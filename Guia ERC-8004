@@ -1,0 +1,576 @@
+# 🤖 Guia ERC-8004 para o Claude Code — Veredict Rebuild
+> Instruções para integrar o padrão ERC-8004 (Trustless Agents) no rebuild do Veredict para o Synthesis Hackathon.
+> Deadline: 22 de março de 2026, 23:59 PST
+
+---
+
+## 🗺️ Visão Geral do que será implementado
+
+O ERC-8004 tem 3 partes. Para o Veredict, vamos implementar **todas as três**:
+
+| Registry | O que faz no Veredict | Prioridade |
+|---|---|---|
+| **Identity Registry** | Registra o VeredictLLM como agente onchain com NFT | 🔴 OBRIGATÓRIO |
+| **Reputation Registry** | Posta feedback onchain após cada mediação concluída | 🟡 RECOMENDADO |
+| **Validation Registry** | Registra o veredito como evidência verificável onchain | 🟢 BONUS |
+
+---
+
+## 📁 Estrutura de arquivos a criar
+
+```
+veredict/                          ← novo repo, do zero
+├── AGENTS.md                      ← soul do VeredictLLM (já existe, reescrever)
+├── agent.json                     ← registration file do ERC-8004
+├── .well-known/
+│   └── agent-registration.json   ← domain verification (opcional mas recomendado)
+├── contracts/
+│   └── interfaces/
+│       ├── IIdentityRegistry.sol
+│       ├── IReputationRegistry.sol
+│       └── IValidationRegistry.sol
+├── lib/
+│   └── erc8004/
+│       ├── identity.ts            ← helpers para Identity Registry
+│       ├── reputation.ts          ← helpers para Reputation Registry
+│       └── validation.ts          ← helpers para Validation Registry
+└── app/
+    └── mediation/
+        └── page.tsx               ← já existia — adicionar chamadas ERC-8004
+```
+
+---
+
+## PASSO 1 — Criar o `agent.json` (Registration File)
+
+**Onde:** `/public/agent.json` (servido publicamente via HTTPS)
+
+Este arquivo é a "identidade" do VeredictLLM. Deve seguir exatamente o schema do ERC-8004.
+
+```json
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "VeredictLLM",
+  "description": "Autonomous AI mediator agent. Resolves B2B contract disputes by reviewing sealed contract terms and verifiable evidence, conducting structured mediation, and executing on-chain ERC-20 settlements without human intervention.",
+  "image": "https://veredict.xyz/logo.png",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "https://veredict.xyz/"
+    },
+    {
+      "name": "A2A",
+      "endpoint": "https://veredict.xyz/.well-known/agent-card.json",
+      "version": "0.3.0"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": null,
+      "agentRegistry": "eip155:8453:{IDENTITY_REGISTRY_ADDRESS}"
+    }
+  ],
+  "supportedTrust": [
+    "reputation",
+    "crypto-economic"
+  ]
+}
+```
+
+> ⚠️ O campo `agentId` começa como `null` e deve ser atualizado após o registro onchain no Passo 3.
+> `8453` = chainId da Base mainnet. Use `84532` para Base Sepolia (testnet).
+
+---
+
+## PASSO 2 — Criar as interfaces Solidity
+
+**Onde:** `/contracts/interfaces/`
+
+O Claude Code **não precisa deployar contratos novos**. Os registries do ERC-8004 já estão deployados. Só precisamos das interfaces para fazer as chamadas.
+
+### `IIdentityRegistry.sol`
+
+```solidity
+// SPDX-License-Identifier: CC0-1.0
+pragma solidity ^0.8.20;
+
+interface IIdentityRegistry {
+    struct MetadataEntry {
+        string metadataKey;
+        bytes metadataValue;
+    }
+
+    event Registered(uint256 indexed agentId, string agentURI, address indexed owner);
+    event URIUpdated(uint256 indexed agentId, string newURI, address indexed updatedBy);
+
+    function register(string calldata agentURI) external returns (uint256 agentId);
+    function register(string calldata agentURI, MetadataEntry[] calldata metadata) external returns (uint256 agentId);
+    function setAgentURI(uint256 agentId, string calldata newURI) external;
+    function getMetadata(uint256 agentId, string memory metadataKey) external view returns (bytes memory);
+    function setMetadata(uint256 agentId, string memory metadataKey, bytes memory metadataValue) external;
+}
+```
+
+### `IReputationRegistry.sol`
+
+```solidity
+// SPDX-License-Identifier: CC0-1.0
+pragma solidity ^0.8.20;
+
+interface IReputationRegistry {
+    event NewFeedback(
+        uint256 indexed agentId,
+        address indexed clientAddress,
+        uint64 feedbackIndex,
+        int128 value,
+        uint8 valueDecimals,
+        string indexed indexedTag1,
+        string tag1,
+        string tag2,
+        string endpoint,
+        string feedbackURI,
+        bytes32 feedbackHash
+    );
+
+    function giveFeedback(
+        uint256 agentId,
+        int128 value,
+        uint8 valueDecimals,
+        string calldata tag1,
+        string calldata tag2,
+        string calldata endpoint,
+        string calldata feedbackURI,
+        bytes32 feedbackHash
+    ) external;
+
+    function getSummary(
+        uint256 agentId,
+        address[] calldata clientAddresses,
+        string calldata tag1,
+        string calldata tag2
+    ) external view returns (uint64 count, int128 summaryValue, uint8 summaryValueDecimals);
+}
+```
+
+### `IValidationRegistry.sol`
+
+```solidity
+// SPDX-License-Identifier: CC0-1.0
+pragma solidity ^0.8.20;
+
+interface IValidationRegistry {
+    event ValidationRequest(
+        address indexed validatorAddress,
+        uint256 indexed agentId,
+        string requestURI,
+        bytes32 indexed requestHash
+    );
+    event ValidationResponse(
+        address indexed validatorAddress,
+        uint256 indexed agentId,
+        bytes32 indexed requestHash,
+        uint8 response,
+        string responseURI,
+        bytes32 responseHash,
+        string tag
+    );
+
+    function validationRequest(
+        address validatorAddress,
+        uint256 agentId,
+        string calldata requestURI,
+        bytes32 requestHash
+    ) external;
+
+    function validationResponse(
+        bytes32 requestHash,
+        uint8 response,
+        string calldata responseURI,
+        bytes32 responseHash,
+        string calldata tag
+    ) external;
+
+    function getValidationStatus(bytes32 requestHash) external view returns (
+        address validatorAddress,
+        uint256 agentId,
+        uint8 response,
+        bytes32 responseHash,
+        string memory tag,
+        uint256 lastUpdate
+    );
+}
+```
+
+---
+
+## PASSO 3 — Encontrar os endereços dos contratos deployados
+
+**Onde procurar:**
+1. Acesse **https://8004.org** — documentação oficial com endereços dos contratos
+2. Acesse **https://github.com/ethereum/ERCs/pull/1170** — PR oficial com detalhes de deployment
+3. No Telegram do Synthesis, pergunte no canal do Protocol Labs: endereços na Base/Base Sepolia
+
+**Salvar em `/lib/erc8004/addresses.ts`:**
+
+```typescript
+// Atualizar com endereços reais após encontrar na documentação
+export const ERC8004_ADDRESSES = {
+  // Base Sepolia (testnet — usar durante desenvolvimento)
+  baseSepolia: {
+    identityRegistry: "0x...",   // ← preencher
+    reputationRegistry: "0x...", // ← preencher
+    validationRegistry: "0x...", // ← preencher
+  },
+  // Base Mainnet (produção)
+  base: {
+    identityRegistry: "0x...",   // ← preencher
+    reputationRegistry: "0x...", // ← preencher
+    validationRegistry: "0x...", // ← preencher
+  }
+}
+```
+
+---
+
+## PASSO 4 — Criar os helpers TypeScript
+
+**Onde:** `/lib/erc8004/`
+
+### `identity.ts` — Registro do VeredictLLM
+
+```typescript
+import { createWalletClient, createPublicClient, http, parseAbi } from 'viem'
+import { baseSepolia } from 'viem/chains'
+import { ERC8004_ADDRESSES } from './addresses'
+
+const IDENTITY_ABI = parseAbi([
+  'function register(string agentURI) returns (uint256 agentId)',
+  'function setAgentURI(uint256 agentId, string newURI) external',
+  'event Registered(uint256 indexed agentId, string agentURI, address indexed owner)',
+])
+
+/**
+ * Registra o VeredictLLM no Identity Registry.
+ * Chamar UMA vez durante o setup inicial do projeto.
+ * Salvar o agentId retornado no .env e no agent.json
+ */
+export async function registerVeredictAgent(
+  walletClient: any,
+  agentJsonUrl: string // URL pública do agent.json, ex: "https://veredict.xyz/agent.json"
+): Promise<bigint> {
+  const hash = await walletClient.writeContract({
+    address: ERC8004_ADDRESSES.baseSepolia.identityRegistry as `0x${string}`,
+    abi: IDENTITY_ABI,
+    functionName: 'register',
+    args: [agentJsonUrl],
+  })
+
+  console.log('✅ VeredictLLM registrado! TX:', hash)
+  
+  // Ler o agentId do evento Registered
+  const publicClient = createPublicClient({ chain: baseSepolia, transport: http() })
+  const receipt = await publicClient.waitForTransactionReceipt({ hash })
+  
+  // Parsear o evento para pegar o agentId
+  const log = receipt.logs[0]
+  const agentId = BigInt(log.topics[1] ?? '0')
+  
+  console.log('🆔 Agent ID:', agentId.toString())
+  console.log('⚠️  Atualizar AGENT_ID no .env e no agent.json!')
+  
+  return agentId
+}
+```
+
+### `reputation.ts` — Feedback pós-mediação
+
+```typescript
+import { parseAbi, keccak256, toBytes, stringToHex } from 'viem'
+import { ERC8004_ADDRESSES } from './addresses'
+
+const REPUTATION_ABI = parseAbi([
+  'function giveFeedback(uint256 agentId, int128 value, uint8 valueDecimals, string tag1, string tag2, string endpoint, string feedbackURI, bytes32 feedbackHash) external',
+])
+
+export interface MediationResult {
+  contractId: string
+  settlementTxHash: string
+  clientSatisfaction: number // 0-100
+  resolutionTimeMs: number
+  disputeType: string
+}
+
+/**
+ * Posta feedback onchain após uma mediação concluída com sucesso.
+ * Chamar ao final do fluxo de mediação, quando os transfers forem confirmados.
+ */
+export async function postMediationFeedback(
+  walletClient: any,
+  agentId: bigint,
+  result: MediationResult
+): Promise<string> {
+
+  // Montar o objeto de feedback off-chain (salvar no IPFS ou endpoint próprio)
+  const feedbackData = {
+    agentRegistry: `eip155:84532:${ERC8004_ADDRESSES.baseSepolia.identityRegistry}`,
+    agentId: agentId.toString(),
+    clientAddress: walletClient.account.address,
+    createdAt: new Date().toISOString(),
+    value: result.clientSatisfaction,
+    valueDecimals: 0,
+    tag1: "mediationSuccess",
+    tag2: result.disputeType,
+    endpoint: "https://veredict.xyz/mediation",
+    proofOfPayment: {
+      txHash: result.settlementTxHash,
+      chainId: "84532"
+    }
+  }
+
+  // Hash do feedback para integridade
+  const feedbackJson = JSON.stringify(feedbackData)
+  const feedbackHash = keccak256(toBytes(feedbackJson))
+
+  // Postar feedback onchain
+  // tag1 = "mediationSuccess", tag2 = tipo de disputa
+  // value = score de 0-100 (100 = mediação perfeita)
+  const hash = await walletClient.writeContract({
+    address: ERC8004_ADDRESSES.baseSepolia.reputationRegistry as `0x${string}`,
+    abi: REPUTATION_ABI,
+    functionName: 'giveFeedback',
+    args: [
+      agentId,
+      BigInt(result.clientSatisfaction), // value
+      0,                                  // valueDecimals
+      "mediationSuccess",                 // tag1
+      result.disputeType,                 // tag2
+      "https://veredict.xyz/mediation",   // endpoint
+      "",                                 // feedbackURI (opcional — usar IPFS se quiser)
+      feedbackHash,                       // hash do feedback
+    ],
+  })
+
+  console.log('⭐ Feedback postado onchain! TX:', hash)
+  return hash
+}
+```
+
+### `validation.ts` — Registrar veredito como evidência
+
+```typescript
+import { parseAbi, keccak256, toBytes } from 'viem'
+import { ERC8004_ADDRESSES } from './addresses'
+
+const VALIDATION_ABI = parseAbi([
+  'function validationRequest(address validatorAddress, uint256 agentId, string requestURI, bytes32 requestHash) external',
+  'function getValidationStatus(bytes32 requestHash) external view returns (address, uint256, uint8, bytes32, string, uint256)',
+])
+
+export interface VeredictEvidence {
+  contractRef: string
+  evidence: string[]
+  settlement: {
+    clientAmount: string
+    developerAmount: string
+    txHashes: string[]
+  }
+  reasoning: string
+}
+
+/**
+ * Registra o veredito como evidência verificável onchain.
+ * Opcional mas aumenta muito o score no critério "Verifiability".
+ */
+export async function registerVerdictAsValidation(
+  walletClient: any,
+  agentId: bigint,
+  evidence: VeredictEvidence,
+  validatorAddress?: string // endereço de um validador externo (opcional)
+): Promise<string> {
+
+  const evidenceJson = JSON.stringify(evidence)
+  const requestHash = keccak256(toBytes(evidenceJson))
+
+  // Se não tiver validador externo, usar o próprio agente como self-validator
+  const validator = validatorAddress ?? walletClient.account.address
+
+  const hash = await walletClient.writeContract({
+    address: ERC8004_ADDRESSES.baseSepolia.validationRegistry as `0x${string}`,
+    abi: VALIDATION_ABI,
+    functionName: 'validationRequest',
+    args: [
+      validator,
+      agentId,
+      `https://veredict.xyz/evidence/${evidence.contractRef}`, // URI das evidências
+      requestHash,
+    ],
+  })
+
+  console.log('✅ Evidência do veredito registrada onchain! TX:', hash)
+  console.log('🔑 Request Hash:', requestHash)
+  return hash
+}
+```
+
+---
+
+## PASSO 5 — Integrar no fluxo de mediação
+
+**Onde:** `/app/mediation/page.tsx` (ou no server action equivalente)
+
+Adicionar as chamadas ao ERC-8004 **ao final** do fluxo de mediação existente:
+
+```typescript
+// Após os transfers ERC-20 serem confirmados:
+
+import { postMediationFeedback } from '@/lib/erc8004/reputation'
+import { registerVerdictAsValidation } from '@/lib/erc8004/validation'
+
+// Dentro da função que executa a mediação, após os transfers:
+async function onMediationComplete(settlementResult: SettlementResult) {
+  
+  const agentId = BigInt(process.env.VEREDICT_AGENT_ID ?? '0')
+
+  // 1. Postar reputação onchain
+  await postMediationFeedback(walletClient, agentId, {
+    contractId: settlementResult.contractRef,
+    settlementTxHash: settlementResult.txHash,
+    clientSatisfaction: 100,
+    resolutionTimeMs: settlementResult.durationMs,
+    disputeType: settlementResult.disputeType,
+  })
+
+  // 2. Registrar veredito como evidência verificável
+  await registerVerdictAsValidation(walletClient, agentId, {
+    contractRef: settlementResult.contractRef,
+    evidence: settlementResult.evidenceItems,
+    settlement: {
+      clientAmount: settlementResult.clientAmount,
+      developerAmount: settlementResult.developerAmount,
+      txHashes: settlementResult.txHashes,
+    },
+    reasoning: settlementResult.mediatorReasoning,
+  })
+}
+```
+
+---
+
+## PASSO 6 — Script de setup inicial (rodar uma vez)
+
+**Onde:** `/scripts/register-agent.ts`
+
+```typescript
+import { createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { baseSepolia } from 'viem/chains'
+import { registerVeredictAgent } from '../lib/erc8004/identity'
+
+async function main() {
+  const account = privateKeyToAccount(process.env.AGENT_PRIVATE_KEY as `0x${string}`)
+  
+  const walletClient = createWalletClient({
+    account,
+    chain: baseSepolia,
+    transport: http(),
+  })
+
+  // A URL pública onde o agent.json estará acessível
+  const agentJsonUrl = 'https://veredict.xyz/agent.json'
+
+  const agentId = await registerVeredictAgent(walletClient, agentJsonUrl)
+  
+  console.log('\n✅ Setup completo!')
+  console.log('Adicionar ao .env:')
+  console.log(`VEREDICT_AGENT_ID=${agentId.toString()}`)
+  console.log('\nAtualizar agent.json com o agentId:', agentId.toString())
+}
+
+main().catch(console.error)
+```
+
+**Rodar com:**
+```bash
+npx tsx scripts/register-agent.ts
+```
+
+---
+
+## PASSO 7 — Variáveis de ambiente
+
+**Arquivo `.env.local`:**
+
+```env
+# ERC-8004
+VEREDICT_AGENT_ID=           # preencher após rodar o script de registro
+AGENT_PRIVATE_KEY=           # private key da wallet do agente (nunca commitar!)
+
+# Registries (preencher com endereços reais da Base Sepolia)
+IDENTITY_REGISTRY_ADDRESS=
+REPUTATION_REGISTRY_ADDRESS=
+VALIDATION_REGISTRY_ADDRESS=
+
+# Já existia no projeto original
+ANTHROPIC_API_KEY=
+```
+
+---
+
+## PASSO 8 — Atualizar o `AGENTS.md`
+
+O Synthesis exige um `AGENTS.md` no repo. Incluir a seção de identidade ERC-8004:
+
+```markdown
+# VeredictLLM — Agent Soul
+
+## Identity
+- Name: VeredictLLM
+- ERC-8004 Agent ID: {VEREDICT_AGENT_ID}
+- Registry: eip155:84532:{IDENTITY_REGISTRY_ADDRESS}
+- Agent JSON: https://veredict.xyz/agent.json
+- Chain: Base Sepolia (testnet) / Base (production)
+
+## Capabilities
+- Autonomous contract dispute mediation
+- Evidence analysis from WhatsApp, CRM, and access logs
+- Structured mediation sessions with both parties
+- On-chain ERC-20 settlement execution (no human intervention)
+- Reputation posting via ERC-8004 Reputation Registry after each case
+
+## Tools
+- Claude (Anthropic) — reasoning and mediation
+- ERC-20 transfers on Base — settlement execution
+- ERC-8004 Identity Registry — agent identity
+- ERC-8004 Reputation Registry — post-mediation feedback
+- ERC-8004 Validation Registry — verdict evidence
+
+## Decision Loop
+discover dispute → analyze evidence → conduct mediation → 
+propose settlement → execute transfers → post feedback onchain → close case
+```
+
+---
+
+## ✅ Checklist final para submissão
+
+- [ ] `agent.json` acessível publicamente via HTTPS
+- [ ] Script de registro executado — `VEREDICT_AGENT_ID` preenchido no `.env`
+- [ ] `agent.json` atualizado com o `agentId` real
+- [ ] Feedback sendo postado onchain após cada mediação (testado)
+- [ ] `AGENTS.md` atualizado com identity info
+- [ ] Deploy live rodando (juízes vão interagir entre 23-25/março)
+- [ ] Video demo gravado e URL na submissão do Devfolio
+- [ ] ERC-8004 identity NFT transferido para sua wallet (fluxo do Devfolio)
+
+---
+
+## 📚 Referências
+
+- Spec oficial: https://eips.ethereum.org/EIPS/eip-8004
+- Documentação e endereços: https://8004.org
+- Discussão técnica: https://ethereum-magicians.org/t/erc-8004-trustless-agents/25098
+- PR com contratos: https://github.com/ethereum/ERCs/pull/1170
+- Synthesis Builder Guide: https://devfolio.notion.site/Synthesis-Builder-Guide-32156997768d810bbb8ef8967439efa0
+- Submission skill: https://synthesis.devfolio.co/submission/skill.md
