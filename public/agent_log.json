@@ -139,7 +139,11 @@
       "selfCustodyExplorer": "https://sepolia.basescan.org/tx/0xf6a996e3d77f0f6211d8636679b57b9ff4bd161b5cd412a0612ca4a6612ff32f",
       "ownerAddress": "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4",
       "custodyType": "self_custody",
-      "selfCustodyVerifiedAt": "2026-03-19T04:46:29.810Z"
+      "selfCustodyVerifiedAt": "2026-03-19T04:46:29.810Z",
+      "tokenURIUpdatedTx": "0xea3da51da249518babc341730363466a03cedf58b79709dfba3c99c755088c67",
+      "tokenURIUpdatedExplorer": "https://sepolia.basescan.org/tx/0xea3da51da249518babc341730363466a03cedf58b79709dfba3c99c755088c67",
+      "tokenURIUpdatedTo": "https://selantar.vercel.app/agent.json",
+      "tokenURIUpdatedAt": "2026-03-19T20:00:00.000Z"
     },
     "reputation": {
       "description": "Client posted positive feedback for Selantar mediation session. Score: 90/100. Tags: mediationSuccess, softwareDispute.",
