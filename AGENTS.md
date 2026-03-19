@@ -5,7 +5,7 @@
 - **Type:** Autonomous AI Dispute Mediator
 - **ERC-8004 Agent ID:** 0
 - **Identity Registry:** eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e
-- **Agent JSON:** https://selantar.xyz/agent.json
+- **Agent JSON:** https://selantar.vercel.app/agent.json
 - **Chain:** Base Sepolia (testnet) / Base (production)
 - **Harness:** claude-code (Claude Opus 4.6)
 - **Model:** claude-sonnet-4-5 (API calls)

@@ -6,7 +6,7 @@
     "agentId": 2122,
     "agentRegistry": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e",
     "reputationRegistry": "eip155:84532:0x8004B663056A597Dffe9eCcC1965A193B7388713",
-    "agentJson": "https://selantar.xyz/agent.json",
+    "agentJson": "https://selantar.vercel.app/agent.json",
     "framework": "Vercel AI SDK v6 (ToolLoopAgent)",
     "model": "openai/gpt-5.4-mini via OpenRouter"
   },
@@ -174,7 +174,7 @@
       "chain": "Base Sepolia (84532)",
       "validatorAddress": "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4",
       "agentId": 2122,
-      "requestURI": "https://selantar.xyz/evidence/clinica-suasuna-001"
+      "requestURI": "https://selantar.vercel.app/evidence/clinica-suasuna-001"
     }
   },
   "autonomyMetrics": {

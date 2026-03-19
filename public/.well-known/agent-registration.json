@@ -1,5 +1,5 @@
 {
-  "agent": "https://selantar.xyz/agent.json",
+  "agent": "https://selantar.vercel.app/agent.json",
   "name": "Selantar",
   "registrations": [
     {

@@ -2,15 +2,15 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Selantar",
   "description": "Autonomous AI mediator agent. Resolves B2B contract disputes by reviewing sealed contract terms and verifiable evidence, conducting structured mediation, and executing on-chain ERC-20 settlements without human intervention.",
-  "image": "https://selantar.xyz/logo.png",
+  "image": "https://selantar.vercel.app/logo.png",
   "services": [
     {
       "name": "web",
-      "endpoint": "https://selantar.xyz/"
+      "endpoint": "https://selantar.vercel.app/"
     },
     {
       "name": "A2A",
-      "endpoint": "https://selantar.xyz/.well-known/agent-card.json",
+      "endpoint": "https://selantar.vercel.app/.well-known/agent-card.json",
       "version": "0.3.0"
     }
   ],

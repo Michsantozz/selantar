@@ -31,7 +31,7 @@ export async function postMediationFeedback(
     valueDecimals: 0,
     tag1: "mediationSuccess",
     tag2: result.disputeType,
-    endpoint: "https://selantar.xyz/mediation",
+    endpoint: "https://selantar.vercel.app/mediation",
     proofOfPayment: {
       txHash: result.settlementTxHash,
       chainId: "84532",
@@ -51,7 +51,7 @@ export async function postMediationFeedback(
       0,
       "mediationSuccess",
       result.disputeType,
-      "https://selantar.xyz/mediation",
+      "https://selantar.vercel.app/mediation",
       "",
       feedbackHash,
     ],

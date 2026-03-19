@@ -39,7 +39,7 @@ export async function registerVerdictAsValidation(
     args: [
       validator,
       agentId,
-      `https://selantar.xyz/evidence/${evidence.contractRef}`,
+      `https://selantar.vercel.app/evidence/${evidence.contractRef}`,
       requestHash,
     ],
   });
