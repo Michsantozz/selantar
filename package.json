@@ -1,5 +1,5 @@
 {
-  "name": "veredict-scaffold",
+  "name": "selantar",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -33,7 +33,7 @@
     "media-chrome": "^4.18.1",
     "motion": "^12.38.0",
     "nanoid": "^5.1.7",
-    "next": "16.1.7",
+    "next": "^16.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-jsx-parser": "^2.4.1",

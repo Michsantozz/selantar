@@ -48,7 +48,7 @@ ORIGEM DA INFERENCIA
 
 ## 3. Visao do Projeto
 
-**VeredictLLM** e um mediador autonomo de disputas B2B com IA. Resolve disputas contratuais entre clientes e desenvolvedores analisando evidencias, conduzindo mediacao estruturada e executando settlements on-chain via ERC-20 — sem intervencao humana.
+**Selantar** e um mediador autonomo de disputas B2B com IA. Resolve disputas contratuais entre clientes e desenvolvedores analisando evidencias, conduzindo mediacao estruturada e executando settlements on-chain via ERC-20 — sem intervencao humana.
 
 ### Hackathon: The Synthesis
 - **Deadline:** 22 de marco de 2026, 23:59 PST
@@ -113,7 +113,7 @@ ORIGEM DA INFERENCIA
 
 ### 4.3 ERC-8004 Integration
 
-- **Identity Registry** — Registro do VeredictLLM como agente onchain (obrigatorio)
+- **Identity Registry** — Registro do Selantar como agente onchain (obrigatorio)
 - **Reputation Registry** — Feedback onchain apos cada mediacao concluida
 - **Validation Registry** — Veredito como evidencia verificavel onchain
 - Contratos ja deployados na Base/Base Sepolia — apenas chamamos via viem
@@ -184,7 +184,7 @@ TEAM_ID=
 ANTHROPIC_API_KEY=
 
 # ERC-8004
-VEREDICT_AGENT_ID=           # preencher apos rodar register-agent.ts
+SELANTAR_AGENT_ID=           # preencher apos rodar register-agent.ts
 AGENT_PRIVATE_KEY=           # private key da wallet do agente (nunca commitar!)
 
 # Registries (enderecos dos contratos ERC-8004 na Base)
@@ -221,7 +221,7 @@ VALIDATION_REGISTRY_ADDRESS=
 ## 10. Estrutura de Arquivos
 
 ```
-newveredict/
+selantar/
 ├── public/
 │   ├── agent.json                    # ERC-8004 registration file
 │   └── .well-known/agent-registration.json
@@ -267,7 +267,6 @@ newveredict/
 | Arquivo | O que contem |
 |---------|-------------|
 | `Guia ERC-8004` | Guia completo com todo codigo ERC-8004 pronto para copiar |
-| `HANDOFF.md` | Contexto completo do projeto e fases de execucao |
-| `.firecrawl/` | Docs baixados: AI SDK, Synthesis rules, prizes, themes |
-| `.env.local` | Credenciais do Synthesis (API key, participant ID, team ID) |
-| `/home/michsantoz/veredict/` | Projeto original — referencia de UI e fluxo (NAO copiar codigo) |
+| `.env.local` | Credenciais do Synthesis (API key, participant ID, team ID) — nunca commitar |
+| `public/agent.json` | ERC-8004 agent registration file |
+| `public/agent_log.json` | DevSpot Agent Manifest com TXs e decisoes do agente |

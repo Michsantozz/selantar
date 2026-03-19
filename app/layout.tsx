@@ -22,7 +22,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "VeredictLLM — Autonomous Dispute Mediator",
+  title: "Selantar — Autonomous Dispute Mediator",
   description:
     "AI-powered B2B contract dispute mediation with on-chain settlements via ERC-8004.",
 };
@@ -36,6 +36,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
+        suppressHydrationWarning
       >
         <Navbar />
         <main>{children}</main>

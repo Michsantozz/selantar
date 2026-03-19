@@ -338,7 +338,7 @@ function HowItWorksSection() {
       icon: ScanSearch,
       title: "AI audits your contract",
       description:
-        "Upload a PDF. Veredict hunts loopholes, flags vague terms, and eliminates ambiguity. Every clause gets a risk score.",
+        "Upload a PDF. Selantar hunts loopholes, flags vague terms, and eliminates ambiguity. Every clause gets a risk score.",
     },
     {
       num: "02",
@@ -553,7 +553,7 @@ function BentoSection() {
           </BlurFade>
           <BlurFade delay={0.3} inView>
             <p className="mt-6 text-base leading-relaxed text-muted-foreground">
-              Veredict transforms angry developers into strategic CEOs.
+              Selantar transforms angry developers into strategic CEOs.
               It de-escalates, proposes diplomatic wins, and settles. All on-chain.
             </p>
           </BlurFade>
@@ -922,7 +922,7 @@ function Footer() {
         <div className="flex items-center gap-2.5">
           <HeartHandshake className="size-4 text-primary" />
           <span className="text-sm font-medium tracking-tight">
-            Veredict<span className="text-primary">LLM</span>
+            Selantar
           </span>
         </div>
 

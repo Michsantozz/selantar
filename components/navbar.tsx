@@ -25,7 +25,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <HeartHandshake className="size-4 text-primary" />
           <span className="text-sm font-medium tracking-tight">
-            Veredict<span className="text-primary">LLM</span>
+            Selantar
           </span>
         </Link>
 

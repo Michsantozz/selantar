@@ -39,3 +39,42 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code internal (AI dev tooling — not project code)
+.agents/
+.claude/
+skills-lock.json
+
+# Research / scraping docs (internal use only)
+.firecrawl/
+
+# Development screenshots (internal)
+screenshots/
+
+# Conversation logs (private dev history)
+CONVERSATION-LOG*.md
+HANDOFF.md
+DESIGN-SYSTEM.md
+RANKINGSKLLS
+
+# Test results
+test-results/
+
+# Root-level staging images (not used in app)
+blocked.jpg
+deadlock.jpg
+explosion.jpg
+hospital.png
+success.jpg
+DEV.png
+E-COMMERCE.png
+
+# Solidity compile artifacts (temp)
+_tmp_*.abi
+_tmp_*.bin
+
+# Dev-only scripts
+scripts/capture-*.sh
+scripts/scrape-*.mjs
+scripts/screenshot-*.ts
+scripts/export-*.py
