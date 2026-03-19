@@ -58,7 +58,7 @@ function useLoadedImage(src: string) {
    HERO — Heatmap shader + staggered copy + stats
    ═══════════════════════════════════════════════ */
 function HeroSection() {
-  const logoImage = useLoadedImage("/veredict-logo.png");
+  const logoImage = useLoadedImage("/selantar-logo.png");
   return (
     <section className="relative min-h-[calc(100dvh-65px)] flex items-center overflow-hidden -mt-[65px] pt-[65px]">
       {/* Animated grid — subtle depth */}
