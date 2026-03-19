@@ -132,8 +132,8 @@ ORIGEM DA INFERENCIA
 - **Path aliases:** `@/*` -> `./*` (sem src-dir)
 - **Icones:** `lucide-react`. Nunca sizing classes no componente de icone; usar `className="size-4"` no wrapper.
 - **shadcn/ui:** Style `new-york`, RSC enabled, Tailwind v4
-- **On-chain:** viem direto — NAO usar SURGE, NAO usar ethers.js
-- **IA:** AI SDK v6 (Vercel) — NAO usar @anthropic-ai/sdk direto, NAO usar OpenClaw
+- **On-chain:** viem direto — NAO usar ethers.js
+- **IA:** AI SDK v6 (Vercel) — NAO usar @anthropic-ai/sdk direto
 - **Modelo registrado:** claude-opus-4-6 (harness), claude-sonnet-4-6 (chamadas de API)
 
 ---
@@ -213,8 +213,6 @@ VALIDATION_REGISTRY_ADDRESS=
 | `bg-red-500` (cor crua) | `bg-destructive` (token semantico) | shadcn |
 | `import { ethers }` | `import { ... } from 'viem'` | decisao arquitetural |
 | `@anthropic-ai/sdk` direto | `@ai-sdk/anthropic` via AI SDK | decisao arquitetural |
-| SURGE SDK | viem direto | decisao arquitetural |
-| OpenClaw | AI SDK ToolLoopAgent | decisao arquitetural |
 
 ---
 
