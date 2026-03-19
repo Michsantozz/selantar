@@ -90,7 +90,7 @@ Client complaint → POST /api/mediation-chat (ToolLoopAgent)
 |-------|------|
 | Framework | Next.js 16, App Router |
 | AI | AI SDK v6 — `ToolLoopAgent`, `useChat`, `DefaultChatTransport` |
-| Model | `claude-sonnet-4-6` via `@ai-sdk/anthropic` |
+| Model | `openai/gpt-5.4-mini` via OpenRouter |
 | On-chain | viem, Base Sepolia (chainId: 84532) |
 | ERC-8004 | Identity + Reputation + Validation registries |
 | UI | Tailwind CSS v4, shadcn/ui (New York), Framer Motion |

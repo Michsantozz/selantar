@@ -86,7 +86,7 @@ ORIGEM DA INFERENCIA
 #### `/api/analyze-contract/route.ts`
 
 - Recebe contrato uploadado (PDF/texto)
-- Streaming via `streamText` com claude-sonnet-4-6 via `@ai-sdk/anthropic`
+- Streaming via `streamText` com openai/gpt-5.4-mini via OpenRouter
 - Retorna analise de risco, clausulas-chave, recomendacoes
 - Retorna `toUIMessageStreamResponse()` (nunca `toDataStreamResponse`)
 - Runtime: Node.js, maxDuration: 120s
@@ -94,7 +94,7 @@ ORIGEM DA INFERENCIA
 #### `/api/mediation-chat/route.ts`
 
 - `ToolLoopAgent` com dual-agent orchestration (mediator + analyst)
-- Modelo: `anthropic/claude-sonnet-4-6` via `@ai-sdk/anthropic`
+- Modelo: `openai/gpt-5.4-mini` via OpenRouter (`@openrouter/ai-sdk-provider`)
 - Tools: `analyzeEvidence`, `proposeSettlement`, `executeSettlement`, `postFeedback`, `registerVerdict`
 - `stopWhen: stepCountIs(10)`
 - Retorna `toUIMessageStreamResponse()`
@@ -134,7 +134,7 @@ ORIGEM DA INFERENCIA
 - **shadcn/ui:** Style `new-york`, RSC enabled, Tailwind v4
 - **On-chain:** viem direto — NAO usar ethers.js
 - **IA:** AI SDK v6 (Vercel) — NAO usar @anthropic-ai/sdk direto
-- **Modelo registrado:** claude-opus-4-6 (harness), claude-sonnet-4-6 (chamadas de API)
+- **Modelo registrado:** claude-opus-4-6 (harness), openai/gpt-5.4-mini via OpenRouter (chamadas de API)
 
 ---
 

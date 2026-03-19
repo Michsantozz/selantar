@@ -96,7 +96,7 @@
 {
   "agentFramework": "vercel-ai-sdk",
   "agentHarness": "claude-code",
-  "model": "claude-sonnet-4-6",
+  "model": "openai/gpt-5.4-mini",
   "skills": ["ai-sdk", "shadcn", "vercel-react-best-practices", "firecrawl", "ai-elements"],
   "tools": ["viem", "Next.js 16", "Tailwind CSS v4", "Framer Motion", "ERC-8004 Registries", "Base Sepolia"],
   "helpfulResources": [
