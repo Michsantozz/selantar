@@ -104,7 +104,7 @@ function getDiscoveryData(scenario: Scenario) {
       {
         label: "The offer that closes this",
         title: isClinica
-          ? <>Propose a <span className="text-primary font-medium">48h window</span> to finish Phase 3 with a <span className="text-primary font-medium">20% discount</span>. You keep <strong className="text-foreground">200 $SURGE</strong>, the doctor gets a fair exit.</>
+          ? <>Propose a <span className="text-primary font-medium">48h window</span> to finish Phase 3 with a <span className="text-primary font-medium">20% discount</span>. You keep <strong className="text-foreground">200 USDC</strong>, the doctor gets a fair exit.</>
           : isEcommerce
             ? <>Split the migration cost <strong className="text-foreground">50/50</strong>. Dev fixes at half rate, client covers infrastructure.</>
             : <>Release <strong className="text-foreground">60% of escrow</strong> now for verified work. Final 15% on delivery within <strong className="text-foreground">14 days</strong>.</>,
@@ -119,7 +119,7 @@ function getDiscoveryData(scenario: Scenario) {
       clientLabel: scenario.parties.client.name,
       devPct: isClinica ? "80%" : isEcommerce ? "67%" : "60%",
       clientPct: isClinica ? "20%" : isEcommerce ? "33%" : "40%",
-      currency: scenario.contract.currency === "BRL" ? "$SURGE" : `$${scenario.contract.currency}`,
+      currency: scenario.contract.currency === "BRL" ? "USDC" : `$${scenario.contract.currency}`,
       action: isClinica
         ? "48h Extension + 20% Discount"
         : isEcommerce

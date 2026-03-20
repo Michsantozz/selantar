@@ -30,9 +30,9 @@ const actions: ActionOption[] = [
     icon: Split,
     title: "Split The Escrow",
     description:
-      "Pay 100 $SURGE for what was actually delivered. Hold 150 until the bugs are squashed and confirmed.",
+      "Pay 100 USDC for what was actually delivered. Hold 150 until the bugs are squashed and confirmed.",
     buttonLabel: "Propose Split 100 / 150",
-    topLabel: "100 $SURGE",
+    topLabel: "100 USDC",
     bottomLabel: "150 held",
     variant: "accent",
   },

@@ -43,7 +43,7 @@ export function IntelligencePanel({ scenario }: IntelligencePanelProps) {
                     Phase 1 — Discovery & Planning
                   </p>
                   <p className="text-[10px] font-mono text-emerald">
-                    100 $SURGE Released
+                    100 USDC Released
                   </p>
                 </div>
               </div>
@@ -58,7 +58,7 @@ export function IntelligencePanel({ scenario }: IntelligencePanelProps) {
                     Phase 2 — AI Build & Training
                   </p>
                   <p className="text-[10px] font-mono text-emerald">
-                    150 $SURGE Released
+                    150 USDC Released
                   </p>
                 </div>
               </div>
@@ -182,7 +182,7 @@ export function IntelligencePanel({ scenario }: IntelligencePanelProps) {
               {devName}
             </span>
             <span className="text-sm font-mono text-foreground">
-              200 $SURGE
+              200 USDC
             </span>
           </div>
           <div className="flex items-center justify-between">
@@ -190,7 +190,7 @@ export function IntelligencePanel({ scenario }: IntelligencePanelProps) {
               {clientName}
             </span>
             <span className="text-sm font-mono text-foreground">
-              50 $SURGE
+              50 USDC
             </span>
           </div>
           <div className="h-px bg-border my-1" />

@@ -30,7 +30,7 @@ export function FinancialDashboard() {
             Smart Escrow
           </span>
           <p className="mt-1.5 text-2xl font-normal tracking-tight text-foreground font-mono">
-            500 $SURGE
+            500 USDC
           </p>
           <span className="text-[11px] text-muted-foreground/60 font-mono">
             On-chain · Base · 0x4f3a...c91b
@@ -57,7 +57,7 @@ export function FinancialDashboard() {
             Escrow Allocation
           </span>
           <span className="font-mono text-xs text-muted-foreground/60">
-            500 $SURGE total
+            500 USDC total
           </span>
         </div>
         <div className="h-3 w-full rounded-full overflow-hidden bg-muted/50 border border-border">
@@ -68,17 +68,17 @@ export function FinancialDashboard() {
             <div
               className="bg-emerald h-full"
               style={{ width: "20%" }}
-              title="Phase 1 — 100 $SURGE Released"
+              title="Phase 1 — 100 USDC Released"
             />
             <div
               className="bg-emerald/70 h-full"
               style={{ width: "30%" }}
-              title="Phase 2 — 150 $SURGE Released"
+              title="Phase 2 — 150 USDC Released"
             />
             <div
               className="bg-destructive/60 h-full animate-pulse"
               style={{ width: "50%" }}
-              title="Phase 3 — 250 $SURGE At Risk"
+              title="Phase 3 — 250 USDC At Risk"
             />
           </div>
         </div>

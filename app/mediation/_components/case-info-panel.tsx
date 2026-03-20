@@ -8,7 +8,7 @@ interface CaseInfoPanelProps {
 }
 
 export function CaseInfoPanel({ scenario }: CaseInfoPanelProps) {
-  const escrowValue = scenario?.escrow ?? "250 $SURGE";
+  const escrowValue = scenario?.escrow ?? "250 USDC";
   const clientName = scenario?.parties.client.name ?? "Client";
   const clientRole = scenario?.parties.client.role ?? "Client";
   const devName = scenario?.parties.developer.name ?? "Developer";

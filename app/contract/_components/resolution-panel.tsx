@@ -17,7 +17,7 @@ export function ResolutionPanel() {
           Everything looks good? Release the full escrow and wrap this up.
         </p>
         <div className="text-xs text-muted-foreground/60 mb-5 space-y-1">
-          <p className="font-mono">500 $SURGE goes straight to ULTRASELF</p>
+          <p className="font-mono">500 USDC goes straight to ULTRASELF</p>
           <p>All 3 phases · Released automatically on-chain</p>
         </div>
 
@@ -26,7 +26,7 @@ export function ResolutionPanel() {
             500
           </span>
           <span className="text-xs text-muted-foreground/60 font-mono">
-            $SURGE
+            USDC
           </span>
         </div>
 
@@ -56,7 +56,7 @@ export function ResolutionPanel() {
 
         <div className="flex items-center gap-3 mb-5 text-xs text-muted-foreground/60">
           <span className="font-mono">
-            Penalty: 15 $SURGE from the liable party
+            Penalty: 15 USDC from the liable party
           </span>
           <span className="text-muted-foreground/20">·</span>
           <span className="font-mono">Case #VRD-8341</span>
