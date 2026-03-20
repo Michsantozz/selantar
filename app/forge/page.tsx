@@ -74,7 +74,7 @@ function ParseCard() {
         {/* Upload zone */}
         <Link
           href="/forge/analyze"
-          className="block rounded-lg border border-dashed border-border/80 bg-muted/[0.04] px-6 py-10 text-center transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-primary/25 hover:bg-primary/[0.02] active:scale-[0.99]"
+          className="block rounded-lg border border-dashed border-border/80 bg-muted/[0.04] px-6 py-8 text-center transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-primary/25 hover:bg-primary/[0.02] active:scale-[0.99]"
         >
           <div className="mx-auto mb-4 flex size-11 items-center justify-center rounded-lg bg-muted/30 transition-colors duration-500 group-hover:bg-primary/10">
             <Upload className="size-[18px] text-muted-foreground/40 transition-colors duration-500 group-hover:text-primary/60" />
@@ -87,25 +87,43 @@ function ParseCard() {
           </p>
         </Link>
 
+        {/* Divider */}
+        <div className="my-4 flex items-center gap-4">
+          <div className="h-px flex-1 bg-border/50" />
+          <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground/30">or</span>
+          <div className="h-px flex-1 bg-border/50" />
+        </div>
+
+        {/* Demo contract option */}
+        <Link
+          href="/contract"
+          className="group/demo flex flex-col items-center gap-3 rounded-lg border border-primary/15 bg-primary/[0.03] px-6 py-6 text-center transition-all duration-500 hover:border-primary/30 hover:bg-primary/[0.06] active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="size-2 rounded-full bg-primary animate-subtle-pulse" />
+            <span className="text-sm font-medium text-foreground transition-colors">
+              No contract? No problem.
+            </span>
+          </div>
+          <p className="text-[12px] leading-relaxed text-muted-foreground/50">
+            Load a sample SaaS contract and watch the AI tear it apart in real time.
+          </p>
+          <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-primary/70 transition-colors group-hover/demo:text-primary">
+            Try Demo
+            <ArrowRight className="size-3 transition-transform duration-500 group-hover/demo:translate-x-0.5" />
+          </span>
+        </Link>
+
         <div className="flex-1" />
 
-        {/* CTAs */}
-        <div className="mt-8 flex flex-col gap-3">
+        {/* CTA */}
+        <div className="mt-8">
           <Link
             href="/forge/analyze"
             className="group/btn flex w-full items-center justify-center gap-2.5 rounded-md bg-foreground py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-background transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-foreground/90 active:scale-[0.98]"
           >
             Analyze a Contract
             <ArrowRight className="size-3.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/btn:translate-x-1" />
-          </Link>
-
-          <Link
-            href="/forge/analyze?demo=true"
-            className="hero-cta group/demo flex w-full items-center justify-center gap-2.5 rounded-md py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-foreground transition-all duration-500 hover:scale-[1.01] active:scale-[0.98]"
-          >
-            <span className="size-1.5 rounded-full bg-primary animate-subtle-pulse" />
-            Try Demo Contract
-            <ArrowRight className="size-3.5 transition-transform duration-500 group-hover/demo:translate-x-1" />
           </Link>
         </div>
       </div>
