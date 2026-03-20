@@ -45,7 +45,7 @@
 - [x] README profissional com TXs linkadas para Basescan
 - [x] .gitignore limpo (sem credentials, sem arquivos internos)
 - [x] CLAUDE.md sem referências suspeitas
-- [x] Assets renomeados (veredict-logo → selantar-logo)
+- [x] Assets renomeados (old branding → selantar-logo)
 - [x] Deploy Vercel: **https://selantar.vercel.app** ✅
 - [x] Todas URLs atualizadas para `selantar.vercel.app`
 
@@ -55,7 +55,7 @@
 
 ### BLOQUEADOR CRÍTICO — sem isso as APIs não funcionam no Vercel
 - [ ] **[HUMANO]** Configurar env vars no Vercel dashboard
-  - `ANTHROPIC_API_KEY`
+  - `OPENROUTER_API_KEY`
   - `AGENT_PRIVATE_KEY`
   - `CLIENT_PRIVATE_KEY`
   - `SELANTAR_AGENT_ID=2122`
@@ -76,7 +76,8 @@
 - [ ] Preparar conversationLog (baseado nos CONVERSATION-LOG*.md)
 - [ ] Criar draft project no Synthesis API (POST /projects)
 - [ ] Publicar projeto (POST /projects/:uuid/publish)
-- [ ] Atualizar tokenURI on-chain: `setAgentURI(2122, "https://selantar.vercel.app/agent.json")`
+- [x] Atualizar tokenURI on-chain: `setAgentURI(2122, "https://selantar.vercel.app/agent.json")`
+  - TX: `0xea3da51da249518babc341730363466a03cedf58b79709dfba3c99c755088c67`
 
 ---
 

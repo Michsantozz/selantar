@@ -216,7 +216,7 @@ const conflictMessages = [
 
 function ProblemSection() {
   return (
-    <section className="relative py-12 lg:py-20 bg-card/40">
+    <section id="problem" className="relative py-12 lg:py-20 bg-card/40">
       <div className="mx-auto max-w-7xl px-4 lg:px-9">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div>
@@ -357,7 +357,7 @@ function HowItWorksSection() {
   ];
 
   return (
-    <section className="relative py-14 lg:py-22 border-t border-border">
+    <section id="how-it-works" className="relative py-14 lg:py-22 border-t border-border">
       <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
         {/* Centered header — breaks left-aligned monotony */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
@@ -535,7 +535,7 @@ const bentoFeatures = [
 
 function BentoSection() {
   return (
-    <section className="relative py-12 lg:py-20">
+    <section id="features" className="relative py-12 lg:py-20">
       <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
         <div className="mb-8 max-w-2xl">
           <BlurFade delay={0.1} inView>
@@ -596,7 +596,7 @@ const pipelineSteps = [
 
 function PipelineSection() {
   return (
-    <section className="relative py-12 lg:py-20 overflow-hidden border-t border-border bg-card/30">
+    <section id="pipeline" className="relative py-12 lg:py-20 overflow-hidden border-t border-border bg-card/30">
       <div className="mx-auto max-w-7xl px-4 lg:px-9">
         <div className="mb-10 max-w-2xl">
           <BlurFade delay={0.1} inView>
@@ -647,7 +647,7 @@ function PipelineSection() {
    ═══════════════════════════════════════════════ */
 function ERC8004Section() {
   return (
-    <section className="relative py-14 lg:py-22 overflow-hidden">
+    <section id="on-chain" className="relative py-14 lg:py-22 overflow-hidden">
       <DotPattern
         width={24}
         height={24}

@@ -87,60 +87,25 @@ function ParseCard() {
           </p>
         </Link>
 
-        {/* Sample output preview */}
-        <div className="mt-6">
-          <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground/25">
-            Sample output
-          </span>
-
-          <div className="mt-3 flex flex-col">
-            {[
-              { clause: "4.2 — Late delivery penalty", risk: "high" },
-              { clause: "7.1 — IP ownership transfer", risk: "medium" },
-              { clause: "3.5 — Scope of deliverables", risk: "medium" },
-              { clause: "1.1 — Contracting parties", risk: "low" },
-            ].map(({ clause, risk }, i) => (
-              <div
-                key={clause}
-                className={`flex items-center justify-between py-2.5 ${
-                  i > 0 ? "border-t border-border/50" : ""
-                }`}
-              >
-                <span className="text-[13px] text-muted-foreground/40">
-                  {clause}
-                </span>
-                <span
-                  className={`rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
-                    risk === "high"
-                      ? "bg-destructive/10 text-destructive/80"
-                      : risk === "medium"
-                        ? "bg-primary/10 text-primary/80"
-                        : "bg-emerald/10 text-emerald/80"
-                  }`}
-                >
-                  {risk}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
         <div className="flex-1" />
 
-        {/* Features + CTA */}
-        <div className="mt-8 border-t border-border pt-6">
-          <div className="mb-5 flex items-center gap-5 text-[11px] text-muted-foreground/30">
-            <span>🔍 Risk scan</span>
-            <span>⚠️ Ambiguity score</span>
-            <span>🛡️ Recommendations</span>
-          </div>
-
+        {/* CTAs */}
+        <div className="mt-8 flex flex-col gap-3">
           <Link
             href="/forge/analyze"
             className="group/btn flex w-full items-center justify-center gap-2.5 rounded-md bg-foreground py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-background transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-foreground/90 active:scale-[0.98]"
           >
             Analyze a Contract
             <ArrowRight className="size-3.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/btn:translate-x-1" />
+          </Link>
+
+          <Link
+            href="/forge/analyze?demo=true"
+            className="hero-cta group/demo flex w-full items-center justify-center gap-2.5 rounded-md py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-foreground transition-all duration-500 hover:scale-[1.01] active:scale-[0.98]"
+          >
+            <span className="size-1.5 rounded-full bg-primary animate-subtle-pulse" />
+            Try Demo Contract
+            <ArrowRight className="size-3.5 transition-transform duration-500 group-hover/demo:translate-x-1" />
           </Link>
         </div>
       </div>
@@ -179,7 +144,7 @@ function WarCard() {
           return (
             <Link
               key={scenario.id}
-              href={`/mediation/discovery?scenario=${scenario.id}`}
+              href={`/mediation/briefing?scenario=${scenario.id}`}
               className="group/sc flex flex-col overflow-hidden rounded-lg border border-border bg-background transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-primary/25 hover:shadow-[0_4px_24px_oklch(0.72_0.17_55/0.04)]"
             >
               {/* Image strip */}

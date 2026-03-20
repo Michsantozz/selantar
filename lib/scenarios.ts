@@ -31,7 +31,7 @@ export interface Scenario {
 export const scenarios: Scenario[] = [
   {
     id: "clinica-suasuna",
-    title: "A Clínica Suasuna",
+    title: "The Suasuna Clinic",
     tagline: "When a doctor's ego meets a developer's deadline",
     parties: {
       client: { name: "Dr. Suasuna", role: "Clinic owner" },
@@ -80,15 +80,15 @@ EVIDENCE:
 The doctor is emotionally frustrated and feels disrespected. The developer is technically correct but poor at escalation. Both parties want to finish the project — neither wants litigation.
 
 Analyze the evidence, determine fair responsibility, and propose a settlement that preserves the relationship.`,
-    clientOpening: `Olha aqui, eu vou ser direto. Eu paguei R$30.000 nesse projeto e o sistema AINDA não marca consulta. Não funciona. Eu tenho pacientes esperando, tenho uma clínica nova na esquina oferecendo agendamento online, e o meu sistema não faz NADA.
+    clientOpening: `Look, I'll be straight with you. I paid R$30,000 on this project and the system STILL can't schedule appointments. It doesn't work. I have patients waiting, a new clinic down the street already offering online booking, and my system does NOTHING.
 
-Eu contratei profissionais pra resolver isso. Não era pra eu ficar correndo atrás de ninguém. Se o desenvolvedor não consegue fazer o trabalho, eu quero meu dinheiro de volta. Simples assim.
+I hired professionals to handle this. I shouldn't have to chase anyone down. If the developer can't do the job, I want my money back. Simple as that.
 
-Pelo amor de Deus, já são mais de 60 dias.`,
+For God's sake, it's been over 60 days.`,
   },
   {
     id: "ecommerce-quebrado",
-    title: "O E-commerce Quebrado",
+    title: "The Broken E-commerce",
     tagline: "A breaking API change nobody planned for",
     parties: {
       client: { name: "ShopFlex", role: "Online retailer" },
@@ -145,7 +145,7 @@ We want a full refund.`,
   },
   {
     id: "freelancer-fantasma",
-    title: "O Freelancer Fantasma",
+    title: "The Ghost Freelancer",
     tagline: "75% delivered, then radio silence",
     parties: {
       client: { name: "StartupAI", role: "AI startup" },

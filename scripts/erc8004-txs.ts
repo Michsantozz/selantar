@@ -17,7 +17,7 @@ const RPC = "https://sepolia.base.org";
 const AGENT_ID = BigInt(2122);
 const IDENTITY_REGISTRY  = "0x8004A818BFB912233c491871b3d84c89A494BD9e";
 const REPUTATION_REGISTRY = "0x8004B663056A597Dffe9eCcC1965A193B7388713";
-const VALIDATION_REGISTRY = "0x8004A818BFB912233c491871b3d84c89A494BD9e";
+const VALIDATION_REGISTRY = "0xd6f7d27ce23830c7a59acfca20197f9769a17120";
 const AGENT_ADDRESS = "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4";
 
 async function main() {
@@ -67,7 +67,7 @@ async function main() {
     value: 90,
     tag1: "mediationSuccess",
     tag2: "softwareDispute",
-    endpoint: "https://selantar.xyz/mediation",
+    endpoint: "https://selantar.vercel.app/mediation",
     settlementTx: "0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86",
   };
   const feedbackHash = keccak256(toBytes(JSON.stringify(feedbackData)));
@@ -82,7 +82,7 @@ async function main() {
       0,
       "mediationSuccess",
       "softwareDispute",
-      "https://selantar.xyz/mediation",
+      "https://selantar.vercel.app/mediation",
       "",
       feedbackHash,
     ],
@@ -117,7 +117,7 @@ async function main() {
     args: [
       AGENT_ADDRESS as `0x${string}`,
       AGENT_ID,
-      `https://selantar.xyz/evidence/clinica-suasuna-001`,
+      `https://selantar.vercel.app/evidence/clinica-suasuna-001`,
       requestHash,
     ],
   });

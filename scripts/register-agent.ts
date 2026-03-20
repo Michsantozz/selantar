@@ -14,7 +14,7 @@ async function main() {
     transport: http(),
   });
 
-  const agentJsonUrl = "https://selantar.xyz/agent.json";
+  const agentJsonUrl = "https://selantar.vercel.app/agent.json";
 
   const agentId = await registerSelantarAgent(walletClient, agentJsonUrl);
 

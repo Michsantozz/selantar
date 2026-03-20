@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import type { UIMessage } from "ai";
@@ -11,7 +12,7 @@ import { ScenarioSelector } from "./_components/scenario-selector";
 import { MediationChat } from "./_components/mediation-chat";
 import { CaseInfoPanel } from "./_components/case-info-panel";
 import { IntelligencePanel } from "./_components/intelligence-panel";
-import type { Scenario } from "@/lib/scenarios";
+import { scenarios, type Scenario } from "@/lib/scenarios";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -34,8 +35,22 @@ interface ClientMessage extends Omit<UIMessage, "parts"> {
 }
 
 export default function MediationPage() {
+  return (
+    <Suspense>
+      <MediationPageContent />
+    </Suspense>
+  );
+}
+
+function MediationPageContent() {
+  const searchParams = useSearchParams();
+  const scenarioParam = searchParams.get("scenario");
+  const initialScenario = scenarioParam
+    ? scenarios.find((s) => s.id === scenarioParam) ?? null
+    : null;
+
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(
-    null
+    initialScenario
   );
   const [input, setInput] = useState("");
   const [clientMessages, setClientMessages] = useState<ClientMessage[]>([]);
@@ -48,6 +63,8 @@ export default function MediationPage() {
   });
 
   const isLoading = status === "streaming" || status === "submitted";
+
+  const autoStartedRef = useRef(false);
 
   // Auto-generate client response after Clara finishes (first round only for now)
   const mediatorMessages = messages.filter((m) => m.role === "assistant");
@@ -207,6 +224,17 @@ Respond to the client directly. Address their frustration first, then analyze th
     },
     [sendMessage]
   );
+
+  // Auto-start mediation when scenario comes from URL (e.g. from briefing page)
+  useEffect(() => {
+    if (initialScenario && !autoStartedRef.current && !hasStartedRef.current) {
+      autoStartedRef.current = true;
+      const t = setTimeout(() => {
+        handleSelectScenario(initialScenario);
+      }, 100);
+      return () => clearTimeout(t);
+    }
+  }, [initialScenario, handleSelectScenario]);
 
   // Build the display messages: interleave client messages with mediator responses
   const displayMessages: UIMessage[] = [];
