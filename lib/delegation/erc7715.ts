@@ -96,7 +96,7 @@ export async function requestExecutionPermissions(
         periodAmount: parseEther("0.001"),
         periodDuration: expirySeconds,
         startTime: currentTime,
-        justification: "Selantar settlement execution — authorize agent to transfer settlement amount",
+        justification: "Intent: Autonomous dispute resolution. Delegating authority to Selantar agent to analyze evidence, determine fair settlement, and execute on-chain transfer within scoped budget.",
       },
     },
     isAdjustmentAllowed: true,

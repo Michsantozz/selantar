@@ -1,0 +1,50 @@
+{
+  "name": "Selantar",
+  "description": "Autonomous AI mediator that resolves B2B contract disputes end-to-end. Analyzes evidence, conducts structured mediation, executes on-chain settlement, and records verifiable receipts across 3 ERC-8004 registries.",
+  "url": "https://selantar.vercel.app",
+  "version": "0.3.0",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false
+  },
+  "skills": [
+    {
+      "id": "mediate-dispute",
+      "name": "Autonomous Dispute Mediation",
+      "description": "Submit a contract dispute with evidence. The agent analyzes both sides, proposes a fair settlement, executes it on-chain, and registers verifiable receipts. Accepts payment via x402 ($0.10 USDC).",
+      "inputModes": ["application/json"],
+      "outputModes": ["application/json"]
+    }
+  ],
+  "defaultInputModes": ["application/json"],
+  "defaultOutputModes": ["application/json"],
+  "provider": {
+    "organization": "Selantar",
+    "url": "https://selantar.vercel.app"
+  },
+  "authentication": {
+    "schemes": ["x402"]
+  },
+  "endpoints": {
+    "mediation": {
+      "url": "https://selantar.vercel.app/api/mediate",
+      "method": "POST",
+      "protocol": "x402",
+      "price": "0.10 USDC",
+      "description": "Paid autonomous mediation — accepts dispute, returns settlement with on-chain receipts"
+    },
+    "mediationChat": {
+      "url": "https://selantar.vercel.app/api/mediation-chat",
+      "method": "POST",
+      "protocol": "AI SDK UIStream",
+      "description": "Interactive mediation chat with dual-agent orchestration"
+    }
+  },
+  "agentIdentity": {
+    "agentId": 2122,
+    "agentRegistry": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e",
+    "operatorWallet": "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4",
+    "agentJson": "https://selantar.vercel.app/agent.json",
+    "registrationFile": "https://selantar.vercel.app/.well-known/agent-registration.json"
+  }
+}

@@ -1,8 +1,8 @@
 import { ToolLoopAgent, stepCountIs } from "ai";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
 
 /**
@@ -16,7 +16,7 @@ export function createClientAgent(scenarioId: string) {
   }
 
   return new ToolLoopAgent({
-    model: openrouter("openai/gpt-5.4-mini"),
+    model: google("gemini-3.1-pro-preview"),
     instructions: persona.systemPrompt,
     tools: {},
     stopWhen: stepCountIs(3),

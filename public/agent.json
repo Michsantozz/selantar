@@ -1,8 +1,9 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Selantar",
-  "description": "Autonomous AI mediator agent. Resolves B2B contract disputes by reviewing sealed contract terms and verifiable evidence, conducting structured mediation, and executing on-chain ERC-20 settlements without human intervention.",
+  "description": "Autonomous AI mediator that resolves B2B contract disputes end-to-end. Analyzes sealed evidence from both parties, conducts structured mediation, determines fair settlement splits, and executes on-chain via intent-based ERC-7715 delegations and Locus USDC payments. All decisions are recorded as verifiable receipts across 3 ERC-8004 registries.",
   "image": "https://selantar.vercel.app/logo.png",
+  "operatorWallet": "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4",
   "services": [
     {
       "name": "web",
@@ -12,9 +13,21 @@
       "name": "A2A",
       "endpoint": "https://selantar.vercel.app/.well-known/agent-card.json",
       "version": "0.3.0"
+    },
+    {
+      "name": "x402-mediation",
+      "endpoint": "https://selantar.vercel.app/api/mediate",
+      "price": "0.10 USDC",
+      "description": "Paid autonomous mediation endpoint — accepts dispute, returns settlement with on-chain receipts"
     }
   ],
-  "x402Support": false,
+  "x402Support": true,
+  "locusIntegration": {
+    "walletAddress": "0x0703726e263b2c7a46b8bd37e641e5d6ff17ad9e",
+    "chain": "base",
+    "currency": "USDC",
+    "capabilities": ["send", "spending-controls", "audit-trail"]
+  },
   "active": true,
   "registrations": [
     {
@@ -25,5 +38,72 @@
   "supportedTrust": [
     "reputation",
     "crypto-economic"
-  ]
+  ],
+  "supportedTools": [
+    {
+      "name": "analyzeEvidence",
+      "description": "Reviews contracts, communications, deliverables, and payment records. Outputs credibility scores and key findings per evidence type.",
+      "onChain": false
+    },
+    {
+      "name": "proposeSettlement",
+      "description": "Determines fair fund distribution between disputing parties based on evidence analysis. Includes conditions and reasoning.",
+      "onChain": false
+    },
+    {
+      "name": "executeSettlement",
+      "description": "Executes settlement on-chain. Supports 4 paths: Locus USDC (spending-controlled), ERC-7715 intent delegation, MetaMask Delegation Framework, direct ETH transfer.",
+      "onChain": true,
+      "chains": ["base", "base-sepolia"]
+    },
+    {
+      "name": "postFeedback",
+      "description": "Posts reputation feedback to ERC-8004 Reputation Registry after mediation. Score, tags, and settlement reference recorded on-chain.",
+      "onChain": true,
+      "registry": "ERC-8004 Reputation Registry"
+    },
+    {
+      "name": "registerVerdict",
+      "description": "Registers the final verdict as verifiable evidence on ERC-8004 Validation Registry. Creates immutable, third-party-verifiable proof of the agent's decision.",
+      "onChain": true,
+      "registry": "ERC-8004 Validation Registry"
+    }
+  ],
+  "techStacks": {
+    "runtime": "Node.js (Next.js 16 App Router)",
+    "aiFramework": "Vercel AI SDK v6 (ToolLoopAgent, dual-agent orchestration)",
+    "model": "google/gemini-3.1-pro-preview",
+    "onChain": "viem ^2.47.5",
+    "delegations": "@metamask/smart-accounts-kit ^0.4.0-beta (ERC-7715 + ERC-7710)",
+    "payments": "x402-next (x402 protocol), Locus USDC wallet (spending controls + audit trail)",
+    "identity": "ERC-8004 (3 registries: Identity, Reputation, Validation)",
+    "hosting": "Vercel (serverless, Edge-compatible)"
+  },
+  "computeConstraints": {
+    "maxStepsPerMediation": 10,
+    "maxDurationMs": 120000,
+    "maxOutputTokensPerStep": 4096,
+    "toolOrchestration": "multi-tool sequential (analyze → propose → execute → feedback → validate)",
+    "selfCorrection": "If tool call fails, agent retries with adjusted parameters before falling back to next settlement path",
+    "settlementPaths": ["locus-usdc", "erc7715-delegation", "metamask-delegation", "direct-eth", "recorded-fallback"]
+  },
+  "taskCategories": [
+    "dispute-resolution",
+    "contract-analysis",
+    "evidence-evaluation",
+    "settlement-execution",
+    "on-chain-reputation",
+    "on-chain-verification"
+  ],
+  "autonomyLevel": {
+    "humanIntervention": "none",
+    "decisionAuthority": "Agent autonomously determines settlement split, conditions, and execution path",
+    "safetyGuardrails": [
+      "Balance verification before any on-chain transfer",
+      "Locus spending controls (allowance cap, per-tx limits, approval threshold)",
+      "Delegation scope enforcement (ERC-7715 periodic amount limits)",
+      "Multi-path fallback chain prevents silent failures",
+      "Evidence credibility scoring before settlement proposal"
+    ]
+  }
 }

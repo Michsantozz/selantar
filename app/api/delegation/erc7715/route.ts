@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseEther } from "viem";
 import { redeemWithPermissionsContext } from "@/lib/delegation/erc7715";
 
 export const runtime = "nodejs";
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
       permissionsContext,
       delegationManager,
       recipientAddress,
-      amount: BigInt(amount),
+      amount: parseEther(amount),
     });
 
     return NextResponse.json({

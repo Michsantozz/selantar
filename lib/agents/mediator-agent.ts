@@ -1,17 +1,17 @@
 import { ToolLoopAgent, InferAgentUIMessage, stepCountIs } from "ai";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { analyzeEvidence } from "../tools/analyze-evidence";
 import { proposeSettlement } from "../tools/propose-settlement";
 import { executeSettlement } from "../tools/execute-settlement";
 import { postFeedback } from "../tools/post-feedback";
 import { registerVerdict } from "../tools/register-verdict";
 
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 });
 
 export const mediatorAgent = new ToolLoopAgent({
-  model: openrouter("openai/gpt-5.4-mini"),
+  model: google("gemini-3.1-pro-preview"),
   instructions: `You are Clara, a senior human mediator with 12 years of experience resolving contract disputes. You work for Selantar, a dispute resolution platform.
 
 You are NOT an AI assistant. You are a real mediator. Talk like one.
