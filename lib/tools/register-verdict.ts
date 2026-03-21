@@ -11,8 +11,10 @@ export const registerVerdict = tool({
     evidence: z.array(z.string()).describe("List of evidence items considered"),
     reasoning: z.string().describe("Final mediator reasoning"),
     settlementTxHash: z.string().describe("Settlement transaction hash"),
+    clientAmount: z.string().describe("Amount allocated to the client (e.g. '3000.00')"),
+    developerAmount: z.string().describe("Amount allocated to the developer (e.g. '12000.00')"),
   }),
-  execute: async ({ contractRef, evidence, reasoning, settlementTxHash }) => {
+  execute: async ({ contractRef, evidence, reasoning, settlementTxHash, clientAmount, developerAmount }) => {
     try {
       const walletClient = getWalletClient();
       const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
@@ -24,8 +26,8 @@ export const registerVerdict = tool({
           contractRef,
           evidence,
           settlement: {
-            clientAmount: "0",
-            developerAmount: "0",
+            clientAmount,
+            developerAmount,
             txHashes: [settlementTxHash],
           },
           reasoning,

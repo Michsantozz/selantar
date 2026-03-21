@@ -19,12 +19,7 @@ yarn-error.log*
 
 # env files
 .env*
-
-# tool/agent caches (contain old project names, secrets, scrapes)
-.agents/
-.firecrawl/
-.cursor/
-.claude/
+!.env.example
 
 # vercel
 .vercel
@@ -32,3 +27,50 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal tools & agents
+.agents/
+.cursor/
+.firecrawl/
+skills-lock.json
+
+# internal docs (root)
+AUDIT-REPORT-*.md
+BRIEFING-*.md
+CONVERSATION-LOG*.md
+DELEGATION-IMPLEMENTATION.md
+DESIGN-SYSTEM.md
+EXECUTION-PLAN.md
+HANDOFF.md
+PROMPTS-GUIDE.md
+SYNTHESIS-PROJECTS.md
+
+# orphan pages
+/app/dashboard/
+/app/mediation/v2/
+/app/contract/
+
+# internal scripts
+scripts/export-conversation-log.py
+scripts/parse-devfolio-projects.py
+scripts/parse-hackathon-projects.py
+scripts/scrape-factory.mjs
+scripts/capture-factory-dark.sh
+scripts/capture-factory-sections.sh
+scripts/screenshot-landing.ts
+scripts/screenshot-mediation.ts
+
+# loose files
+public/skill.md
+*.abi
+*.bin
+screenshots/
+test-results/
+blocked.jpg
+deadlock.jpg
+explosion.jpg
+success.jpg
+DEV.png
+E-COMMERCE.png
+hospital.png
+RANKINGSKLLS

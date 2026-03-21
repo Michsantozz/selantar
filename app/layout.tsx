@@ -24,7 +24,30 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "Selantar — Autonomous Dispute Mediator",
   description:
-    "AI-powered B2B contract dispute mediation with on-chain settlements via ERC-8004.",
+    "AI that listens to both sides, protects egos, and settles disputes on-chain. No lawyers. No delays.",
+  openGraph: {
+    title: "Selantar — Autonomous Dispute Mediator",
+    description:
+      "AI-powered B2B contract dispute mediation with on-chain settlements via ERC-8004.",
+    url: "https://selantar.vercel.app",
+    siteName: "Selantar",
+    type: "website",
+    images: [
+      {
+        url: "https://selantar.vercel.app/selantar-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Selantar — Autonomous Dispute Mediator",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Selantar — Autonomous Dispute Mediator",
+    description:
+      "AI that listens to both sides, protects egos, and settles disputes on-chain.",
+    images: ["https://selantar.vercel.app/selantar-logo.png"],
+  },
 };
 
 export default function RootLayout({

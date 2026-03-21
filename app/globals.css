@@ -228,6 +228,12 @@
   animation: analysis-scan 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+@keyframes dashdraw {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
 
 /* --- Scrollbar --- */
 ::-webkit-scrollbar { width: 6px; }

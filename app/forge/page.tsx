@@ -182,17 +182,11 @@ function WarCard() {
                 <span className="absolute left-2 bottom-2 size-3 border-l border-b border-foreground/12" />
                 <span className="absolute right-2 bottom-2 size-3 border-r border-b border-foreground/12" />
 
-                {/* Case + REC overlay */}
-                <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3">
+                {/* Case overlay */}
+                <div className="absolute inset-x-0 top-0 flex items-center px-4 pt-3">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-foreground/40">
                     Case {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="size-[5px] rounded-full bg-primary animate-subtle-pulse" />
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-foreground/40">
-                      Rec
-                    </span>
-                  </div>
                 </div>
               </div>
 
@@ -320,14 +314,11 @@ export default function ForgePage() {
           </div>
 
           <div className="mt-auto pt-8">
-            <div className="flex items-center gap-2">
-              <span className="size-[5px] rounded-full bg-emerald animate-subtle-pulse" />
-              <span className="font-mono text-[10px] text-muted-foreground/20">
-                47 contracts analyzed this week
-              </span>
-            </div>
+            <span className="block font-mono text-[10px] text-muted-foreground/20">
+              Drop a contract to begin
+            </span>
             <span className="mt-1 block font-mono text-[10px] text-muted-foreground/12">
-              Protocol v2.4.1 · Base Sepolia
+              Base Sepolia
             </span>
           </div>
         </motion.aside>

@@ -2,7 +2,7 @@
 
 import type { UIMessage, ChatStatus } from "ai";
 import { isToolUIPart } from "ai";
-import { Scale, Send, Square, Search, FileCheck, Gavel, CheckCircle2 } from "lucide-react";
+import { Scale, Send, Square, Search, FileCheck, Gavel, CheckCircle2, Play, HeartHandshake } from "lucide-react";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ import {
   ChainOfThoughtStep,
 } from "@/components/ai-elements/chain-of-thought";
 
+import { cn } from "@/lib/utils";
 import type { Scenario } from "@/lib/scenarios";
 
 interface MediationChatProps {
@@ -33,6 +34,10 @@ interface MediationChatProps {
   status: ChatStatus;
   onStop: () => void;
   scenario?: Scenario | null;
+  started?: boolean;
+  onStart?: () => void;
+  onReviewSettlement?: () => void;
+  settlementSealed?: boolean;
 }
 
 export function MediationChat({
@@ -43,12 +48,43 @@ export function MediationChat({
   status,
   onStop,
   scenario,
+  started = true,
+  onStart,
+  onReviewSettlement,
+  settlementSealed,
 }: MediationChatProps) {
   const displayMessages = messages.length > 0 ? messages : null;
-  const showMock = !displayMessages;
+  const showMock = !displayMessages && !started;
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-border bg-card overflow-hidden">
+    <div className="flex h-full flex-col rounded-xl border border-border bg-card overflow-hidden relative">
+      {/* Start overlay — blocks chat until user clicks */}
+      {!started && onStart && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-card/95 backdrop-blur-sm">
+          <div className="flex flex-col items-center">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
+              <HeartHandshake className="size-5 text-primary" />
+            </div>
+            <p className="mt-4 text-sm font-medium text-foreground">
+              {scenario?.title ?? "Mediation Room"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground/50 max-w-[260px] text-center leading-relaxed">
+              Clara will analyze evidence, mediate the dispute, and execute settlement on-chain.
+            </p>
+            <button
+              onClick={onStart}
+              className="mt-6 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/15 px-5 py-2.5 text-[13px] font-medium text-primary transition-all hover:bg-primary/25 hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Play className="size-3.5 fill-primary" />
+              Start Mediation
+            </button>
+            <p className="mt-3 text-[10px] text-muted-foreground/30 font-mono">
+              Uses gas on Base Sepolia
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2.5">
@@ -85,6 +121,16 @@ export function MediationChat({
         <ConversationContent className="gap-4 px-4 py-4">
           {showMock ? (
             <MockMediationConversation />
+          ) : !displayMessages ? (
+            /* Started but no messages yet — Clara is loading */
+            <div className="flex items-center gap-3 rounded-md border border-primary/10 bg-primary/[0.03] px-4 py-3">
+              <div className="relative h-1 w-16 overflow-hidden rounded-full bg-primary/10">
+                <span className="absolute inset-y-0 left-0 w-8 animate-analysis-scan rounded-full bg-primary/50" />
+              </div>
+              <span className="text-[10px] font-mono text-muted-foreground/50">
+                <Shimmer duration={2}>Clara is analyzing the case...</Shimmer>
+              </span>
+            </div>
           ) : (
             displayMessages?.map((message) => {
               // Detect client opening message (synthetic)
@@ -139,6 +185,14 @@ export function MediationChat({
 
               // Mediator messages (assistant)
               if (message.role === "assistant") {
+                // Check if this message contains a completed proposeSettlement
+                const hasSettlementProposal = message.parts.some(
+                  (p) =>
+                    isToolUIPart(p) &&
+                    p.type === "tool-proposeSettlement" &&
+                    p.state === "output-available"
+                );
+
                 return (
                   <motion.div
                     key={message.id}
@@ -160,6 +214,47 @@ export function MediationChat({
                         {renderMessageParts(message.parts)}
                       </MessageContent>
                     </div>
+
+                    {/* Review Settlement button — appears after proposeSettlement completes */}
+                    {hasSettlementProposal && onReviewSettlement && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.4 }}
+                        className="pt-2"
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="flex-1 h-px bg-primary/20" />
+                          <span className="text-xs uppercase tracking-wider text-primary/50">
+                            {settlementSealed ? "Settlement sealed" : "Settlement proposed"}
+                          </span>
+                          <div className="flex-1 h-px bg-primary/20" />
+                        </div>
+
+                        <button
+                          onClick={onReviewSettlement}
+                          disabled={settlementSealed}
+                          className={cn(
+                            "w-full rounded-md border py-3 flex items-center justify-center gap-2.5 text-xs font-medium uppercase tracking-wider transition-all",
+                            settlementSealed
+                              ? "border-emerald/30 bg-emerald/[0.06] text-emerald cursor-default"
+                              : "border-primary/30 bg-primary/[0.06] text-primary hover:border-primary/50 hover:bg-primary/[0.10]"
+                          )}
+                        >
+                          {settlementSealed ? (
+                            <>
+                              <CheckCircle2 className="size-4" />
+                              Settlement Sealed On-Chain
+                            </>
+                          ) : (
+                            <>
+                              <FileCheck className="size-4" />
+                              Review Settlement
+                            </>
+                          )}
+                        </button>
+                      </motion.div>
+                    )}
                   </motion.div>
                 );
               }
@@ -631,7 +726,7 @@ function getToolMeta(toolName: string): ToolMeta {
   const meta: Record<string, ToolMeta> = {
     analyzeEvidence: { label: "Evidence analysis", isOnchain: false },
     proposeSettlement: { label: "Settlement proposal", isOnchain: false },
-    executeSettlement: { label: "Settlement execution", isOnchain: true },
+    executeSettlement: { label: "Delegated settlement execution", isOnchain: true },
     postFeedback: { label: "Reputation record", isOnchain: true },
     registerVerdict: { label: "Verdict registration", isOnchain: true },
   };
@@ -712,12 +807,42 @@ function renderToolSummary(toolName: string, output: Record<string, unknown> | n
       );
     }
 
-    case "executeSettlement":
+    case "executeSettlement": {
+      const txHash = (output.txHash ?? output.userOpHash) as string | undefined;
+      const status = output.status as string | undefined;
+      const method = output.method as string | undefined;
+      const isQueued = status?.includes("queued") || status?.includes("recorded");
+      const isDelegation = method === "delegation";
+      return (
+        <div className="space-y-1">
+          {isDelegation && (
+            <span className="inline-flex items-center gap-1 rounded border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary">
+              Via MetaMask Delegation
+            </span>
+          )}
+          {isDelegation && output.delegationScope && (
+            <p className="text-[10px] text-muted-foreground/50">
+              {String(output.delegationScope)}
+            </p>
+          )}
+          {txHash && (
+            <p className="font-mono text-[10px] text-muted-foreground/60 truncate">
+              tx: {txHash}
+            </p>
+          )}
+          {!txHash && isQueued && (
+            <p className="text-xs text-muted-foreground/50">
+              Registered — pending on-chain confirmation
+            </p>
+          )}
+        </div>
+      );
+    }
+
     case "postFeedback":
     case "registerVerdict": {
       const txHash = (output.txHash ?? output.feedbackTxHash ?? output.validationTxHash) as string | undefined;
       const status = output.status as string | undefined;
-      // Hide technical fallback messages — show clean status only
       const isQueued = status?.includes("queued") || status?.includes("recorded");
       return (
         <div className="space-y-1">

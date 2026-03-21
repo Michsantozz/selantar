@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect, Suspense } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { DefaultChatTransport, isToolUIPart } from "ai";
 import type { UIMessage } from "ai";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
@@ -12,6 +12,8 @@ import { ScenarioSelector } from "./_components/scenario-selector";
 import { MediationChat } from "./_components/mediation-chat";
 import { CaseInfoPanel } from "./_components/case-info-panel";
 import { IntelligencePanel } from "./_components/intelligence-panel";
+import { SettlementModal, type SettlementData } from "./_components/settlement-modal";
+import { OriginalContractModal } from "./_components/original-contract-modal";
 import { scenarios, type Scenario } from "@/lib/scenarios";
 
 const fadeUp = {
@@ -52,11 +54,19 @@ function MediationPageContent() {
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(
     initialScenario
   );
+  const [mediationStarted, setMediationStarted] = useState(false);
   const [input, setInput] = useState("");
   const [clientMessages, setClientMessages] = useState<ClientMessage[]>([]);
   const hasStartedRef = useRef(false);
   const lastMediatorCountRef = useRef(0);
   const isGeneratingClientRef = useRef(false);
+
+  // Settlement modal state
+  const [showSettlementModal, setShowSettlementModal] = useState(false);
+  const [settlementSealed, setSettlementSealed] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  // Original contract modal state
+  const [showOriginalContract, setShowOriginalContract] = useState(false);
 
   const { messages, sendMessage, status, stop } = useChat({
     transport: new DefaultChatTransport({ api: "/api/mediation-chat" }),
@@ -64,7 +74,63 @@ function MediationPageContent() {
 
   const isLoading = status === "streaming" || status === "submitted";
 
-  const autoStartedRef = useRef(false);
+  // Extract settlement data from proposeSettlement tool output
+  const settlementData = useMemo<SettlementData | null>(() => {
+    for (const msg of messages) {
+      if (msg.role !== "assistant") continue;
+      for (const part of msg.parts) {
+        if (!isToolUIPart(part)) continue;
+        if (part.type !== "tool-proposeSettlement") continue;
+        if (part.state !== "output-available" || !part.output) continue;
+        const output = part.output as Record<string, unknown>;
+        // Tool returns { proposal: { clientAmount, developerAmount, ... }, reasoning, conditions }
+        const proposal = (output.proposal ?? output) as Record<string, unknown>;
+        return {
+          clientAmount: String(proposal.clientAmount ?? "0"),
+          developerAmount: String(proposal.developerAmount ?? "0"),
+          clientPercentage: Number(proposal.clientPercentage ?? 0),
+          developerPercentage: Number(proposal.developerPercentage ?? 0),
+          reasoning: String(output.reasoning ?? ""),
+          conditions: (output.conditions as string[]) ?? [],
+        };
+      }
+    }
+    return null;
+  }, [messages]);
+
+  // Connect wallet handler
+  const handleConnectWallet = useCallback(async () => {
+    const eth = (
+      window as unknown as {
+        ethereum?: {
+          request: (args: { method: string }) => Promise<string[]>;
+        };
+      }
+    ).ethereum;
+    if (!eth) return;
+    try {
+      const accounts = await eth.request({ method: "eth_requestAccounts" });
+      if (accounts[0]) setWalletAddress(accounts[0]);
+    } catch {
+      // user rejected
+    }
+  }, []);
+
+  // Seal handler — triggers executeSettlement via Clara
+  const handleSeal = useCallback(
+    (signature: string) => {
+      setSettlementSealed(true);
+      setShowSettlementModal(false);
+
+      // Send message to Clara to execute the settlement on-chain
+      if (settlementData) {
+        sendMessage({
+          text: `The developer has signed the settlement agreement (signature: ${signature.slice(0, 10)}...). Both parties agree. Please execute the settlement on-chain now: developer receives ${settlementData.developerAmount}, client receives ${settlementData.clientAmount}.`,
+        });
+      }
+    },
+    [sendMessage, settlementData]
+  );
 
   // Auto-generate client response after Clara finishes (first round only for now)
   const mediatorMessages = messages.filter((m) => m.role === "assistant");
@@ -225,16 +291,12 @@ Respond to the client directly. Address their frustration first, then analyze th
     [sendMessage]
   );
 
-  // Auto-start mediation when scenario comes from URL (e.g. from briefing page)
-  useEffect(() => {
-    if (initialScenario && !autoStartedRef.current && !hasStartedRef.current) {
-      autoStartedRef.current = true;
-      const t = setTimeout(() => {
-        handleSelectScenario(initialScenario);
-      }, 100);
-      return () => clearTimeout(t);
-    }
-  }, [initialScenario, handleSelectScenario]);
+  // Start mediation only when user clicks the play button
+  const handleStartMediation = useCallback(() => {
+    if (!selectedScenario || mediationStarted) return;
+    setMediationStarted(true);
+    handleSelectScenario(selectedScenario);
+  }, [selectedScenario, mediationStarted, handleSelectScenario]);
 
   // Build the display messages: interleave client messages with mediator responses
   const displayMessages: UIMessage[] = [];
@@ -276,7 +338,7 @@ Respond to the client directly. Address their frustration first, then analyze th
   if (!selectedScenario) {
     return (
       <div className="relative min-h-screen">
-        <ScenarioSelector onSelect={handleSelectScenario} />
+        <ScenarioSelector onSelect={(s) => { setSelectedScenario(s); }} />
       </div>
     );
   }
@@ -296,6 +358,7 @@ Respond to the client directly. Address their frustration first, then analyze th
             <button
               onClick={() => {
                 setSelectedScenario(null);
+                setMediationStarted(false);
                 setClientMessages([]);
                 hasStartedRef.current = false;
                 lastMediatorCountRef.current = 0;
@@ -345,7 +408,11 @@ Respond to the client directly. Address their frustration first, then analyze th
             animate="visible"
             className="lg:col-span-3 min-h-0 overflow-y-auto"
           >
-            <CaseInfoPanel scenario={selectedScenario} />
+            <CaseInfoPanel
+              scenario={selectedScenario}
+              onViewContract={() => setShowOriginalContract(true)}
+              wallet={walletAddress}
+            />
           </motion.div>
 
           {/* Center: Chat */}
@@ -364,6 +431,10 @@ Respond to the client directly. Address their frustration first, then analyze th
               status={status}
               onStop={stop}
               scenario={selectedScenario}
+              started={mediationStarted}
+              onStart={handleStartMediation}
+              onReviewSettlement={settlementData ? () => setShowSettlementModal(true) : undefined}
+              settlementSealed={settlementSealed}
             />
           </motion.div>
 
@@ -375,10 +446,30 @@ Respond to the client directly. Address their frustration first, then analyze th
             animate="visible"
             className="lg:col-span-3 min-h-0 overflow-y-auto"
           >
-            <IntelligencePanel scenario={selectedScenario} />
+            <IntelligencePanel scenario={selectedScenario} messages={displayMessages} />
           </motion.div>
         </div>
       </div>
+
+      {/* Settlement Modal */}
+      {settlementData && (
+        <SettlementModal
+          open={showSettlementModal}
+          onClose={() => setShowSettlementModal(false)}
+          onSeal={handleSeal}
+          scenario={selectedScenario}
+          settlement={settlementData}
+          wallet={walletAddress}
+          onConnectWallet={handleConnectWallet}
+        />
+      )}
+
+      {/* Original Contract Modal */}
+      <OriginalContractModal
+        open={showOriginalContract}
+        onClose={() => setShowOriginalContract(false)}
+        scenario={selectedScenario}
+      />
     </div>
   );
 }

@@ -130,8 +130,8 @@ function HeroSection() {
             <BlurFade delay={0.8}>
               <div className="mt-14 flex items-center gap-8 border-t border-border/40 pt-8">
                 {[
-                  { value: "11%", label: "revenue lost to contract friction" },
-                  { value: "24h", label: "average dispute resolution" },
+                  { value: "5", label: "tools execute on-chain" },
+                  { value: "3", label: "ERC standards integrated" },
                   { value: "0", label: "humans required" },
                 ].map(({ value, label }) => (
                   <div key={value} className="flex flex-col">

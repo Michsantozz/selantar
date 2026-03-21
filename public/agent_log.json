@@ -128,6 +128,27 @@
         "explorer": "https://sepolia.basescan.org/tx/0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044"
       }
     }
+    ,{
+      "step": 6,
+      "action": "grantDelegation",
+      "reasoning": "Integrating MetaMask Delegations (ERC-7710) to enable intent-based settlement. Instead of the agent moving its own funds, dispute parties grant scoped ERC-20 permissions. The agent redeems delegations to execute settlement on behalf of the parties — more secure, auditable, and aligned with the institutional mediation model.",
+      "input": {
+        "contractRef": "test-delegation-001",
+        "maxAmountUsdc": "250",
+        "delegationScope": "erc20TransferAmount"
+      },
+      "output": {
+        "status": "delegations_created",
+        "clientSmartAccount": "0x4ae5e741931D4E882B9c695ae4522a522390eD3B",
+        "agentSmartAccount": "0xe765f43E8B7065729E54E563D4215727154decC9",
+        "scope": "Up to 250 USDC",
+        "signed": true,
+        "framework": "MetaMask Smart Accounts Kit v0.3.0",
+        "standard": "ERC-7710",
+        "network": "Base Sepolia (84532)",
+        "timestamp": "2026-03-20T15:33:58.313Z"
+      }
+    }
   ],
   "onChainReceipts": {
     "identity": {
@@ -194,6 +215,8 @@
     "settlementProposedByAgent": true,
     "settlementExecutedOnChain": true,
     "reputationPostedOnChain": true,
+    "delegatedSettlementEnabled": true,
+    "delegationFramework": "MetaMask Smart Accounts Kit (ERC-7710)",
     "totalProcessingTimeMs": 5829810
   },
   "conversationSummary": {
