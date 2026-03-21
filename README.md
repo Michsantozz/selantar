@@ -254,7 +254,7 @@ Clara calls these silently during mediation. The parties never see the machinery
 |-------|------|
 | Framework | Next.js 16, App Router |
 | AI | AI SDK v6 — `ToolLoopAgent`, `generateText`, `useChat`, `DefaultChatTransport` |
-| Model | `openai/gpt-5.4-mini` via OpenRouter |
+| Model | `gemini-3.1-pro-preview` via Google AI (`@ai-sdk/google`) |
 | Payments | x402 protocol — `x402-next`, `@coinbase/x402` (USDC on Base Sepolia) |
 | On-chain | viem, Base Sepolia (chainId: 84532) |
 | Delegations | MetaMask Smart Accounts Kit — ERC-7710 scoped delegations |
@@ -332,10 +332,10 @@ npm run dev
 **Required env vars:**
 
 ```bash
-OPENROUTER_API_KEY=      # OpenRouter API key (for gpt-5.4-mini)
-AGENT_PRIVATE_KEY=       # wallet that holds Agent NFT #2122
-CLIENT_PRIVATE_KEY=      # second wallet for ERC-8004 feedback
-SELANTAR_AGENT_ID=2122   # ERC-8004 agent ID
+GOOGLE_GENERATIVE_AI_API_KEY=  # Google AI API key (for gemini-3.1-pro-preview)
+AGENT_PRIVATE_KEY=             # wallet that holds Agent NFT #2122
+CLIENT_PRIVATE_KEY=            # second wallet for ERC-8004 feedback
+SELANTAR_AGENT_ID=2122         # ERC-8004 agent ID
 ```
 
 ---
