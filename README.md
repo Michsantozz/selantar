@@ -183,11 +183,12 @@ Full implementation report with all 8 problems encountered and solutions: [`DELE
 PDF contract drops
   → AI audits it — hunts loopholes, flags vague terms, eliminates ambiguity
     → Transforms into a living contract with milestones, rules, and on-chain escrow
-      → As milestones are approved, cash releases instantly
-        → If a dispute hits, Sentinel already has the proof
-          → Clara mediates live — protects egos, proposes concrete numbers
-            → Both sides sign → Settlement executes on-chain
-              → ERC-8004 receipt registered forever
+      → Contract hash registered on ERC-8004 Validation Registry — immutable proof of integrity
+        → As milestones are approved, cash releases instantly
+          → If a dispute hits, Sentinel already has the proof
+            → Clara mediates live — protects egos, proposes concrete numbers
+              → Both sides sign → Settlement executes on-chain
+                → ERC-8004 receipt registered forever
 ```
 
 Every step autonomous. Every action verifiable. Every receipt on-chain.
@@ -197,6 +198,11 @@ Every step autonomous. Every action verifiable. Every receipt on-chain.
 ## Architecture
 
 ```
+Contract Creation:
+  Upload contract → POST /api/analyze-contract (AI audit, streaming)
+    → POST /api/create-escrow → keccak256(contract) registered on ERC-8004 Validation Registry
+    → ContractID (CSX-YYYY-XXXXXXXX) + TX hash returned → contract goes live on-chain
+
 Interactive (UI):
   Pick a case → Clara mediates live via ToolLoopAgent
     → analyzeEvidence → proposeSettlement → executeSettlement
@@ -268,9 +274,18 @@ Clara calls these silently during mediation. The parties never see the machinery
 
 All ERC-8004 transactions are live on Base Sepolia:
 
+**Contract creation (forge):**
+
+- **Contract registered** (hash of integrity, on escrow creation): [0xcac8dd72...](https://sepolia.basescan.org/tx/0xcac8dd72bc85ab242e09920f0a72fff8fe81e2f2e9abf1b22e17f6ec49e246ea)
+
+**Mediation (dispute resolution):**
+
 - **Settlement TX** (Clínica Suasuna case): [0xb5d338a5...](https://sepolia.basescan.org/tx/0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86)
 - **Reputation feedback** (score: 90/100): [0x91efdaca...](https://sepolia.basescan.org/tx/0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044)
 - **Verdict validation**: [0xabff70e4...](https://sepolia.basescan.org/tx/0xabff70e40d61bd4f5322343f37d9a5dde7a4bfa254a7d1b752e62cc1544115f3)
+
+**Infrastructure:**
+
 - **Validation Registry deployed**: [0xd770f4ab...](https://sepolia.basescan.org/tx/0xd770f4ab10efb44f90d1517d525cae3ddabf772b6246db977b148de3282313cd)
 
 Full agent decision log: [`/agent_log.json`](https://selantar.vercel.app/agent_log.json)

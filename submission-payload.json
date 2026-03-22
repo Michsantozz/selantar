@@ -12,7 +12,7 @@
     "6f0e3d7dcadf4ef080d3f424963caff5",
     "f50e31188e2641bc93764e7a6f26b0f6"
   ],
-  "conversationLog": "<<PENDENTE>>",
+  "conversationLog": "https://github.com/Michsantozz/selantar/blob/main/CONVERSATION-LOG.md",
   "submissionMetadata": {
     "agentFramework": "vercel-ai-sdk",
     "agentHarness": "claude-code",
@@ -30,7 +30,8 @@
       { "name": "ai-sdk", "reason": "Core to the entire mediation system — ToolLoopAgent for dual-agent orchestration, streamText for contract analysis, toUIMessageStreamResponse for real-time chat." },
       { "name": "shadcn", "reason": "Built the glassmorphism UI (mediation chat, intelligence panel, settlement cards) using shadcn components with semantic Tailwind tokens." },
       { "name": "firecrawl", "reason": "Researched ERC-8004 docs, Synthesis track requirements, Locus API docs, and MetaMask delegation framework during development." },
-      { "name": "x402", "reason": "Integrated x402 payment protocol for the paid mediation endpoint (/api/mediate), making the agent a discoverable payable service on Base." }
+      { "name": "x402", "reason": "Integrated x402 payment protocol for the paid mediation endpoint (/api/mediate), making the agent a discoverable payable service on Base." },
+      { "name": "react-flow", "reason": "Built the Sentinel plan visualizer — an animated ReactFlow graph showing the AI analysis pipeline (contract → risk assessment → milestones → escrow → on-chain registration) as the agent processes the contract in real time." }
     ],
     "intention": "continuing",
     "intentionNotes": "Building Selantar as a real product for B2B dispute resolution. Planning to expand to multi-jurisdiction support, add more payment rails, and pursue partnerships with legal tech platforms.",

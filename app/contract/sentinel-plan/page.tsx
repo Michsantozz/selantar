@@ -7,11 +7,14 @@ import {
   Background,
   Handle,
   Position,
+  useReactFlow,
   type Node,
   type Edge,
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { registerFlowNav } from "@/lib/demo-flow-camera";
+import { registerDemoAction } from "@/lib/demo-actions";
 import {
   ShieldCheckIcon,
   CheckCircleIcon,
@@ -972,6 +975,30 @@ function useSentinelPlanSim() {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
+// Componente interno ao contexto ReactFlow — permite usar useReactFlow()
+function DemoFlowController() {
+  const { getNode, fitBounds, fitView } = useReactFlow();
+
+  useEffect(() => {
+    registerFlowNav((nodeId, zoom = 1.8) => {
+      if (nodeId === "__reset__") {
+        fitView({ duration: 400, padding: 0.15 });
+        return;
+      }
+      const node = getNode(nodeId);
+      if (!node) return;
+      const w = (node as any).measured?.width ?? 280;
+      const h = (node as any).measured?.height ?? 120;
+      fitBounds(
+        { x: node.position.x, y: node.position.y, width: w, height: h },
+        { duration: 500, padding: 1.2 }
+      );
+    });
+  }, [getNode, fitBounds, fitView]);
+
+  return null;
+}
+
 export default function SentinelPlanPage() {
   const { nodes, edges, isRunning, progress, stepIdx, startSim } = useSentinelPlanSim();
   const [chatOpen, setChatOpen] = useState(false);
@@ -990,6 +1017,12 @@ export default function SentinelPlanPage() {
     setApproving(true);
     setTimeout(() => setDeploying(true), 600);
   };
+
+  // Register for demo auto-click
+  useEffect(() => {
+    registerDemoAction("sentinel-approve", handleApprove);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDeployDone = () => {
     router.push("/contract/demo");
@@ -1219,6 +1252,7 @@ export default function SentinelPlanPage() {
             maxZoom={1.5}
           >
             <Background color="#27272a" gap={28} size={1} />
+            <DemoFlowController />
           </ReactFlow>
 
         </div>
