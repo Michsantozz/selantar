@@ -47,7 +47,9 @@ SYNTHESIS-PROJECTS.md
 # orphan pages
 /app/dashboard/
 /app/mediation/v2/
-/app/contract/
+/app/contract/*
+!/app/contract/setup/
+!/app/contract/setup/_components/
 
 # internal scripts
 scripts/export-conversation-log.py
