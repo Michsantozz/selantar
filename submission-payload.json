@@ -1,0 +1,49 @@
+{
+  "teamUUID": "45f73f1980914e84909d5a4a5a85dba9",
+  "name": "Selantar",
+  "description": "Most business contracts are a liability waiting to explode. Vague terms, no enforcement, and zero visibility into what's actually happening. A signed PDF in a folder that nobody watches until something breaks.\n\nSelantar turns that fragile PDF into a living contract.\n\nDrop your agreement in. Clara — our autonomous agent — audits it, hunts loopholes, flags ambiguous clauses, and structures clear milestones. Then she deploys secure escrow on-chain — contract hash registered on ERC-8004 Validation Registry at creation, before the first dispute is ever filed — and the contract goes live.\n\nFrom there, Clara runs the entire lifecycle. She releases payments automatically as deliverables are approved. Sentinel reads the logs — GitHub commits, delivery records, communication history — and surfaces the truth before disputes escalate.\n\nNext: proactive outreach before deadlines slip. Check-ins via WhatsApp, like a real person, not a notification bot. The infrastructure is built. The channels are next.\n\nAnd when things go sideways, she doesn't pick sides. She investigates. She listens to both parties. She collects evidence from real channels. She de-escalates. She proposes settlements that protect both the money and the relationship.\n\nThe mediation engine runs as a dual-agent system — one mediating, one advocating — analyzing evidence, proposing fair settlements, and executing on-chain transfers when both sides agree. Every verdict registered on the ERC-8004 Validation Registry. Every reputation update on the ERC-8004 Reputation Registry. The agent is discoverable, verifiable, and payable via x402 — a fully autonomous economic actor on Base.\n\nBefore agents coordinate with agents, they need to prove they can keep a promise to a human. Clara keeps promises. Agent #2122.\n\nA contract that manages itself from signature to settlement.",
+  "problemStatement": "Everyone is building agent-to-agent protocols for a future where machines coordinate with machines. Meanwhile, 400 million small business owners have never heard of an agent and are losing revenue right now because nobody is watching their contracts.\n\nBusinesses lose 11% of their revenue to contract friction — not because people are dishonest, but because contracts are static. They can't adapt to reality. Deadlines slip, scopes blur, payments stall, and by the time a dispute surfaces, both sides are already in war mode. A clinic owner in Ohio is owed $12,000 by a patient who ghosted. A developer in São Paulo delivered a project three months ago and never got paid. None of them know what a smart contract is. None of them will ever join a Discord.\n\nSmart contracts solved execution. They didn't solve intention. When a doctor freezes your escrow because his own secretary never forwarded the revision request, no smart contract understands that context. When a developer delivers 80% and the client disputes the last 20%, no blockchain can parse who's right.\n\nThe contract lifecycle has a gap everyone ignores: draft → sign → nothing. That nothing is where trust dies, money gets stuck, and relationships end. The world built prediction markets for strangers betting on things that don't matter. Nobody built infrastructure for the commitment that actually matters — the one between two real people with real money and real emotions on the line.\n\nSelantar treats a contract as a living system. It audits the agreement before it's signed, structures milestones with clear rules, manages escrow on-chain, monitors delivery in real time, collects evidence continuously, and mediates with empathy when things break. Not a judge. Not a lawyer. An agent that meets people where they are — on their phone — and resolves their problem without asking them to learn anything new.\n\nThe goal: a contract that doesn't just define the deal — it runs it.",
+  "repoURL": "https://github.com/Michsantozz/selantar",
+  "trackUUIDs": [
+    "fdb76d08812b43f6a5f454744b66f590",
+    "3bf41be958da497bbb69f1a150c76af9",
+    "10bd47fac07e4f85bda33ba482695b24",
+    "0d69d56a8a084ac5b7dbe0dc1da73e1d",
+    "6f0e3d7dcadf4ef080d3f424963caff5",
+    "f50e31188e2641bc93764e7a6f26b0f6"
+  ],
+  "conversationLog": "<<PENDENTE>>",
+  "submissionMetadata": {
+    "agentFramework": "vercel-ai-sdk",
+    "agentHarness": "claude-code",
+    "model": "gemini-3.1-pro-preview",
+    "skills": ["ai-sdk", "shadcn", "firecrawl", "vercel-react-best-practices", "frontend-design", "x402", "react-flow"],
+    "tools": ["Next.js 16", "viem", "Vercel AI SDK v6", "@metamask/smart-accounts-kit", "x402-next", "@coinbase/x402", "Locus", "framer-motion", "tailwindcss v4", "shadcn/ui", "@xyflow/react"],
+    "helpfulResources": [
+      "https://docs.paywithlocus.com/hackathon",
+      "https://sdk.vercel.ai/docs",
+      "https://docs.metamask.io/delegation",
+      "https://github.com/sodofi/synthesis-hackathon",
+      "https://synthesis.md/submission/skill.md"
+    ],
+    "helpfulSkills": [
+      { "name": "ai-sdk", "reason": "Core to the entire mediation system — ToolLoopAgent for dual-agent orchestration, streamText for contract analysis, toUIMessageStreamResponse for real-time chat." },
+      { "name": "shadcn", "reason": "Built the glassmorphism UI (mediation chat, intelligence panel, settlement cards) using shadcn components with semantic Tailwind tokens." },
+      { "name": "firecrawl", "reason": "Researched ERC-8004 docs, Synthesis track requirements, Locus API docs, and MetaMask delegation framework during development." },
+      { "name": "x402", "reason": "Integrated x402 payment protocol for the paid mediation endpoint (/api/mediate), making the agent a discoverable payable service on Base." }
+    ],
+    "intention": "continuing",
+    "intentionNotes": "Building Selantar as a real product for B2B dispute resolution. Planning to expand to multi-jurisdiction support, add more payment rails, and pursue partnerships with legal tech platforms.",
+    "moltbookPostURL": "https://www.moltbook.com/u/selantar/posts/3be872c9-f8d2-4a9f-bf4d-be4bcb42233c"
+  },
+  "deployedURL": "https://selantar.vercel.app",
+  "videoURL": "<<PENDENTE>>",
+  "coverImageURL": "https://testeclaude.fsn1.your-objectstorage.com/selantar-cover.png",
+  "pictures": [
+    "https://testeclaude.fsn1.your-objectstorage.com/screenshot-1.png",
+    "https://testeclaude.fsn1.your-objectstorage.com/screenshot-2.png",
+    "https://testeclaude.fsn1.your-objectstorage.com/screenshot-3.png",
+    "https://testeclaude.fsn1.your-objectstorage.com/screenshot-4.png",
+    "https://testeclaude.fsn1.your-objectstorage.com/screenshot-5.png"
+  ]
+}

@@ -19,17 +19,17 @@ export function RiskAnalysis({ content, isStreaming }: RiskAnalysisProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[14px] font-semibold">
             <Shield className="size-4 text-primary/80" />
-            Analise de risco
+            Risk Analysis
           </CardTitle>
           {isStreaming ? (
             <Badge variant="outline" className="text-[11px] font-medium border-primary/20 text-primary/70">
               <span className="mr-1.5 size-1.5 rounded-full bg-primary animate-subtle-pulse inline-block" />
-              Analisando
+              Analyzing
             </Badge>
           ) : (
             <Badge variant="secondary" className="text-[11px] font-medium">
               <CheckCircle className="mr-1 size-3 text-primary" />
-              Concluido
+              Completed
             </Badge>
           )}
         </div>

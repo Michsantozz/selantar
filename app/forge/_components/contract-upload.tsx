@@ -48,17 +48,17 @@ export function ContractUpload({ onSubmit, isLoading }: ContractUploadProps) {
           <Upload className="size-5 text-primary/60" />
         </div>
         <p className="mb-1 text-[14px] font-medium">
-          Arraste um arquivo .txt ou cole o contrato abaixo
+          Drag a .txt file or paste the contract below
         </p>
         <p className="text-[12px] text-muted-foreground">
-          O contrato sera analisado pela IA para identificar riscos e clausulas-chave
+          The contract will be analyzed by AI to identify risks and key clauses
         </p>
       </div>
 
       <Textarea
         value={contractText}
         onChange={(e) => setContractText(e.target.value)}
-        placeholder="Cole o texto do contrato aqui..."
+        placeholder="Paste the contract text here..."
         className="min-h-[180px] resize-y bg-secondary/30 border-border/50 text-[14px] placeholder:text-muted-foreground/40 focus:border-primary/30"
       />
 
@@ -66,8 +66,8 @@ export function ContractUpload({ onSubmit, isLoading }: ContractUploadProps) {
         <div className="flex items-center gap-2 text-[12px] text-muted-foreground/70">
           <FileText className="size-3" />
           {contractText.length > 0
-            ? `${contractText.length.toLocaleString()} caracteres`
-            : "Nenhum contrato carregado"}
+            ? `${contractText.length.toLocaleString()} characters`
+            : "No contract loaded"}
         </div>
         <div className="flex gap-2">
           {contractText.length > 0 && (
@@ -78,7 +78,7 @@ export function ContractUpload({ onSubmit, isLoading }: ContractUploadProps) {
               className="h-8 text-[12px]"
             >
               <X className="mr-1.5 size-3" />
-              Limpar
+              Clear
             </Button>
           )}
           <Button
@@ -90,10 +90,10 @@ export function ContractUpload({ onSubmit, isLoading }: ContractUploadProps) {
             {isLoading ? (
               <>
                 <Loader2 className="mr-1.5 size-3 animate-spin" />
-                Analisando...
+                Analyzing...
               </>
             ) : (
-              "Analisar contrato"
+              "Analyze contract"
             )}
           </Button>
         </div>

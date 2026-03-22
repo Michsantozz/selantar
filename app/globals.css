@@ -55,6 +55,7 @@
   --color-glass-highlight: var(--glass-highlight);
   --color-emerald: var(--emerald);
   --color-emerald-foreground: var(--emerald-foreground);
+  --color-chain: var(--chain);
   --animate-orbit: orbit calc(var(--duration)*1s) linear infinite;
   --animate-marquee: marquee var(--duration) infinite linear;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
@@ -106,58 +107,60 @@
 }
 
 :root {
-  /* === Selantar — Warm Dark + Burnt Amber (Factory.ai inspired) === */
+  /* === Selantar — Void palette === */
 
-  --background: oklch(0.08 0.005 50);
-  --foreground: oklch(0.88 0.005 80);
+  --background: #000000;
+  --foreground: #f2f2f7;
 
-  --card: oklch(0.11 0.005 50);
-  --card-foreground: oklch(0.88 0.005 80);
+  --card: #0a0a0a;
+  --card-foreground: #f2f2f7;
 
-  --popover: oklch(0.12 0.005 50);
-  --popover-foreground: oklch(0.88 0.005 80);
+  --popover: #111111;
+  --popover-foreground: #f2f2f7;
 
-  --primary: oklch(0.72 0.17 55);
-  --primary-foreground: oklch(0.08 0.005 50);
+  --primary: #e2863a;
+  --primary-foreground: #000000;
 
-  --secondary: oklch(0.16 0.006 50);
-  --secondary-foreground: oklch(0.88 0.005 80);
+  --secondary: #111111;
+  --secondary-foreground: #f2f2f7;
 
-  --muted: oklch(0.16 0.006 50);
-  --muted-foreground: oklch(0.55 0.008 60);
+  --muted: #111111;
+  --muted-foreground: #8e8e93;
 
-  --accent: oklch(0.72 0.17 55);
-  --accent-foreground: oklch(0.08 0.005 50);
+  --accent: #e2863a;
+  --accent-foreground: #000000;
 
-  --destructive: oklch(0.62 0.22 25);
+  --destructive: #ff453a;
 
-  --border: oklch(1 0 0 / 7%);
-  --input: oklch(1 0 0 / 8%);
-  --ring: oklch(0.72 0.17 55);
+  --border: #2c2c2e;
+  --input: #2c2c2e;
+  --ring: #e2863a;
 
   --radius: 0.625rem;
 
-  --glass: oklch(1 0 0 / 3%);
-  --glass-border: oklch(1 0 0 / 7%);
-  --glass-highlight: oklch(1 0 0 / 5%);
+  --glass: rgba(255,255,255,0.02);
+  --glass-border: #2c2c2e;
+  --glass-highlight: rgba(255,255,255,0.04);
 
-  --emerald: oklch(0.72 0.17 162);
-  --emerald-foreground: oklch(0.08 0.005 50);
+  --emerald: #30d158;
+  --emerald-foreground: #000000;
 
-  --chart-1: oklch(0.72 0.17 55);
-  --chart-2: oklch(0.65 0.14 70);
-  --chart-3: oklch(0.55 0.10 90);
-  --chart-4: oklch(0.48 0.08 110);
-  --chart-5: oklch(0.42 0.06 130);
+  --chain: #64d2ff;
 
-  --sidebar: oklch(0.09 0.005 50);
-  --sidebar-foreground: oklch(0.88 0.005 80);
-  --sidebar-primary: oklch(0.72 0.17 55);
-  --sidebar-primary-foreground: oklch(0.08 0.005 50);
-  --sidebar-accent: oklch(0.16 0.006 50);
-  --sidebar-accent-foreground: oklch(0.88 0.005 80);
-  --sidebar-border: oklch(1 0 0 / 7%);
-  --sidebar-ring: oklch(0.72 0.17 55);
+  --chart-1: #e2863a;
+  --chart-2: #30d158;
+  --chart-3: #ff453a;
+  --chart-4: #64d2ff;
+  --chart-5: #8e8e93;
+
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #f2f2f7;
+  --sidebar-primary: #e2863a;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #1c1c1e;
+  --sidebar-accent-foreground: #f2f2f7;
+  --sidebar-border: #2c2c2e;
+  --sidebar-ring: #e2863a;
 }
 
 @layer base {
@@ -234,6 +237,37 @@
   }
 }
 
+
+/* --- Live Contract Page — Pulse Animations --- */
+@keyframes pulse-urgent {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.17 55 / 0%); }
+  50% { box-shadow: 0 0 0 6px oklch(0.72 0.17 55 / 12%); }
+}
+@keyframes pulse-urgent-red {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.62 0.22 25 / 0%); }
+  50% { box-shadow: 0 0 0 6px oklch(0.62 0.22 25 / 12%); }
+}
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.17 55 / 0%); }
+  50% { box-shadow: 0 0 0 4px oklch(0.72 0.17 55 / 10%); }
+}
+@keyframes pulse-border-red {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.62 0.22 25 / 0%); }
+  50% { box-shadow: 0 0 0 4px oklch(0.62 0.22 25 / 10%); }
+}
+
+.animate-pulse-urgent {
+  animation: pulse-urgent 2.5s ease-in-out infinite;
+}
+.animate-pulse-urgent-red {
+  animation: pulse-urgent-red 2.5s ease-in-out infinite;
+}
+.animate-pulse-border {
+  animation: pulse-border 2.5s ease-in-out infinite;
+}
+.animate-pulse-border-red {
+  animation: pulse-border-red 2.5s ease-in-out infinite;
+}
 
 /* --- Scrollbar --- */
 ::-webkit-scrollbar { width: 6px; }

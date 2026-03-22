@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ArrowRight, Upload, DollarSign, Clock, Paperclip } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Upload, LoaderIcon } from "lucide-react";
 import { scenarios } from "@/lib/scenarios";
 import { DotPattern } from "@/components/ui/dot-pattern";
 
@@ -34,6 +36,14 @@ const cardReveal = (delay: number) => ({
    CARD 1 — Parse & Protect
    ═══════════════════════════════════════════════ */
 function ParseCard() {
+  const [demoLoading, setDemoLoading] = useState(false)
+  const router = useRouter()
+
+  const handleDemo = () => {
+    setDemoLoading(true)
+    setTimeout(() => router.push("/contractv2"), 1500)
+  }
+
   return (
     <motion.div
       {...cardReveal(0.15)}
@@ -72,20 +82,22 @@ function ParseCard() {
         </div>
 
         {/* Upload zone */}
-        <Link
-          href="/forge/analyze"
-          className="block rounded-lg border border-dashed border-border/80 bg-muted/[0.04] px-6 py-8 text-center transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-primary/25 hover:bg-primary/[0.02] active:scale-[0.99]"
-        >
-          <div className="mx-auto mb-4 flex size-11 items-center justify-center rounded-lg bg-muted/30 transition-colors duration-500 group-hover:bg-primary/10">
-            <Upload className="size-[18px] text-muted-foreground/40 transition-colors duration-500 group-hover:text-primary/60" />
+        <div className="relative cursor-not-allowed rounded-lg border border-dashed border-border/30 bg-muted/[0.02] px-6 py-8 text-center">
+          {/* Soon badge */}
+          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">
+            <span className="size-1.5 rounded-full bg-muted-foreground/30" />
+            Coming Soon
+          </span>
+          <div className="mx-auto mb-4 flex size-11 items-center justify-center rounded-lg bg-muted/20 opacity-30">
+            <Upload className="size-[18px] text-muted-foreground/40" />
           </div>
-          <p className="text-sm text-muted-foreground/60">
+          <p className="text-sm text-muted-foreground/25">
             Drag & drop your contract PDF
           </p>
-          <p className="mt-1.5 text-[11px] text-muted-foreground/25">
+          <p className="mt-1.5 text-[11px] text-muted-foreground/15">
             PDF only · Max 10 MB · Private & encrypted
           </p>
-        </Link>
+        </div>
 
         {/* Divider */}
         <div className="my-4 flex items-center gap-4">
@@ -95,36 +107,65 @@ function ParseCard() {
         </div>
 
         {/* Demo contract option */}
-        <Link
-          href="/contract"
-          className="group/demo flex flex-col items-center gap-3 rounded-lg border border-primary/15 bg-primary/[0.03] px-6 py-6 text-center transition-all duration-500 hover:border-primary/30 hover:bg-primary/[0.06] active:scale-[0.99]"
+        <button
+          onClick={handleDemo}
+          disabled={demoLoading}
+          className="group/demo flex flex-col items-center gap-3 rounded-lg border border-primary/15 bg-primary/[0.03] px-6 py-6 text-center transition-all duration-500 hover:border-primary/30 hover:bg-primary/[0.06] active:scale-[0.99] disabled:pointer-events-none w-full"
         >
-          <div className="flex items-center gap-2.5">
-            <span className="size-2 rounded-full bg-primary animate-subtle-pulse" />
-            <span className="text-sm font-medium text-foreground transition-colors">
-              No contract? No problem.
-            </span>
-          </div>
-          <p className="text-[12px] leading-relaxed text-muted-foreground/50">
-            Load a sample SaaS contract and watch the AI tear it apart in real time.
-          </p>
-          <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-primary/70 transition-colors group-hover/demo:text-primary">
-            Try Demo
-            <ArrowRight className="size-3 transition-transform duration-500 group-hover/demo:translate-x-0.5" />
-          </span>
-        </Link>
+          <AnimatePresence mode="wait">
+            {demoLoading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center gap-3 py-2"
+              >
+                <LoaderIcon className="size-5 text-primary animate-spin" />
+                <p className="text-sm text-primary">Loading demo contract...</p>
+                <div className="h-1 w-32 rounded-full bg-border overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-primary"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 1.4, ease: "easeInOut" }}
+                  />
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="idle"
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col items-center gap-3"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="size-2 rounded-full bg-primary animate-subtle-pulse" />
+                  <span className="text-sm font-medium text-foreground transition-colors">
+                    No contract? No problem.
+                  </span>
+                </div>
+                <p className="text-[12px] leading-relaxed text-muted-foreground/50">
+                  Load a sample SaaS contract and watch the AI tear it apart in real time.
+                </p>
+                <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-primary/70 transition-colors group-hover/demo:text-primary">
+                  Try Demo
+                  <ArrowRight className="size-3 transition-transform duration-500 group-hover/demo:translate-x-0.5" />
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
 
         <div className="flex-1" />
 
         {/* CTA */}
         <div className="mt-8">
-          <Link
-            href="/forge/analyze"
-            className="group/btn flex w-full items-center justify-center gap-2.5 rounded-md bg-foreground py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-background transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-foreground/90 active:scale-[0.98]"
-          >
+          <div className="relative flex w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-md border border-border/30 bg-muted/[0.03] py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-foreground/20">
             Analyze a Contract
-            <ArrowRight className="size-3.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/btn:translate-x-1" />
-          </Link>
+            <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/40">
+              Coming Soon
+            </span>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -132,31 +173,39 @@ function ParseCard() {
 }
 
 /* ═══════════════════════════════════════════════
-   CARD 2 — Go to War
+   CARD 2 — Live Scenarios
    ═══════════════════════════════════════════════ */
 function WarCard() {
   return (
     <motion.div
       {...cardReveal(0.25)}
-      className="flex h-full flex-col rounded-xl border border-border bg-card transition-colors duration-500 hover:border-destructive/12"
+      className="flex h-full flex-col rounded-xl border border-border bg-card transition-colors duration-500 hover:border-primary/12"
     >
       {/* ── Card header ── */}
       <div className="flex items-center justify-between px-7 py-5">
         <div className="flex items-center gap-2.5">
-          <span className="size-[6px] rounded-full bg-destructive" />
+          <span className="size-[6px] rounded-full bg-primary" />
           <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-            Go to War
+            Skip the Setup
           </span>
         </div>
         <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground/25">
-          02 — Live Mediation
+          02 — Live Scenarios
         </span>
       </div>
 
       <div className="h-px bg-border" />
 
+      {/* ── Explanation ── */}
+      <div className="px-7 pt-5 pb-3">
+        <p className="text-sm leading-relaxed text-muted-foreground/50">
+          Jump straight into a real dispute. Pick a scenario below and
+          watch Selantar mediate from evidence to settlement — fully autonomous.
+        </p>
+      </div>
+
       {/* ── Body: stacked scenario cards ── */}
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-4">
         {scenarios.map((scenario, i) => {
           const meta = scenarioMeta[scenario.id];
           return (
@@ -191,10 +240,11 @@ function WarCard() {
               </div>
 
               {/* Content */}
-              <div className="flex flex-col gap-2 px-4 pb-4 pt-2">
-                <div className="flex items-baseline justify-between gap-2">
-                  <h4 className="flex items-center gap-2 text-[14px] font-medium tracking-tight text-foreground transition-colors duration-300 group-hover/sc:text-primary">
-                    <span className="text-sm">{meta?.emoji}</span>
+              <div className="flex flex-col gap-1.5 px-4 pb-4 pt-3">
+                {/* Title + value */}
+                <div className="flex items-start justify-between gap-3">
+                  <h4 className="flex items-center gap-1.5 text-[13px] font-medium leading-snug tracking-tight text-foreground transition-colors duration-300 group-hover/sc:text-primary">
+                    <span>{meta?.emoji}</span>
                     {scenario.title}
                   </h4>
                   <span className="shrink-0 font-mono text-[12px] tabular-nums text-primary">
@@ -202,51 +252,27 @@ function WarCard() {
                   </span>
                 </div>
 
-                <p className="text-[11px] text-muted-foreground/40">
+                {/* Tagline */}
+                <p className="text-[11px] leading-snug text-muted-foreground/40">
                   {scenario.tagline}
                 </p>
 
-                <div className="flex items-center gap-2 font-mono text-[10px]">
-                  <span className="text-foreground/35">{scenario.parties.client.name}</span>
-                  <span className="text-[9px] font-bold text-primary/60">VS</span>
-                  <span className="text-foreground/35">{scenario.parties.developer.name}</span>
-                </div>
-
-                <div className="mt-1 flex items-center justify-between border-t border-border/40 pt-2">
-                  <div className="flex items-center gap-3 font-mono text-[9px] uppercase tracking-wider text-muted-foreground/25">
-                    <span className="flex items-center gap-1">
-                      <DollarSign className="size-2.5" />
-                      {scenario.contract.currency} {scenario.contract.value}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="size-2.5" />
-                      {scenario.contract.duration}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Paperclip className="size-2.5" />
-                      {scenario.evidence.length}
-                    </span>
+                {/* Footer row */}
+                <div className="mt-2 flex items-center justify-between border-t border-border/30 pt-2">
+                  <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                    <span className="text-foreground/40">{scenario.parties.client.name}</span>
+                    <span className="text-[9px] font-bold text-primary/50">VS</span>
+                    <span className="text-foreground/40">{scenario.parties.developer.name}</span>
                   </div>
-                  <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-foreground/60 transition-colors duration-300 group-hover/sc:text-primary">
+                  <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-foreground/40 transition-colors duration-300 group-hover/sc:text-primary">
                     Open
-                    <ArrowRight className="size-3 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/sc:translate-x-0.5" />
+                    <ArrowRight className="size-2.5 transition-transform duration-500 group-hover/sc:translate-x-0.5" />
                   </span>
                 </div>
               </div>
             </Link>
           );
         })}
-      </div>
-
-      {/* ── Footer CTA ── */}
-      <div className="border-t border-border px-7 py-5">
-        <Link
-          href="/mediation"
-          className="hero-cta group/btn flex w-full items-center justify-center gap-2.5 rounded-md py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-foreground transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.01] active:scale-[0.98]"
-        >
-          Enter the War Room
-          <ArrowRight className="size-3.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/btn:translate-x-1" />
-        </Link>
       </div>
     </motion.div>
   );

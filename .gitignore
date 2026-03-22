@@ -31,13 +31,12 @@ next-env.d.ts
 # internal tools & agents
 .agents/
 .cursor/
-.firecrawl/
 skills-lock.json
 
 # internal docs (root)
 AUDIT-REPORT-*.md
 BRIEFING-*.md
-CONVERSATION-LOG*.md
+
 DELEGATION-IMPLEMENTATION.md
 DESIGN-SYSTEM.md
 EXECUTION-PLAN.md

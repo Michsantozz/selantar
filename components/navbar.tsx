@@ -40,6 +40,7 @@ const baseScanUrl =
 
 export function Navbar() {
   const pathname = usePathname();
+  if (pathname.startsWith('/contract/')) return null;
   const isLanding = pathname === "/";
   const [wallet, setWallet] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
