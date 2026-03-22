@@ -50,6 +50,8 @@ SYNTHESIS-PROJECTS.md
 /app/contract/*
 !/app/contract/setup/
 !/app/contract/setup/_components/
+!/app/contract/sentinel-plan/
+!/app/contract/sentinel-plan/_components/
 
 # internal scripts
 scripts/export-conversation-log.py
