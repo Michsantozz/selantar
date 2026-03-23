@@ -93,7 +93,7 @@ export function Navbar() {
             className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <span className="size-1.5 rounded-full bg-primary animate-subtle-pulse" />
-            BaseScan
+            HashScan
             <ExternalLink className="size-3 transition-transform group-hover:translate-x-0.5" />
           </a>
 
@@ -155,7 +155,7 @@ export function Navbar() {
                 className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 <span className="size-1.5 rounded-full bg-primary animate-subtle-pulse" />
-                BaseScan
+                HashScan
                 <ExternalLink className="size-3" />
               </a>
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getClientWalletClient } from "@/lib/wallet";
 import { postMediationFeedback } from "@/lib/erc8004/reputation";
 import { notifyOpenClaw } from "@/lib/notify-openclaw";
+import { getExplorerTxUrl } from "@/lib/hedera/explorer";
 
 export const postFeedback = tool({
   description:
@@ -19,7 +20,7 @@ export const postFeedback = tool({
   execute: async ({ satisfactionScore, disputeType, settlementTxHash }) => {
     try {
       const walletClient = getClientWalletClient();
-      const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
+      const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "36");
 
       const feedbackTxHash = await postMediationFeedback(
         walletClient,
@@ -38,7 +39,7 @@ export const postFeedback = tool({
         tipo: disputeType,
         registry: "ERC-8004 Reputation",
         tx: feedbackTxHash,
-        explorer: `https://hashscan.io/testnet/transaction/${feedbackTxHash}`,
+        explorer: getExplorerTxUrl(feedbackTxHash),
       });
 
       return {
@@ -49,7 +50,7 @@ export const postFeedback = tool({
         linkedSettlement: settlementTxHash,
         registry: "ERC-8004 Reputation Registry",
         chain: "Hedera Testnet",
-        explorer: `https://hashscan.io/testnet/transaction/${feedbackTxHash}`,
+        explorer: getExplorerTxUrl(feedbackTxHash),
         timestamp: new Date().toISOString(),
       };
     } catch {

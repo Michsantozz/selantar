@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getWalletClient } from "@/lib/wallet";
 import { registerVerdictAsValidation } from "@/lib/erc8004/validation";
 import { notifyOpenClaw } from "@/lib/notify-openclaw";
+import { getExplorerTxUrl } from "@/lib/hedera/explorer";
 
 export const registerVerdict = tool({
   description:
@@ -18,7 +19,7 @@ export const registerVerdict = tool({
   execute: async ({ contractRef, evidence, reasoning, settlementTxHash, clientAmount, developerAmount }) => {
     try {
       const walletClient = getWalletClient();
-      const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
+      const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "36");
 
       const validationTxHash = await registerVerdictAsValidation(
         walletClient,

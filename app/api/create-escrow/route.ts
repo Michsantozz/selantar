@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     const milestones = Array.isArray(body?.milestones) ? body.milestones : [];
 
     const walletClient = getWalletClient();
-    const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
+    const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "36");
 
     // 1. Hash the contract text — proof of integrity
     const contractHash = keccak256(toBytes(contractText ?? contractRef));

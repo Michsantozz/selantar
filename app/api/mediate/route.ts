@@ -170,7 +170,7 @@ export async function GET() {
       txHashes: "string[] — all on-chain transaction hashes",
     },
     erc8004: {
-      agentId: process.env.SELANTAR_AGENT_ID ?? "2122",
+      agentId: process.env.SELANTAR_AGENT_ID ?? "36",
       registries: {
         identity: "0x8004A818BFB912233c491871b3d84c89A494BD9e",
         reputation: "0x8004B663056A597Dffe9eCcC1965A193B7388713",
