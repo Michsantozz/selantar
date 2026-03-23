@@ -57,6 +57,10 @@ export async function postMediationFeedback(
     ],
   });
 
-  console.log("Feedback posted on-chain! TX:", hash);
+  const { createPublicClient, http } = await import("viem");
+  const { baseSepolia } = await import("viem/chains");
+  const publicClient = createPublicClient({ chain: baseSepolia, transport: http("https://sepolia.base.org") });
+  await publicClient.waitForTransactionReceipt({ hash });
+
   return hash;
 }

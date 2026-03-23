@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
           const result = await redeemSettlementDelegation({
             signedDelegation,
-            recipientAddress: agentSmartAccount.address,
+            recipientAddress: clientSmartAccount.address,
             amount: delegationAmount,
           });
 
@@ -66,12 +66,17 @@ export async function POST(req: Request) {
       }
     }
 
-    // Fallback: direct ETH self-transfer
+    // Fallback: direct ETH transfer to client
     if (settlementMethod === "direct") {
       try {
         const { parseEther } = await import("viem");
+        const { privateKeyToAccount } = await import("viem/accounts");
+        const clientPk = process.env.CLIENT_PRIVATE_KEY;
+        const clientAddress = clientPk
+          ? privateKeyToAccount((clientPk.startsWith("0x") ? clientPk : `0x${clientPk}`) as `0x${string}`).address
+          : walletClient.account.address;
         const hash = await walletClient.sendTransaction({
-          to: walletClient.account.address,
+          to: clientAddress,
           value: parseEther("0.0001"),
         });
         await publicClient.waitForTransactionReceipt({ hash });

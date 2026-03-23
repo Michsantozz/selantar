@@ -200,8 +200,14 @@ export const executeSettlement = tool({
 
       const settlementAmount = parseEther("0.0001");
 
+      const clientAddress = process.env.CLIENT_WALLET_ADDRESS ?? process.env.CLIENT_PRIVATE_KEY
+        ? (await import("viem/accounts")).privateKeyToAccount(
+            (process.env.CLIENT_PRIVATE_KEY!.startsWith("0x") ? process.env.CLIENT_PRIVATE_KEY! : `0x${process.env.CLIENT_PRIVATE_KEY!}`) as `0x${string}`
+          ).address
+        : walletClient.account.address;
+
       const hash = await walletClient.sendTransaction({
-        to: walletClient.account.address,
+        to: clientAddress,
         value: settlementAmount,
       });
 

@@ -211,6 +211,7 @@ Contract: ${contractRef}
 Client receives: ${currency} ${settlement.clientAmount}
 Developer receives: ${currency} ${settlement.developerAmount}
 Split: ${settlement.clientPercentage}/${settlement.developerPercentage}
+Chain: Base Sepolia (84532)
 Date: ${new Date().toISOString()}`;
 
     const signature = await personalSign(message, wallet);
@@ -229,6 +230,7 @@ Contract: ${contractRef}
 Client receives: ${currency} ${settlement.clientAmount}
 Developer receives: ${currency} ${settlement.developerAmount}
 Split: ${settlement.clientPercentage}/${settlement.developerPercentage}
+Chain: Base Sepolia (84532)
 Date: ${new Date().toISOString()}`;
 
     const signature = await personalSign(message, wallet);
