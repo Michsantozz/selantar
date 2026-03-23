@@ -34,15 +34,7 @@ next-env.d.ts
 skills-lock.json
 
 # internal docs (root)
-AUDIT-REPORT-*.md
-BRIEFING-*.md
-
-DELEGATION-IMPLEMENTATION.md
-DESIGN-SYSTEM.md
-EXECUTION-PLAN.md
-HANDOFF.md
-PROMPTS-GUIDE.md
-SYNTHESIS-PROJECTS.md
+# (liberados para submission — mostram processo de criação)
 
 # orphan pages
 /app/dashboard/
