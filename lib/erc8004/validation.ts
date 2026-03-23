@@ -44,7 +44,10 @@ export async function registerVerdictAsValidation(
     ],
   });
 
-  console.log("Verdict evidence registered on-chain! TX:", hash);
-  console.log("Request Hash:", requestHash);
+  const { createPublicClient, http } = await import("viem");
+  const { baseSepolia } = await import("viem/chains");
+  const publicClient = createPublicClient({ chain: baseSepolia, transport: http("https://sepolia.base.org") });
+  await publicClient.waitForTransactionReceipt({ hash });
+
   return hash;
 }

@@ -117,9 +117,12 @@ export async function POST(req: Request) {
       console.warn("ERC-8004 validation skipped:", e);
     }
 
+    const settlementSucceeded = settlementTxHash !== "0x0";
+
     return NextResponse.json({
-      success: true,
-      settlementTxHash,
+      success: settlementSucceeded,
+      status: settlementSucceeded ? "executed" : "queued",
+      settlementTxHash: settlementSucceeded ? settlementTxHash : null,
       settlementMethod,
       feedbackTx,
       validationTx,

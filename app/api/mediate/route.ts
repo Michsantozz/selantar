@@ -116,9 +116,12 @@ Be direct, fair, and concrete. No fluff.`,
   });
 };
 
-// Use env var for wallet address — derived at runtime, not build time
-// Set AGENT_WALLET_ADDRESS in Vercel, or it falls back to deriving from AGENT_PRIVATE_KEY at request time
-const SELANTAR_WALLET = (process.env.AGENT_WALLET_ADDRESS ?? "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4") as `0x${string}`;
+// Use env var for wallet address — derived at runtime from AGENT_PRIVATE_KEY
+import { getWalletClient } from "@/lib/wallet";
+const SELANTAR_WALLET = (() => {
+  try { return getWalletClient().account.address; }
+  catch { return (process.env.AGENT_WALLET_ADDRESS ?? "0x0") as `0x${string}`; }
+})();
 
 export const POST = withX402(handler, SELANTAR_WALLET, {
   price: "$0.10",

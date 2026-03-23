@@ -9,7 +9,11 @@ const openrouter = createOpenRouter({
 });
 
 export async function POST(req: Request) {
-  const { contractText } = await req.json();
+  const body = await req.json();
+  const contractText = typeof body?.contractText === "string" ? body.contractText.slice(0, 100000) : "";
+  if (!contractText) {
+    return new Response(JSON.stringify({ error: "contractText is required" }), { status: 400 });
+  }
 
   const result = streamText({
     model: openrouter("openai/gpt-5.4-mini"),

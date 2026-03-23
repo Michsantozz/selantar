@@ -5,6 +5,7 @@ import type {
   SmartAccountsEnvironment,
 } from "@metamask/smart-accounts-kit";
 import { type Hex, toHex } from "viem";
+import { randomBytes } from "crypto";
 
 // Create and sign a delegation from a party to the agent
 // Scope: nativeTokenTransferAmount — limits ETH the agent can move
@@ -17,7 +18,7 @@ export async function createAndSignDelegation(params: {
   const { delegatorAccount, agentAddress, environment, maxAmount } = params;
 
   // Unique salt per delegation so the enforcer treats each as a fresh allowance
-  const salt = toHex(BigInt(Date.now()) * 1000000n + BigInt(Math.floor(Math.random() * 1000000)), { size: 32 });
+  const salt = `0x${randomBytes(32).toString("hex")}` as Hex;
 
   // Create the delegation with native ETH transfer scope
   const delegation = createDelegation({

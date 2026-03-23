@@ -13,7 +13,8 @@ export const executeSettlement = tool({
     reasoning: z.string().describe("Final mediator reasoning for the verdict"),
   }),
   execute: async ({ clientAmount, developerAmount, contractRef, reasoning }) => {
-    console.log(">>> executeSettlement called! USE_LOCUS=" + process.env.USE_LOCUS + " USE_ERC7715=" + process.env.USE_ERC7715 + " USE_DELEGATION=" + process.env.USE_DELEGATION);
+    const walletClient = getWalletClient();
+    const publicClient = getPublicClient();
 
     // --- 1. LOCUS PATH (first): Execute USDC settlement via Locus wallet ---
     if (process.env.USE_LOCUS === "true" && process.env.LOCUS_API_KEY) {
@@ -27,7 +28,7 @@ export const executeSettlement = tool({
         });
         const balanceData = await balanceRes.json() as { success: boolean; data?: { usdc_balance?: string } };
         const balance = parseFloat(balanceData.data?.usdc_balance ?? "0");
-        console.log(`Locus wallet balance: $${balance} USDC`);
+        // Locus balance checked
 
         if (balance < 0.01) {
           console.warn("Locus: Insufficient balance ($" + balance + "), falling back to delegation");
@@ -46,7 +47,7 @@ export const executeSettlement = tool({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            to_address: process.env.CLIENT_WALLET_ADDRESS ?? "0x7C41D01c95F55c5590e65c8f91B4F854316d1da4",
+            to_address: process.env.CLIENT_WALLET_ADDRESS ?? walletClient.account.address,
             amount: clientUsdcAmount,
             memo: `Selantar settlement [${contractRef}] — client portion (${clientAmount}). ${reasoning}`,
           }),
@@ -70,7 +71,7 @@ export const executeSettlement = tool({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            to_address: process.env.DEVELOPER_WALLET_ADDRESS ?? process.env.AGENT_WALLET_ADDRESS ?? "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4",
+            to_address: process.env.DEVELOPER_WALLET_ADDRESS ?? process.env.AGENT_WALLET_ADDRESS ?? walletClient.account.address,
             amount: devUsdcAmount,
             memo: `Selantar settlement [${contractRef}] — developer portion (${developerAmount}). ${reasoning}`,
           }),
@@ -196,8 +197,6 @@ export const executeSettlement = tool({
 
     // --- 4. FALLBACK: Direct ETH transfer as proof of settlement ---
     try {
-      const walletClient = getWalletClient();
-      const publicClient = getPublicClient();
 
       const settlementAmount = parseEther("0.0001");
 

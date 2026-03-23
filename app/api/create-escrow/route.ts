@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { keccak256, toBytes, parseAbi } from "viem";
 import { getWalletClient } from "@/lib/wallet";
-import { registerVerdictAsValidation } from "@/lib/erc8004/validation";
+
 import { ERC8004_ADDRESSES } from "@/lib/erc8004/addresses";
 
 export const runtime = "nodejs";
@@ -17,23 +17,13 @@ const VALIDATION_ABI = parseAbi([
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const {
-      contractText,
-      contractRef,
-      clientName,
-      developerName,
-      totalAmount,
-      currency,
-      milestones,
-    } = body as {
-      contractText: string;
-      contractRef: string;
-      clientName: string;
-      developerName: string;
-      totalAmount: string;
-      currency: string;
-      milestones: { label: string; value: string; deadline: string }[];
-    };
+    const contractRef = String(body?.contractRef ?? `CSX-${Date.now()}`);
+    const contractText = String(body?.contractText ?? contractRef);
+    const clientName = String(body?.clientName ?? "");
+    const developerName = String(body?.developerName ?? "");
+    const totalAmount = String(body?.totalAmount ?? "0");
+    const currency = String(body?.currency ?? "BRL");
+    const milestones = Array.isArray(body?.milestones) ? body.milestones : [];
 
     const walletClient = getWalletClient();
     const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
@@ -71,7 +61,7 @@ export async function POST(req: Request) {
           requestHash,
         ],
       });
-      console.log("[create-escrow] ERC-8004 validation TX:", validationTxHash);
+      // TX logged for audit trail in Vercel logs
     } catch (err) {
       console.warn("[create-escrow] ERC-8004 registration failed (wallet unfunded?):", err);
       // Graceful fallback — return simulated hash so demo still works

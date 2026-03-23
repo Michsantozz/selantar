@@ -1,23 +1,30 @@
 import FirecrawlApp from "@mendable/firecrawl-js";
 import { NextResponse } from "next/server";
 
-const app = new FirecrawlApp({
-  apiKey: "test",
-  apiUrl: "http://localhost:3002",
-});
-
 export async function POST(request: Request) {
-  const { url, options } = await request.json();
+  try {
+    const body = await request.json();
+    const url = typeof body?.url === "string" ? body.url : "";
+    if (!url) {
+      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    }
 
-  if (!url) {
-    return NextResponse.json({ error: "URL is required" }, { status: 400 });
+    const app = new FirecrawlApp({
+      apiKey: process.env.FIRECRAWL_API_KEY ?? "test",
+      apiUrl: process.env.FIRECRAWL_API_URL ?? "http://localhost:3002",
+    });
+
+    const result = await app.scrape(url, {
+      formats: ["markdown"],
+      waitFor: 5000,
+      ...(body.options ?? {}),
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Scrape failed" },
+      { status: 500 }
+    );
   }
-
-  const result = await app.scrapeUrl(url, {
-    formats: ["markdown"],
-    waitFor: 5000,
-    ...options,
-  });
-
-  return NextResponse.json(result);
 }
