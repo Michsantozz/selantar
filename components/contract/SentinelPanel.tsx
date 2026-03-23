@@ -1,6 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { registerDemoAction } from '@/lib/demo-actions'
+
+const EVO_BASE = 'https://whats.vensa.pro'
+const EVO_INSTANCE = 'testeultra2'
+const EVO_KEY = '429683C4C977415CAAFCCE10F7D57E11'
+const EVO_NUMBER = '5562994161690'
+
+async function sendWhatsApp(text: string, delayMs = 1500) {
+  try {
+    await fetch(`${EVO_BASE}/chat/sendPresence/${EVO_INSTANCE}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
+      body: JSON.stringify({ number: EVO_NUMBER, options: { presence: 'composing', delay: delayMs } }),
+    })
+    await new Promise((r) => setTimeout(r, delayMs))
+    await fetch(`${EVO_BASE}/message/sendText/${EVO_INSTANCE}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: EVO_KEY },
+      body: JSON.stringify({ number: EVO_NUMBER, text, delay: 500 }),
+    })
+  } catch {
+    // silently fail
+  }
+}
 import {
   ReactFlow,
   Background,
@@ -216,7 +240,8 @@ const SY = 0       // Sentinel row Y
 const CY = 190     // Clara row Y
 const START_X = 0
 
-const NODES: Node[] = [
+function buildNodes(firing: boolean): Node[] {
+  return [
   // ── Start ──
   { id: 'contract', type: 'action', position: { x: START_X, y: 85 },
     data: {
@@ -292,7 +317,27 @@ const NODES: Node[] = [
       icon: 'scale', status: 'waiting', agent: 'clara',
       detail: 'clause 3.2',
     } },
-]
+
+  // s-whatsapp override when firing
+  ...(firing ? [{
+    id: 's-whatsapp', type: 'action', position: { x: START_X + G * 2, y: SY },
+    data: {
+      label: 'Follow-up WhatsApp',
+      description: '⌛ Sentinel digitando mensagem para Dr. Suasuna...',
+      icon: 'whatsapp', status: 'active' as ActionStatus, agent: 'sentinel' as const,
+      detail: 'ao vivo agora',
+    }
+  }] : [{
+    id: 's-whatsapp', type: 'action', position: { x: START_X + G * 2, y: SY },
+    data: {
+      label: 'Follow-up WhatsApp',
+      description: '✓ Mensagem enviada. Dr. Suasuna notificado sobre M2.',
+      icon: 'whatsapp', status: 'done' as ActionStatus, agent: 'sentinel' as const,
+      detail: 'enviado',
+    }
+  }]),
+  ]
+}
 
 const EDGES: Edge[] = [
   // Fork from contract to both tracks
@@ -345,17 +390,32 @@ const STATUS_LINES = [
 export function SentinelPanel() {
   const [statusIdx, setStatusIdx] = useState(0)
   const [expanded, setExpanded] = useState(false)
+  const [firing, setFiring] = useState(false)
 
   useEffect(() => {
     const t = setInterval(() => setStatusIdx((p) => (p + 1) % STATUS_LINES.length), 3000)
     return () => clearInterval(t)
   }, [])
 
+  useEffect(() => {
+    // on mount — anima node s-whatsapp e dispara mensagem real
+    const run = async () => {
+      await new Promise((r) => setTimeout(r, 1200)) // pequeno delay para UI carregar
+      setFiring(true)
+      await sendWhatsApp(
+        '✅ *Contrato ativo — Selantar*\nSite Clinica Suassuna · R$4.800 · 4 milestones\nSentinel monitorando. Qualquer movimento eu aviso.',
+        2500
+      )
+      setFiring(false)
+    }
+    run()
+  }, [])
+
   const cur = STATUS_LINES[statusIdx]
 
   const flowCanvas = (padding: number) => (
     <ReactFlow
-      nodes={NODES}
+      nodes={buildNodes(firing)}
       edges={EDGES}
       nodeTypes={nodeTypes}
       fitView

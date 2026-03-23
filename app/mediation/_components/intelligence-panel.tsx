@@ -298,7 +298,7 @@ export function IntelligencePanel({ scenario, messages = [] }: IntelligencePanel
       </div>
 
       {/* Evidence — colored items */}
-      <div className="rounded-xl border border-border bg-card p-5 flex-1">
+      <div id="med-evidence" className="rounded-xl border border-border bg-card p-5 flex-1">
         <div className="flex items-center gap-2 mb-4">
           <span className="size-2 rounded-full bg-accent" />
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -323,7 +323,7 @@ export function IntelligencePanel({ scenario, messages = [] }: IntelligencePanel
       </div>
 
       {/* Settlement Status — dynamic from tool outputs */}
-      <div className="rounded-xl border border-primary/20 bg-card p-5">
+      <div id="med-settlement-status" className="rounded-xl border border-primary/20 bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
           <span className="size-2 rounded-full bg-primary" />
           <span className="text-xs font-medium uppercase tracking-wider text-primary/70">

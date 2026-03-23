@@ -86,7 +86,7 @@ export function MilestoneCard({
         </div>
 
         {!isDispute && (
-          <div className="flex gap-2 ml-auto">
+          <div id="cd-client-options" className="flex gap-2 ml-auto">
             <Button size="sm" variant="outline"
               className="h-6 px-3 text-[10px] uppercase tracking-wider border-emerald/30 bg-emerald/5 text-emerald hover:bg-emerald/10"
               onClick={onApprove}>

@@ -231,6 +231,13 @@ API (x402):
 
 Clara calls these silently during mediation. The parties never see the machinery — they just see a mediator who somehow already knows everything.
 
+**Live omnichannel actions (outside mediation):**
+
+| Action | What It Does |
+|--------|-------------|
+| WhatsApp dispatch | Sentinel fires a real WhatsApp message to parties on contract activation — via Evolution API with typing presence |
+| GitHub monitor | Sentinel fetches live commits from the dev's repo and displays them in the contract flow |
+
 ---
 
 ## Autonomy Metrics
@@ -328,7 +335,7 @@ Every TX is real. Every receipt is permanent. Click any link and verify.
 
 **Phase 1 (NOW — Live):** Autonomous mediation protocol. AI that listens to both sides, protects egos, and settles disputes on-chain. The first protocol where machines care about context, not just code.
 
-**Phase 2 (NEXT):** Omnichannel Sentinel. Evidence collected from every channel where business actually happens — WhatsApp, GitHub, CRM, email. Mediation meets you where the context lives.
+**Phase 2 (LIVE):** Omnichannel Sentinel. Evidence collected from every channel where business actually happens — WhatsApp, GitHub, CRM, email. Mediation meets you where the context lives. When a contract goes live, Sentinel fires a real WhatsApp message to the parties via Evolution API. GitHub commits are fetched live and displayed in the monitoring flow. This isn't a prototype — it's running.
 
 **Phase 3 (HORIZON):** Trust Economy. On-chain reputation unlocks liquidity, insurance, and credit lines. Your professional truth — not just your payment history — becomes capital. Honesty becomes the most valuable asset in the agent economy.
 

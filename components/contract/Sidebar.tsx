@@ -63,6 +63,7 @@ export function Sidebar({ milestones, activeMilestoneId }: SidebarProps) {
           return (
             <div key={m.id}>
               <div
+                id={`cd-milestone-${m.id}`}
                 className={cn(
                   'flex items-center gap-2 py-1.5 rounded px-1 -mx-1 transition-colors',
                   isActive && 'bg-accent/5'

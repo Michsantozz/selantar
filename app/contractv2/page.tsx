@@ -112,7 +112,7 @@ export default function ContractV2Page() {
         style={{ gridTemplateColumns: "1fr 1fr 1.2fr" }}>
 
         {/* Col 1 — Risk Review (4th) */}
-        <div className="flex flex-col min-h-0">
+        <div id="cv2-risk-col" className="flex flex-col min-h-0">
           <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent" />
@@ -125,7 +125,7 @@ export default function ContractV2Page() {
         </div>
 
         {/* Col 2 — Milestones (5th) */}
-        <div className="flex flex-col min-h-0">
+        <div id="cv2-milestones-col" className="flex flex-col min-h-0">
           <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent" />
@@ -138,7 +138,7 @@ export default function ContractV2Page() {
         </div>
 
         {/* Col 3 — Deploy Preview + Clara (6th) */}
-        <div className="flex flex-col min-h-0">
+        <div id="cv2-deploy-col" className="flex flex-col min-h-0">
           <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent" />

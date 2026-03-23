@@ -15,6 +15,7 @@ import { IntelligencePanel } from "./_components/intelligence-panel";
 import { SettlementModal, type SettlementData } from "./_components/settlement-modal";
 import { OriginalContractModal } from "./_components/original-contract-modal";
 import { scenarios, type Scenario } from "@/lib/scenarios";
+import { registerDemoAction } from "@/lib/demo-actions";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -298,6 +299,17 @@ Respond to the client directly. Address their frustration first, then analyze th
     handleSelectScenario(selectedScenario);
   }, [selectedScenario, mediationStarted, handleSelectScenario]);
 
+  // Register demo actions
+  useEffect(() => {
+    registerDemoAction("med-start", () => handleStartMediation());
+  }, [handleStartMediation]);
+
+  useEffect(() => {
+    registerDemoAction("med-review-settlement", () => {
+      if (settlementData) setShowSettlementModal(true);
+    });
+  }, [settlementData]);
+
   // Build the display messages: interleave client messages with mediator responses
   const displayMessages: UIMessage[] = [];
 
@@ -402,6 +414,7 @@ Respond to the client directly. Address their frustration first, then analyze th
         <div className="grid h-[calc(100vh-10rem)] grid-cols-1 gap-3 lg:grid-cols-12">
           {/* Left: Case Info */}
           <motion.div
+            id="med-case-info"
             custom={0}
             variants={fadeUp}
             initial="hidden"
@@ -417,6 +430,7 @@ Respond to the client directly. Address their frustration first, then analyze th
 
           {/* Center: Chat */}
           <motion.div
+            id="med-chat"
             custom={1}
             variants={fadeUp}
             initial="hidden"
@@ -440,6 +454,7 @@ Respond to the client directly. Address their frustration first, then analyze th
 
           {/* Right: Intelligence + Evidence */}
           <motion.div
+            id="med-intelligence"
             custom={2}
             variants={fadeUp}
             initial="hidden"
