@@ -41,7 +41,7 @@ export const registerVerdict = tool({
         evidencias: evidence.length,
         registry: "ERC-8004 Validation",
         tx: validationTxHash,
-        explorer: `https://hashscan.io/testnet/transaction/${validationTxHash}`,
+        explorer: getExplorerTxUrl(validationTxHash),
       });
 
       return {
@@ -52,7 +52,7 @@ export const registerVerdict = tool({
         linkedSettlement: settlementTxHash,
         registry: "ERC-8004 Validation Registry",
         chain: "Hedera Testnet",
-        explorer: `https://hashscan.io/testnet/transaction/${validationTxHash}`,
+        explorer: getExplorerTxUrl(validationTxHash),
         timestamp: new Date().toISOString(),
       };
     } catch {
