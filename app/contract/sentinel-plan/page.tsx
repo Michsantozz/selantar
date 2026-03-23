@@ -13,7 +13,6 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { registerFlowNav } from "@/lib/demo-flow-camera";
 import { registerDemoAction } from "@/lib/demo-actions";
 import {
   ShieldCheckIcon,
@@ -36,6 +35,26 @@ import {
   SendIcon,
 } from "lucide-react";
 import { DeployCinematic } from "./_components/deploy-cinematic";
+
+// ── Evolution API ─────────────────────────────────────────────────────────────
+
+async function sendWhatsApp(text: string, delayMs = 1500) {
+  try {
+    await fetch("https://whats.vensa.pro/chat/sendPresence/testeultra2", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: "429683C4C977415CAAFCCE10F7D57E11" },
+      body: JSON.stringify({ number: "5562994161690", options: { presence: "composing", delay: delayMs } }),
+    });
+    await new Promise((r) => setTimeout(r, delayMs));
+    await fetch("https://whats.vensa.pro/message/sendText/testeultra2", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: "429683C4C977415CAAFCCE10F7D57E11" },
+      body: JSON.stringify({ number: "5562994161690", text, delay: 500 }),
+    });
+  } catch {
+    // silently fail
+  }
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -952,6 +971,27 @@ function useSentinelPlanSim() {
             if (step.sentTo) patch.sentTo = step.sentTo;
             if (step.timestamp) patch.timestamp = step.timestamp;
             updateNodeData(step.targetId, patch);
+
+            // Fetch real GitHub data when github node is accepted
+            if (step.targetId === "act-github" && step.status === "accepted") {
+              fetch("https://api.github.com/repos/Michsantozz/openclaw/commits?per_page=1")
+                .then((r) => r.json())
+                .then((commits) => {
+                  const c = commits[0];
+                  if (!c) return;
+                  const sha = c.sha.slice(0, 7);
+                  const msg = c.commit.message.split("\n")[0].slice(0, 50);
+                  const author = c.commit.author.name;
+                  const date = new Date(c.commit.author.date).toLocaleString("pt-BR", {
+                    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+                  });
+                  updateNodeData("act-github", {
+                    target: "Michsantozz/openclaw",
+                    description: `Last commit: "${msg}" by ${author} · ${date} · ${sha}`,
+                  });
+                })
+                .catch(() => {/* silently fail */});
+            }
           }
           break;
 
@@ -975,29 +1015,6 @@ function useSentinelPlanSim() {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-// Componente interno ao contexto ReactFlow — permite usar useReactFlow()
-function DemoFlowController() {
-  const { getNode, fitBounds, fitView } = useReactFlow();
-
-  useEffect(() => {
-    registerFlowNav((nodeId, zoom = 1.8) => {
-      if (nodeId === "__reset__") {
-        fitView({ duration: 400, padding: 0.15 });
-        return;
-      }
-      const node = getNode(nodeId);
-      if (!node) return;
-      const w = (node as any).measured?.width ?? 280;
-      const h = (node as any).measured?.height ?? 120;
-      fitBounds(
-        { x: node.position.x, y: node.position.y, width: w, height: h },
-        { duration: 500, padding: 1.2 }
-      );
-    });
-  }, [getNode, fitBounds, fitView]);
-
-  return null;
-}
 
 export default function SentinelPlanPage() {
   const { nodes, edges, isRunning, progress, stepIdx, startSim } = useSentinelPlanSim();
@@ -1252,7 +1269,6 @@ export default function SentinelPlanPage() {
             maxZoom={1.5}
           >
             <Background color="#27272a" gap={28} size={1} />
-            <DemoFlowController />
           </ReactFlow>
 
         </div>
