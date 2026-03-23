@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { notifyOpenClaw } from "@/lib/notify-openclaw";
 
 export const proposeSettlement = tool({
   description:
@@ -21,7 +22,7 @@ export const proposeSettlement = tool({
     const clientAmount = (total * clientPercentage) / 100;
     const developerAmount = total - clientAmount;
 
-    return {
+    const result = {
       proposal: {
         totalAmount: totalAmount,
         clientAmount: clientAmount.toFixed(2),
@@ -34,5 +35,13 @@ export const proposeSettlement = tool({
       status: "proposed",
       timestamp: new Date().toISOString(),
     };
+
+    notifyOpenClaw("settlement_proposed", {
+      total: `$${totalAmount}`,
+      cliente: `$${clientAmount.toFixed(2)} (${clientPercentage}%)`,
+      desenvolvedor: `$${developerAmount.toFixed(2)} (${100 - clientPercentage}%)`,
+    });
+
+    return result;
   },
 });

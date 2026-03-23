@@ -3,6 +3,22 @@
 > Diretriz arquitetural para Claude Code neste repositorio.
 > Todas as decisoes de codigo devem ser rastreaveis ate uma skill ou arquivo-fonte listado abaixo.
 
+## REGRA CRITICA: PROTECAO DA BRANCH MAIN
+
+**A branch `main` esta CONGELADA ate 25 de marco de 2026.**
+O hackathon Hedera Hello Future Apex ainda esta em andamento na `hedera-apex`. A `main` esta congelada ate 25/03 (judging anterior).
+
+**ANTES de qualquer operacao git (commit, push, merge, checkout):**
+1. Rode `git branch` e confirme que esta em `hedera-apex`
+2. Se estiver na `main`, **PARE TUDO** e avise o usuario imediatamente
+3. NUNCA faca `git checkout main`, `git merge` na main, ou `git push origin main`
+4. NUNCA faca `git push --force` em nenhuma branch
+5. Push APENAS com: `git push origin hedera-apex`
+
+**Se o usuario pedir pra commitar/push sem especificar branch, CONFIRME a branch antes de executar.**
+
+---
+
 ## Regra Zero: Nao Confie na Memoria
 
 O ecossistema AI SDK, ERC-8004 e Next.js evolui semanalmente.
@@ -20,7 +36,7 @@ Consulte **obrigatoriamente** antes de gerar codigo:
 | 1 | `@skill ai-sdk` | `useChat`, `sendMessage`, `streamText`, `isToolUIPart`, `DefaultChatTransport`, `toUIMessageStreamResponse`, `inputSchema`, `ToolLoopAgent`, `InferAgentUIMessage` |
 | 2 | `@skill shadcn` | Composicao de componentes, Tailwind semantico (sem cores cruas), `cn()`, acessibilidade, forms, icones (`lucide-react`) |
 | 3 | `@skill vercel-react-best-practices` | App Router, file conventions, RSC boundaries, `'use client'`/`'use server'`, async params, metadata, error handling, hydration |
-| 4 | `@skill firecrawl` | Web scraping, search — usado para pesquisar docs ERC-8004 e Synthesis |
+| 4 | `@skill firecrawl` | Web scraping, search — usado para pesquisar docs Hedera e ERC-8004 |
 
 ### Referencias Criticas (dentro das skills)
 
@@ -50,9 +66,14 @@ ORIGEM DA INFERENCIA
 
 **Selantar** e um mediador autonomo de disputas B2B com IA. Resolve disputas contratuais entre clientes e desenvolvedores analisando evidencias, conduzindo mediacao estruturada e executando settlements on-chain via ERC-20 — sem intervencao humana.
 
-### Hackathon: The Synthesis
-- **Deadline:** 22 de marco de 2026, 23:59 PST
-- **Prizes alvo:** "Agents With Receipts — ERC-8004" (Protocol Labs), "Let the Agent Cook", Open Track
+### Hackathon: Hedera Hello Future Apex 2026
+- **Branch:** `hedera-apex` (main congelada ate 25/03)
+- **Deadline Apex:** 23 de marco de 2026, 23:59 ET
+- **Track alvo:** AI & Agents ($40K) + OpenClaw Bounty ($8K)
+- **Judging:** 24 Mar - 17 Abr | Winners: 27 Abr
+- **Network:** Hedera Testnet (Chain ID 296)
+- **Regras:** Fresh code, commits incrementais, 1 main track + 1 bounty max
+- **Entregaveis:** GitHub repo, pitch deck PDF, demo video (max 5 min), demo link live
 
 ### Paginas (apenas 3)
 
@@ -116,7 +137,7 @@ ORIGEM DA INFERENCIA
 - **Identity Registry** — Registro do Selantar como agente onchain (obrigatorio)
 - **Reputation Registry** — Feedback onchain apos cada mediacao concluida
 - **Validation Registry** — Veredito como evidencia verificavel onchain
-- Contratos ja deployados na Base/Base Sepolia — apenas chamamos via viem
+- Contratos na Hedera Testnet (branch hedera-apex) / Base Sepolia (main) — chamamos via viem
 - Interfaces Solidity em `contracts/interfaces/` (somente para ABI)
 - Helpers TypeScript em `lib/erc8004/` (identity.ts, reputation.ts, validation.ts)
 - Enderecos em `lib/erc8004/addresses.ts`
@@ -175,10 +196,9 @@ npx tsx scripts/register-agent.ts  # Registrar agente no ERC-8004 (rodar uma vez
 Requeridas em `.env.local`:
 
 ```bash
-# Synthesis Hackathon (ja configuradas)
-SYNTHESIS_API_KEY=
-PARTICIPANT_ID=
-TEAM_ID=
+# Hedera (branch hedera-apex)
+HEDERA_RPC_URL=https://testnet.hashio.io/api
+HEDERA_CHAIN_ID=296
 
 # Anthropic
 ANTHROPIC_API_KEY=
@@ -186,8 +206,9 @@ ANTHROPIC_API_KEY=
 # ERC-8004
 SELANTAR_AGENT_ID=           # preencher apos rodar register-agent.ts
 AGENT_PRIVATE_KEY=           # private key da wallet do agente (nunca commitar!)
+CLIENT_PRIVATE_KEY=          # private key da wallet do cliente (nunca commitar!)
 
-# Registries (enderecos dos contratos ERC-8004 na Base)
+# Registries (enderecos dos contratos ERC-8004 — Hedera Testnet)
 IDENTITY_REGISTRY_ADDRESS=
 REPUTATION_REGISTRY_ADDRESS=
 VALIDATION_REGISTRY_ADDRESS=
@@ -245,14 +266,16 @@ selantar/
 ├── components/ui/                    # shadcn components
 ├── lib/
 │   ├── utils.ts
-│   ├── wallet.ts                     # viem wallet client config
+│   ├── wallet.ts                     # viem wallet client config (Hedera Testnet)
+│   ├── hedera/
+│   │   └── chains.ts                 # Hedera chain definitions (viem defineChain)
 │   └── erc8004/
-│       ├── addresses.ts              # Contract addresses (Base + Base Sepolia)
+│       ├── addresses.ts              # Contract addresses (Hedera Testnet + Base Sepolia)
 │       ├── identity.ts               # Identity Registry helpers
 │       ├── reputation.ts             # Reputation Registry helpers
 │       └── validation.ts             # Validation Registry helpers
 ├── scripts/register-agent.ts         # One-time ERC-8004 registration
-├── AGENTS.md                         # Agent soul (Synthesis requirement)
+├── AGENTS.md                         # Agent soul (Hedera Apex requirement)
 ├── CLAUDE.md                         # This file
 ├── .env.local                        # Credentials (never commit)
 └── Guia ERC-8004                     # Reference guide (read-only)
@@ -265,6 +288,6 @@ selantar/
 | Arquivo | O que contem |
 |---------|-------------|
 | `Guia ERC-8004` | Guia completo com todo codigo ERC-8004 pronto para copiar |
-| `.env.local` | Credenciais do Synthesis (API key, participant ID, team ID) — nunca commitar |
+| `.env.local` | Credenciais e private keys — nunca commitar |
 | `public/agent.json` | ERC-8004 agent registration file |
 | `public/agent_log.json` | DevSpot Agent Manifest com TXs e decisoes do agente |

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
@@ -16,9 +17,15 @@ import { ContractUpload } from "../_components/contract-upload";
 import { RiskAnalysis } from "../_components/risk-analysis";
 import { DotPattern } from "@/components/ui/dot-pattern";
 import { Separator } from "@/components/ui/separator";
+import { scenarios } from "@/lib/scenarios";
 
-export default function AnalyzePage() {
+function AnalyzeContent() {
+  const searchParams = useSearchParams();
+  const scenarioId = searchParams.get("scenario");
+  const scenario = scenarioId ? scenarios.find((s) => s.id === scenarioId) : null;
+
   const [analyzed, setAnalyzed] = useState(false);
+  const autoTriggered = useRef(false);
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ api: "/api/analyze-contract" }),
@@ -30,6 +37,18 @@ export default function AnalyzePage() {
     setAnalyzed(true);
     sendMessage({ text: contractText });
   };
+
+  // Auto-trigger analysis when scenario is pre-loaded
+  useEffect(() => {
+    if (scenario?.contractDocument && !autoTriggered.current) {
+      autoTriggered.current = true;
+      const timer = setTimeout(() => {
+        handleAnalyze(scenario.contractDocument!);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenario]);
 
   const analysisContent = messages
     .filter((m) => m.role === "assistant")
@@ -107,7 +126,7 @@ export default function AnalyzePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.5 }}
             >
-              <ContractUpload onSubmit={handleAnalyze} isLoading={isLoading} />
+              <ContractUpload onSubmit={handleAnalyze} isLoading={isLoading} initialText={scenario?.contractDocument} />
             </motion.div>
 
             {analyzed && (
@@ -129,10 +148,10 @@ export default function AnalyzePage() {
                     className="mt-6 flex justify-end"
                   >
                     <Link
-                      href="/mediation"
+                      href="/contract/sentinel-plan"
                       className="hero-cta group flex items-center gap-2.5 rounded-md px-6 py-3 text-sm font-medium uppercase tracking-[0.12em] text-foreground transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
                     >
-                      Start Mediation
+                      Generate Sentinel Plan
                       <ArrowRight className="size-3.5 transition-transform duration-500 group-hover:translate-x-1" />
                     </Link>
                   </motion.div>
@@ -241,5 +260,13 @@ export default function AnalyzePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>}>
+      <AnalyzeContent />
+    </Suspense>
   );
 }

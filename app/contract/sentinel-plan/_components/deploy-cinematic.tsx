@@ -31,7 +31,7 @@ const STEPS: DeployStep[] = [
   {
     id: "structure",
     label: "Structure validated",
-    sublabel: "4 milestones · R$ 15.000 · Base Sepolia",
+    sublabel: "4 milestones · R$ 15.000 · Hedera Testnet",
     duration: 900,
   },
   {
@@ -42,7 +42,7 @@ const STEPS: DeployStep[] = [
   },
   {
     id: "broadcast",
-    label: "Broadcasting to Base Sepolia",
+    label: "Broadcasting to Hedera Testnet",
     sublabel: "Awaiting network confirmation...",
     duration: 2400,
   },
@@ -59,7 +59,7 @@ type DeployResult = {
   contractId: string;
   escrowId: string;
   validationTxHash: string;
-  basescanUrl: string;
+  explorerUrl: string;
 };
 
 const ACCENT = "oklch(0.7 0.18 50)";
@@ -190,7 +190,7 @@ function ProgressBar({ progress }: { progress: number }) {
 
 // ── TX Hash Card ──────────────────────────────────────────────────────────────
 
-function TxHashCard({ txHash, contractId, escrowId, basescanUrl }: { txHash: string; contractId: string; escrowId: string; basescanUrl: string }) {
+function TxHashCard({ txHash, contractId, escrowId, explorerUrl }: { txHash: string; contractId: string; escrowId: string; explorerUrl: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -255,7 +255,7 @@ function TxHashCard({ txHash, contractId, escrowId, basescanUrl }: { txHash: str
           <span className="text-xs text-muted-foreground/50 shrink-0">TX Hash</span>
           <div className="flex items-center gap-2 min-w-0">
             <a
-              href={basescanUrl}
+              href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="font-mono text-xs text-muted-foreground/60 truncate hover:text-muted-foreground transition-colors"
@@ -278,7 +278,7 @@ function TxHashCard({ txHash, contractId, escrowId, basescanUrl }: { txHash: str
         {/* Network */}
         <div className="flex items-center justify-between px-4 py-2.5">
           <span className="text-xs text-muted-foreground/50">Network</span>
-          <span className="text-xs font-medium text-foreground/70">Base Sepolia</span>
+          <span className="text-xs font-medium text-foreground/70">Hedera Testnet</span>
         </div>
       </div>
     </motion.div>
@@ -368,7 +368,7 @@ export function DeployCinematic({
           contractId: result.contractId,
           escrowId: result.escrowId,
           validationTxHash: result.validationTxHash,
-          basescanUrl: result.basescanUrl,
+          explorerUrl: result.explorerUrl,
         });
       } else {
         // Fallback to deterministic fake if API fails
@@ -377,7 +377,7 @@ export function DeployCinematic({
           contractId: `CSX-${new Date().getFullYear()}-${ts.slice(-6)}`,
           escrowId: `ESC-0x${ts.slice(0, 4)}...${ts.slice(-4)}`,
           validationTxHash: `0x${ts.padStart(64, "0")}`,
-          basescanUrl: `https://sepolia.basescan.org/tx/0x${ts.padStart(64, "0")}`,
+          explorerUrl: `https://hashscan.io/testnet/transaction/0x${ts.padStart(64, "0")}`,
         });
       }
       setTxVisible(true);
@@ -525,7 +525,7 @@ export function DeployCinematic({
                     txHash={deployResult.validationTxHash}
                     contractId={deployResult.contractId}
                     escrowId={deployResult.escrowId}
-                    basescanUrl={deployResult.basescanUrl}
+                    explorerUrl={deployResult.explorerUrl}
                   />
                 )}
               </motion.div>
@@ -557,7 +557,7 @@ export function DeployCinematic({
 
                 {deployResult && (
                   <a
-                    href={deployResult.basescanUrl}
+                    href={deployResult.explorerUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-xs font-medium transition-all hover:brightness-110"
@@ -568,7 +568,7 @@ export function DeployCinematic({
                     }}
                   >
                     <LinkIcon className="size-3" />
-                    Ver transação na Base Sepolia
+                    Ver transação na Hedera Testnet
                   </a>
                 )}
               </motion.div>

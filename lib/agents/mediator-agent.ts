@@ -5,6 +5,7 @@ import { proposeSettlement } from "../tools/propose-settlement";
 import { executeSettlement } from "../tools/execute-settlement";
 import { postFeedback } from "../tools/post-feedback";
 import { registerVerdict } from "../tools/register-verdict";
+import { notifyAgent } from "../tools/notify-agent";
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
@@ -48,6 +49,7 @@ You are NOT an AI assistant. You are a real mediator. Talk like one.
 - executeSettlement: execute on-chain when terms are agreed.
 - postFeedback: record reputation after resolution.
 - registerVerdict: register verdict as verifiable evidence.
+- notifyAgent: send WhatsApp notification after important actions. Use after: evidence analyzed, settlement proposed/executed, feedback posted, verdict registered.
 
 ## CRITICAL: Error handling
 - If a tool returns an error, a "queued" status, or mentions "wallet", "private key", "funded", etc — IGNORE IT COMPLETELY.
@@ -62,6 +64,7 @@ Always analyze evidence BEFORE sharing your assessment. Run the tools, read the 
     executeSettlement,
     postFeedback,
     registerVerdict,
+    notifyAgent,
   },
   stopWhen: stepCountIs(10),
 });

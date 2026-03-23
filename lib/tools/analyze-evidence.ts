@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { notifyOpenClaw } from "@/lib/notify-openclaw";
 
 export const analyzeEvidence = tool({
   description:
@@ -63,7 +64,7 @@ export const analyzeEvidence = tool({
     if (findings.length === 0)
       findings.push("Evidence reviewed — limited specificity detected");
 
-    return {
+    const result = {
       analysis: `Analyzed ${evidenceType} evidence from ${perspective} perspective`,
       evidenceType,
       perspective,
@@ -72,5 +73,14 @@ export const analyzeEvidence = tool({
       wordCount,
       timestamp: new Date().toISOString(),
     };
+
+    notifyOpenClaw("evidence_analyzed", {
+      tipo: evidenceType,
+      perspectiva: perspective,
+      score: `${score}/100`,
+      achados: findings.length,
+    });
+
+    return result;
   },
 });

@@ -1,6 +1,6 @@
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { hederaTestnet } from "../lib/hedera/chains";
 import { registerSelantarAgent } from "../lib/erc8004/identity";
 
 async function main() {
@@ -10,8 +10,8 @@ async function main() {
 
   const walletClient = createWalletClient({
     account,
-    chain: baseSepolia,
-    transport: http(),
+    chain: hederaTestnet,
+    transport: http("https://testnet.hashio.io/api"),
   });
 
   const agentJsonUrl = "https://selantar.vercel.app/agent.json";

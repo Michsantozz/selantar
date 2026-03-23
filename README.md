@@ -10,7 +10,7 @@ You can't solve a human problem with a binary calculator. You need a system that
 
 We believe attention is the new gold for the next decade.
 
-Built for [The Synthesis](https://synthesis.md) · Tracks: **Agents With Receipts — ERC-8004** · **Best Use of Delegations** · **Agent Services on Base** · **Let the Agent Cook**
+Built for **Hedera Hello Future Apex Hackathon** · Tracks: **AI & Agents** · **OpenClaw Bounty** · Network: **Hedera Testnet**
 
 ---
 

@@ -2,10 +2,11 @@ import { tool } from "ai";
 import { z } from "zod";
 import { parseEther } from "viem";
 import { getWalletClient, getPublicClient } from "@/lib/wallet";
+import { notifyOpenClaw } from "@/lib/notify-openclaw";
 
 export const executeSettlement = tool({
   description:
-    "Execute the approved settlement on-chain via Locus USDC wallet or intent-based delegation. The dispute parties delegate the INTENT to resolve their dispute — the agent autonomously analyzes evidence, determines the fair split, and executes settlement. Supports Locus USDC payments with spending controls, ERC-7715 permissions, MetaMask Delegation Framework. Falls back to direct transfer on Base Sepolia.",
+    "Execute the approved settlement on-chain via Locus USDC wallet or intent-based delegation. The dispute parties delegate the INTENT to resolve their dispute — the agent autonomously analyzes evidence, determines the fair split, and executes settlement. Supports Locus USDC payments with spending controls, ERC-7715 permissions, MetaMask Delegation Framework. Falls back to direct HBAR transfer on Hedera Testnet.",
   inputSchema: z.object({
     clientAmount: z.string().describe("Amount to transfer to the client (in USD for display)"),
     developerAmount: z.string().describe("Amount to transfer to the developer (in USD for display)"),
@@ -82,7 +83,7 @@ export const executeSettlement = tool({
           data?: { transaction_id?: string; status?: string; tx_hash?: string };
         };
 
-        return {
+        const locusResult = {
           status: "executed",
           method: "locus",
           clientTransactionId: clientData.data?.transaction_id,
@@ -98,6 +99,16 @@ export const executeSettlement = tool({
           auditTrail: `${locusBase}/pay/transactions`,
           timestamp: new Date().toISOString(),
         };
+
+        notifyOpenClaw("settlement_executed", {
+          metodo: "Locus USDC",
+          cliente: `$${clientAmount}`,
+          desenvolvedor: `$${developerAmount}`,
+          contrato: contractRef,
+          tx: clientData.data?.transaction_id ?? "pending",
+        });
+
+        return locusResult;
       } catch (locusError) {
         console.warn("Locus path failed, falling back to ERC-7715/delegation:", locusError);
         // Fall through to ERC-7715
@@ -138,9 +149,9 @@ export const executeSettlement = tool({
           developerAmount,
           contractRef,
           reasoning,
-          chain: "Base Sepolia",
+          chain: "Hedera Testnet",
           delegationScope: "ERC-7715 Intent Delegation — agent resolved dispute and executed settlement autonomously",
-          explorer: `https://sepolia.basescan.org/tx/${userOpHash}`,
+          explorer: `https://hashscan.io/testnet/transaction/${userOpHash}`,
           timestamp: new Date().toISOString(),
         };
       } catch (erc7715Error) {
@@ -183,11 +194,11 @@ export const executeSettlement = tool({
           developerAmount,
           contractRef,
           reasoning,
-          chain: "Base Sepolia",
+          chain: "Hedera Testnet",
           delegationScope: "Intent Delegation — dispute resolution delegated to agent, settlement determined autonomously",
           delegator: clientSmartAccount.address,
           delegate: agentSmartAccount.address,
-          explorer: `https://sepolia.basescan.org/tx/${userOpHash}`,
+          explorer: `https://hashscan.io/testnet/transaction/${userOpHash}`,
           timestamp: new Date().toISOString(),
         };
       } catch (delegationError) {
@@ -213,6 +224,15 @@ export const executeSettlement = tool({
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
+      notifyOpenClaw("settlement_executed", {
+        metodo: "Direct HBAR",
+        cliente: `$${clientAmount}`,
+        desenvolvedor: `$${developerAmount}`,
+        contrato: contractRef,
+        tx: hash,
+        explorer: `https://hashscan.io/testnet/transaction/${hash}`,
+      });
+
       return {
         status: "executed",
         method: "direct",
@@ -222,8 +242,8 @@ export const executeSettlement = tool({
         developerAmount,
         contractRef,
         reasoning,
-        chain: "Base Sepolia",
-        explorer: `https://sepolia.basescan.org/tx/${hash}`,
+        chain: "Hedera Testnet",
+        explorer: `https://hashscan.io/testnet/transaction/${hash}`,
         timestamp: new Date().toISOString(),
       };
     } catch {
@@ -234,7 +254,7 @@ export const executeSettlement = tool({
         developerAmount,
         contractRef,
         reasoning,
-        chain: "Base Sepolia",
+        chain: "Hedera Testnet",
         timestamp: new Date().toISOString(),
       };
     }

@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { getWalletClient } from "@/lib/wallet";
 import { registerVerdictAsValidation } from "@/lib/erc8004/validation";
+import { notifyOpenClaw } from "@/lib/notify-openclaw";
 
 export const registerVerdict = tool({
   description:
@@ -34,6 +35,14 @@ export const registerVerdict = tool({
         }
       );
 
+      notifyOpenClaw("verdict_registered", {
+        contrato: contractRef,
+        evidencias: evidence.length,
+        registry: "ERC-8004 Validation",
+        tx: validationTxHash,
+        explorer: `https://hashscan.io/testnet/transaction/${validationTxHash}`,
+      });
+
       return {
         status: "registered",
         validationTxHash,
@@ -41,8 +50,8 @@ export const registerVerdict = tool({
         evidenceCount: evidence.length,
         linkedSettlement: settlementTxHash,
         registry: "ERC-8004 Validation Registry",
-        chain: "Base Sepolia",
-        explorer: `https://sepolia.basescan.org/tx/${validationTxHash}`,
+        chain: "Hedera Testnet",
+        explorer: `https://hashscan.io/testnet/transaction/${validationTxHash}`,
         timestamp: new Date().toISOString(),
       };
     } catch {
@@ -53,7 +62,7 @@ export const registerVerdict = tool({
         evidenceCount: evidence.length,
         linkedSettlement: settlementTxHash,
         registry: "ERC-8004 Validation Registry",
-        chain: "Base Sepolia",
+        chain: "Hedera Testnet",
         timestamp: new Date().toISOString(),
       };
     }

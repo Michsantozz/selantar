@@ -125,7 +125,7 @@ const SELANTAR_WALLET = (() => {
 
 export const POST = withX402(handler, SELANTAR_WALLET, {
   price: "$0.10",
-  network: "base-sepolia",
+  network: "hedera-testnet" as any,
   config: {
     description: "Selantar AI Mediation — autonomous B2B dispute resolution with on-chain settlement and ERC-8004 receipts",
   },
@@ -139,7 +139,7 @@ export async function GET() {
       "Autonomous B2B dispute resolution with AI-powered mediation, on-chain settlement, and ERC-8004 verifiable receipts",
     protocol: "x402",
     price: "$0.10 USDC",
-    network: "base-sepolia",
+    network: "hedera-testnet",
     method: "POST",
     endpoint: "/api/mediate",
     inputSchema: {

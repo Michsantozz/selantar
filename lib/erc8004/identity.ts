@@ -1,5 +1,5 @@
 import { createPublicClient, http, parseAbi } from "viem";
-import { baseSepolia } from "viem/chains";
+import { hederaTestnet } from "@/lib/hedera/chains";
 import { ERC8004_ADDRESSES } from "./addresses";
 
 const IDENTITY_ABI = parseAbi([
@@ -18,7 +18,7 @@ export async function registerSelantarAgent(
   agentJsonUrl: string
 ): Promise<bigint> {
   const hash = await walletClient.writeContract({
-    address: ERC8004_ADDRESSES.baseSepolia.identityRegistry,
+    address: ERC8004_ADDRESSES.hederaTestnet.identityRegistry,
     abi: IDENTITY_ABI,
     functionName: "register",
     args: [agentJsonUrl],
@@ -27,8 +27,8 @@ export async function registerSelantarAgent(
   console.log("Selantar registered! TX:", hash);
 
   const publicClient = createPublicClient({
-    chain: baseSepolia,
-    transport: http(),
+    chain: hederaTestnet,
+    transport: http("https://testnet.hashio.io/api"),
   });
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
 

@@ -33,7 +33,7 @@ export async function registerVerdictAsValidation(
   const validator = validatorAddress ?? walletClient.account.address;
 
   const hash = await walletClient.writeContract({
-    address: ERC8004_ADDRESSES.baseSepolia.validationRegistry,
+    address: ERC8004_ADDRESSES.hederaTestnet.validationRegistry,
     abi: VALIDATION_ABI,
     functionName: "validationRequest",
     args: [
@@ -45,8 +45,8 @@ export async function registerVerdictAsValidation(
   });
 
   const { createPublicClient, http } = await import("viem");
-  const { baseSepolia } = await import("viem/chains");
-  const publicClient = createPublicClient({ chain: baseSepolia, transport: http("https://sepolia.base.org") });
+  const { hederaTestnet } = await import("@/lib/hedera/chains");
+  const publicClient = createPublicClient({ chain: hederaTestnet, transport: http("https://testnet.hashio.io/api") });
   await publicClient.waitForTransactionReceipt({ hash });
 
   return hash;

@@ -14,7 +14,7 @@ export function ContractHeader() {
             variant="outline"
             className="border-primary/30 bg-primary/10 text-primary text-[10px] uppercase tracking-wider"
           >
-            Base Sepolia
+            Hedera Testnet
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">

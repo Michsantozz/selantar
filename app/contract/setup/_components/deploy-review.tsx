@@ -276,7 +276,7 @@ export function DeployReview() {
             <div className="divide-y divide-border">
               <div className="flex items-center justify-between px-5 py-2.5">
                 <span className="text-sm text-muted-foreground">Network</span>
-                <span className="text-sm font-medium text-foreground">Base Sepolia</span>
+                <span className="text-sm font-medium text-foreground">Hedera Testnet</span>
               </div>
               <div className="flex items-center justify-between px-5 py-2.5">
                 <span className="text-sm text-muted-foreground">Standard</span>

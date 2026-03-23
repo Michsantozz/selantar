@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       milestones,
       createdAt: new Date().toISOString(),
       agentId: agentId.toString(),
-      network: "base-sepolia",
+      network: "hedera-testnet",
     };
 
     const payloadJson = JSON.stringify(escrowPayload);
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     let validationTxHash: string;
     try {
       validationTxHash = await walletClient.writeContract({
-        address: ERC8004_ADDRESSES.baseSepolia.validationRegistry,
+        address: ERC8004_ADDRESSES.hederaTestnet.validationRegistry,
         abi: VALIDATION_ABI,
         functionName: "validationRequest",
         args: [
@@ -80,8 +80,8 @@ export async function POST(req: Request) {
       escrowId,
       contractHash,
       validationTxHash,
-      network: "base-sepolia",
-      basescanUrl: `https://sepolia.basescan.org/tx/${validationTxHash}`,
+      network: "hedera-testnet",
+      explorerUrl: `https://hashscan.io/testnet/transaction/${validationTxHash}`,
     });
   } catch (err) {
     console.error("[create-escrow] Error:", err);

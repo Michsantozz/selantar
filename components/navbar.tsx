@@ -35,8 +35,8 @@ const navLinks = [
   { href: "/#on-chain", label: "On-chain" },
 ];
 
-const baseScanUrl =
-  "https://sepolia.basescan.org/address/0x377711a26B52F4AD8C548AAEF8297E0563b87Db4";
+const explorerUrl =
+  "https://hashscan.io/testnet/account/0x377711a26B52F4AD8C548AAEF8297E0563b87Db4";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -87,7 +87,7 @@ export function Navbar() {
           <div className="mx-1 h-4 w-px bg-border" />
 
           <a
-            href={baseScanUrl}
+            href={explorerUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -149,7 +149,7 @@ export function Navbar() {
               <div className="h-px bg-border" />
 
               <a
-                href={baseScanUrl}
+                href={explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

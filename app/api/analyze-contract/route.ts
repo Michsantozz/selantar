@@ -10,7 +10,20 @@ const openrouter = createOpenRouter({
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const contractText = typeof body?.contractText === "string" ? body.contractText.slice(0, 100000) : "";
+
+  // Support both direct contractText AND useChat/DefaultChatTransport messages format
+  let contractText = "";
+  if (typeof body?.contractText === "string") {
+    contractText = body.contractText.slice(0, 100000);
+  } else if (Array.isArray(body?.messages)) {
+    const lastUserMsg = [...body.messages].reverse().find((m: Record<string, unknown>) => m.role === "user");
+    if (lastUserMsg) {
+      const parts = lastUserMsg.parts as Array<{ type: string; text?: string }> | undefined;
+      const textPart = parts?.find((p) => p.type === "text");
+      contractText = (textPart?.text || (lastUserMsg.content as string) || "").slice(0, 100000);
+    }
+  }
+
   if (!contractText) {
     return new Response(JSON.stringify({ error: "contractText is required" }), { status: 400 });
   }

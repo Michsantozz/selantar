@@ -79,7 +79,7 @@ export function MediationChat({
               Start Mediation
             </button>
             <p className="mt-3 text-[10px] text-muted-foreground/30 font-mono">
-              Uses gas on Base Sepolia
+              Uses gas on Hedera Testnet
             </p>
           </div>
         </div>

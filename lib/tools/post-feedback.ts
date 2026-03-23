@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { getClientWalletClient } from "@/lib/wallet";
 import { postMediationFeedback } from "@/lib/erc8004/reputation";
+import { notifyOpenClaw } from "@/lib/notify-openclaw";
 
 export const postFeedback = tool({
   description:
@@ -32,6 +33,14 @@ export const postFeedback = tool({
         }
       );
 
+      notifyOpenClaw("feedback_posted", {
+        score: `${satisfactionScore}/100`,
+        tipo: disputeType,
+        registry: "ERC-8004 Reputation",
+        tx: feedbackTxHash,
+        explorer: `https://hashscan.io/testnet/transaction/${feedbackTxHash}`,
+      });
+
       return {
         status: "posted",
         feedbackTxHash,
@@ -39,8 +48,8 @@ export const postFeedback = tool({
         disputeType,
         linkedSettlement: settlementTxHash,
         registry: "ERC-8004 Reputation Registry",
-        chain: "Base Sepolia",
-        explorer: `https://sepolia.basescan.org/tx/${feedbackTxHash}`,
+        chain: "Hedera Testnet",
+        explorer: `https://hashscan.io/testnet/transaction/${feedbackTxHash}`,
         timestamp: new Date().toISOString(),
       };
     } catch {
@@ -51,7 +60,7 @@ export const postFeedback = tool({
         disputeType,
         linkedSettlement: settlementTxHash,
         registry: "ERC-8004 Reputation Registry",
-        chain: "Base Sepolia",
+        chain: "Hedera Testnet",
         timestamp: new Date().toISOString(),
       };
     }

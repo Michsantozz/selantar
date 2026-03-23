@@ -404,7 +404,7 @@ Respond to the client directly. Address their frustration first, then analyze th
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-primary animate-subtle-pulse" />
               <span className="text-[11px] font-mono text-muted-foreground/50">
-                Base Sepolia
+                Hedera Testnet
               </span>
             </div>
           </div>

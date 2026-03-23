@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       userOpHash,
-      explorer: `https://sepolia.basescan.org/tx/${userOpHash}`,
+      explorer: `https://hashscan.io/testnet/transaction/${userOpHash}`,
     });
   } catch (error) {
     console.error("ERC-7715 redeem failed:", error);

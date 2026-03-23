@@ -218,7 +218,7 @@ export function OriginalContractModal({
                 <div className="flex items-center gap-2">
                   <Shield className="size-3.5 text-primary" />
                   <span className="text-xs text-foreground/50">
-                    Verified on Base Sepolia
+                    Verified on Hedera Testnet
                   </span>
                 </div>
                 <span className="text-xs font-mono text-primary/50">

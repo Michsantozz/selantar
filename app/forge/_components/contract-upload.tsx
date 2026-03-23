@@ -8,10 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 interface ContractUploadProps {
   onSubmit: (text: string) => void;
   isLoading: boolean;
+  initialText?: string;
 }
 
-export function ContractUpload({ onSubmit, isLoading }: ContractUploadProps) {
-  const [contractText, setContractText] = useState("");
+export function ContractUpload({ onSubmit, isLoading, initialText }: ContractUploadProps) {
+  const [contractText, setContractText] = useState(initialText ?? "");
   const [dragOver, setDragOver] = useState(false);
 
   const handleDrop = useCallback((e: React.DragEvent) => {

@@ -353,7 +353,7 @@ export default function ForgeDesignPage() {
               </span>
             </div>
             <span className="mt-1 block font-mono text-[10px] text-muted-foreground/12">
-              Protocol v2.4.1 · Base Sepolia
+              Protocol v2.4.1 · Hedera Testnet
             </span>
           </div>
         </motion.aside>

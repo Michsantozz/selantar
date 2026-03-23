@@ -427,7 +427,7 @@ export default function ForgeDemoPage() {
                 Drop a contract to begin
               </span>
               <span className="mt-1 block font-mono text-[10px] text-muted-foreground/12">
-                Base Sepolia
+                Hedera Testnet
               </span>
             </div>
           </motion.aside>

@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Upload, LoaderIcon } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Upload } from "lucide-react";
 import { scenarios } from "@/lib/scenarios";
 import { DotPattern } from "@/components/ui/dot-pattern";
 
@@ -36,14 +34,6 @@ const cardReveal = (delay: number) => ({
    CARD 1 — Parse & Protect
    ═══════════════════════════════════════════════ */
 function ParseCard() {
-  const [demoLoading, setDemoLoading] = useState(false)
-  const router = useRouter()
-
-  const handleDemo = () => {
-    setDemoLoading(true)
-    setTimeout(() => router.push("/contractv2"), 1500)
-  }
-
   return (
     <motion.div
       {...cardReveal(0.15)}
@@ -81,22 +71,33 @@ function ParseCard() {
           </p>
         </div>
 
-        {/* Upload zone */}
-        <div className="relative cursor-not-allowed rounded-lg border border-dashed border-border/30 bg-muted/[0.02] px-6 py-8 text-center">
-          {/* Soon badge */}
-          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">
-            <span className="size-1.5 rounded-full bg-muted-foreground/30" />
-            Coming Soon
+        {/* Demo contracts */}
+        <div className="flex flex-col gap-3">
+          <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground/50">
+            Try with a demo contract
           </span>
-          <div className="mx-auto mb-4 flex size-11 items-center justify-center rounded-lg bg-muted/20 opacity-30">
-            <Upload className="size-[18px] text-muted-foreground/40" />
-          </div>
-          <p className="text-sm text-muted-foreground/25">
-            Drag & drop your contract PDF
-          </p>
-          <p className="mt-1.5 text-[11px] text-muted-foreground/15">
-            PDF only · Max 10 MB · Private & encrypted
-          </p>
+          {[scenarios[0], scenarios[1]].map((s) => {
+            const meta = scenarioMeta[s.id];
+            return (
+              <Link
+                key={s.id}
+                href={`/forge/analyze?scenario=${s.id}`}
+                className="group/demo flex items-center gap-4 rounded-lg border border-border bg-background px-4 py-4 transition-all duration-500 hover:border-primary/25 hover:shadow-[0_4px_24px_oklch(0.72_0.17_55/0.04)]"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] border border-primary/10 text-lg">
+                  {meta?.emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-foreground">{s.title}</p>
+                  <p className="text-[11px] text-muted-foreground/40 truncate">{s.tagline}</p>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="font-mono text-[12px] tabular-nums text-primary">{s.escrow}</span>
+                  <ArrowRight className="size-3 text-muted-foreground/25 transition-all duration-500 group-hover/demo:text-primary group-hover/demo:translate-x-0.5" />
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Divider */}
@@ -106,66 +107,27 @@ function ParseCard() {
           <div className="h-px flex-1 bg-border/50" />
         </div>
 
-        {/* Demo contract option */}
-        <button
-          onClick={handleDemo}
-          disabled={demoLoading}
-          className="group/demo flex flex-col items-center gap-3 rounded-lg border border-primary/15 bg-primary/[0.03] px-6 py-6 text-center transition-all duration-500 hover:border-primary/30 hover:bg-primary/[0.06] active:scale-[0.99] disabled:pointer-events-none w-full"
-        >
-          <AnimatePresence mode="wait">
-            {demoLoading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center gap-3 py-2"
-              >
-                <LoaderIcon className="size-5 text-primary animate-spin" />
-                <p className="text-sm text-primary">Loading demo contract...</p>
-                <div className="h-1 w-32 rounded-full bg-border overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full bg-primary"
-                    initial={{ width: "0%" }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 1.4, ease: "easeInOut" }}
-                  />
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="idle"
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col items-center gap-3"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="size-2 rounded-full bg-primary animate-subtle-pulse" />
-                  <span className="text-sm font-medium text-foreground transition-colors">
-                    No contract? No problem.
-                  </span>
-                </div>
-                <p className="text-[12px] leading-relaxed text-muted-foreground/50">
-                  Load a sample SaaS contract and watch the AI tear it apart in real time.
-                </p>
-                <span className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-primary/70 transition-colors group-hover/demo:text-primary">
-                  Try Demo
-                  <ArrowRight className="size-3 transition-transform duration-500 group-hover/demo:translate-x-0.5" />
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </button>
+        {/* Upload your own */}
+        <div className="rounded-lg border border-dashed border-border/30 bg-muted/[0.02] px-6 py-5 text-center">
+          <div className="mx-auto mb-2 flex size-9 items-center justify-center rounded-lg bg-muted/20 opacity-40">
+            <Upload className="size-4 text-muted-foreground/40" />
+          </div>
+          <p className="text-[12px] text-muted-foreground/30">
+            Or paste your own contract on the next page
+          </p>
+        </div>
 
         <div className="flex-1" />
 
         {/* CTA */}
         <div className="mt-8">
-          <div className="relative flex w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-md border border-border/30 bg-muted/[0.03] py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-foreground/20">
+          <Link
+            href="/forge/analyze"
+            className="flex w-full items-center justify-center gap-2.5 rounded-md border border-primary/20 bg-primary/[0.04] py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-primary transition-all duration-500 hover:bg-primary/[0.08] hover:border-primary/30"
+          >
             Analyze a Contract
-            <span className="rounded-full border border-border/60 bg-card px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/40">
-              Coming Soon
-            </span>
-          </div>
+            <ArrowRight className="size-3" />
+          </Link>
         </div>
       </div>
     </motion.div>
@@ -344,7 +306,7 @@ export default function ForgePage() {
               Drop a contract to begin
             </span>
             <span className="mt-1 block font-mono text-[10px] text-muted-foreground/12">
-              Base Sepolia
+              Hedera Testnet
             </span>
           </div>
         </motion.aside>

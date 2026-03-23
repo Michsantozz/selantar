@@ -159,7 +159,7 @@ export function ContractModal({ open, onClose }: ContractModalProps) {
               <div className="mt-3 flex items-center justify-between rounded-md border border-border bg-muted/10 px-3.5 py-2.5">
                 <div className="flex items-center gap-2">
                   <ShieldIcon className="size-3.5 text-accent" />
-                  <span className="text-xs text-foreground/50">Verified on Base Sepolia</span>
+                  <span className="text-xs text-foreground/50">Verified on Hedera Testnet</span>
                 </div>
                 <span className="text-xs font-mono text-accent/50">TX: 0xb5d3...01e86</span>
               </div>

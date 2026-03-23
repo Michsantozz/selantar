@@ -23,7 +23,7 @@ export async function postMediationFeedback(
   result: MediationResult
 ): Promise<string> {
   const feedbackData = {
-    agentRegistry: `eip155:84532:${ERC8004_ADDRESSES.baseSepolia.identityRegistry}`,
+    agentRegistry: `eip155:296:${ERC8004_ADDRESSES.hederaTestnet.identityRegistry}`,
     agentId: agentId.toString(),
     clientAddress: walletClient.account.address,
     createdAt: new Date().toISOString(),
@@ -34,7 +34,7 @@ export async function postMediationFeedback(
     endpoint: "https://selantar.vercel.app/mediation",
     proofOfPayment: {
       txHash: result.settlementTxHash,
-      chainId: "84532",
+      chainId: "296",
     },
   };
 
@@ -42,7 +42,7 @@ export async function postMediationFeedback(
   const feedbackHash = keccak256(toBytes(feedbackJson));
 
   const hash = await walletClient.writeContract({
-    address: ERC8004_ADDRESSES.baseSepolia.reputationRegistry,
+    address: ERC8004_ADDRESSES.hederaTestnet.reputationRegistry,
     abi: REPUTATION_ABI,
     functionName: "giveFeedback",
     args: [
@@ -58,8 +58,8 @@ export async function postMediationFeedback(
   });
 
   const { createPublicClient, http } = await import("viem");
-  const { baseSepolia } = await import("viem/chains");
-  const publicClient = createPublicClient({ chain: baseSepolia, transport: http("https://sepolia.base.org") });
+  const { hederaTestnet } = await import("@/lib/hedera/chains");
+  const publicClient = createPublicClient({ chain: hederaTestnet, transport: http("https://testnet.hashio.io/api") });
   await publicClient.waitForTransactionReceipt({ hash });
 
   return hash;

@@ -22,6 +22,8 @@ export interface Scenario {
     image: string; // Path to cinematic card image in /public/scenarios/
     gradient: string; // Tailwind gradient classes for the card bottom fade
   };
+  // Formal contract document text for AI analysis (used in /forge/analyze)
+  contractDocument?: string;
   // The full context message sent to the mediator agent
   contextMessage: string;
   // Client's opening complaint — what they say when the mediation starts
@@ -59,6 +61,50 @@ export const scenarios: Scenario[] = [
       image: "/scenarios/clinica.webp",
       gradient: "from-transparent via-transparent to-card",
     },
+    contractDocument: `CONTRATO DE PRESTACAO DE SERVICOS DE TECNOLOGIA
+No. CSX-2026-0041
+
+PARTES:
+CONTRATANTE: Dr. Ariano Suasuna — Clinica Suasuna LTDA, CNPJ 12.345.678/0001-90
+CONTRATADA: ULTRASELF Tecnologia LTDA, CNPJ 98.765.432/0001-10
+
+1. OBJETO
+Desenvolvimento de sistema CRM customizado para gestao de pacientes, agendamentos e prontuarios eletronicos da Clinica Suasuna, entregue em 3 (tres) fases conforme cronograma abaixo.
+
+2. VALOR E PAGAMENTO
+Valor total: R$ 45.000,00 (quarenta e cinco mil reais), divididos em:
+- Fase 1 — Setup + Infraestrutura: R$ 15.000,00 (ate dia 28)
+- Fase 2 — Modulos de Agendamento e Pacientes: R$ 15.000,00 (ate dia 56)
+- Fase 3 — Integracao CRM + WhatsApp + Painel Admin: R$ 15.000,00 (ate dia 90)
+Pagamento de cada fase condicionado a aprovacao formal do CONTRATANTE.
+
+3. PRAZO
+90 (noventa) dias corridos a partir da assinatura. Atrasos por culpa exclusiva da CONTRATADA acarretam multa de 2% ao mes sobre o valor da fase em atraso.
+
+4. OBRIGACOES DO CONTRATANTE
+4.1. Fornecer acesso ao sistema CRM legado e credenciais necessarias em ate 5 dias uteis apos solicitacao formal.
+4.2. Designar ponto focal para validacao das entregas.
+4.3. Realizar aprovacao ou solicitar ajustes em ate 7 dias uteis apos cada entrega.
+
+5. OBRIGACOES DA CONTRATADA
+5.1. Entregar cada fase conforme escopo definido no Anexo A.
+5.2. Comunicar formalmente qualquer impedimento tecnico em ate 48 horas.
+5.3. Manter repositorio GitHub atualizado com commits semanais.
+
+6. ESCROW
+R$ 15.000,00 referentes a Fase 3 serao mantidos em escrow ate aprovacao final.
+
+7. RESCISAO
+Qualquer parte pode rescindir mediante aviso previo de 15 dias. Em caso de rescisao, o pagamento sera proporcional as entregas aprovadas.
+
+8. RESOLUCAO DE DISPUTAS
+As partes concordam em submeter eventuais disputas a mediacao autonoma via plataforma Selantar antes de recurso judicial.
+
+Goiania, 15 de janeiro de 2026.
+
+___________________________          ___________________________
+Dr. Ariano Suasuna                   Matheus Silva — ULTRASELF
+CONTRATANTE                          CONTRATADA`,
     contextMessage: `You are mediating a dispute between ULTRASELF (developer) and Dr. Suasuna (client).
 
 CONTRACT:
@@ -116,6 +162,56 @@ For God's sake, it's been over 60 days.`,
       image: "/scenarios/ecommerce.webp",
       gradient: "from-transparent via-transparent to-card",
     },
+    contractDocument: `SERVICE AGREEMENT — PAYMENT GATEWAY INTEGRATION
+Contract No. SF-CC-2026-017
+
+PARTIES:
+CLIENT: ShopFlex Inc., a Delaware corporation ("Client")
+CONTRACTOR: CodeCraft Development LLC ("Contractor")
+
+1. SCOPE OF WORK
+Contractor shall integrate Stripe payment processing and local payment methods (PIX, Boleto) into Client's e-commerce platform (shopflex.com), including:
+a) Stripe Checkout integration with 3D Secure
+b) Webhook handling for payment confirmations
+c) Local payment methods: PIX (instant), Boleto (3-day settlement)
+d) Refund processing and dispute handling
+e) Admin dashboard for payment analytics
+
+2. COMPENSATION
+Total: $12,000.00 USD, payable upon completion and acceptance.
+Full amount held in escrow until final delivery approval.
+
+3. TIMELINE
+Duration: 30 calendar days from execution date.
+Milestones:
+- Week 1: Stripe API integration + test environment
+- Week 2: Local payment methods (PIX, Boleto)
+- Week 3: Webhooks, refunds, error handling
+- Week 4: Admin dashboard + QA + deployment
+
+4. CLIENT OBLIGATIONS
+4.1. Provide API keys and staging environment access within 48 hours.
+4.2. Designate technical point of contact for integration questions.
+4.3. Complete acceptance testing within 5 business days of each delivery.
+
+5. CONTRACTOR OBLIGATIONS
+5.1. Deliver weekly progress reports with test coverage metrics.
+5.2. Maintain code in private GitHub repository with CI/CD.
+5.3. Notify Client within 24 hours of any blocking issue.
+
+6. WARRANTY
+Contractor warrants 30 days of bug fixes post-delivery at no additional cost.
+
+7. LIMITATION OF LIABILITY
+Neither party liable for delays caused by third-party service providers, including payment gateway API changes, provided the affected party notifies the other within 48 hours.
+
+8. DISPUTE RESOLUTION
+Disputes shall be submitted to autonomous mediation via Selantar platform prior to arbitration.
+
+Executed on March 1, 2026.
+
+___________________________          ___________________________
+Ricardo Mendes, CEO ShopFlex         Ana Ferreira, CTO CodeCraft`,
     contextMessage: `You are mediating a dispute between ShopFlex (client) and CodeCraft (developer).
 
 CONTRACT:

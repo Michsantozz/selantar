@@ -1,8 +1,8 @@
 import { createWalletClient, createPublicClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { hederaTestnet } from "@/lib/hedera/chains";
 
-const RPC_URL = "https://sepolia.base.org";
+const RPC_URL = process.env.HEDERA_RPC_URL ?? "https://testnet.hashio.io/api";
 
 export function getWalletClient() {
   const privateKey = process.env.AGENT_PRIVATE_KEY;
@@ -18,14 +18,14 @@ export function getWalletClient() {
 
   return createWalletClient({
     account,
-    chain: baseSepolia,
+    chain: hederaTestnet,
     transport: http(RPC_URL),
   });
 }
 
 export function getPublicClient() {
   return createPublicClient({
-    chain: baseSepolia,
+    chain: hederaTestnet,
     transport: http(RPC_URL),
   });
 }
@@ -46,7 +46,7 @@ export function getClientWalletClient() {
 
   return createWalletClient({
     account,
-    chain: baseSepolia,
+    chain: hederaTestnet,
     transport: http(RPC_URL),
   });
 }

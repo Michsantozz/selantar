@@ -4,12 +4,19 @@
 // Validation is handled off-chain via hashing + identity metadata.
 
 export const ERC8004_ADDRESSES = {
-  // Base Sepolia (testnet — use during development)
+  // Hedera Testnet (Apex Hackathon — active)
+  // Identity + Reputation: official ERC-8004 vanity deploys (same addresses cross-chain)
+  // Validation: TODO — deploy our own (same as we did on Base Sepolia)
+  hederaTestnet: {
+    identityRegistry: "0x8004A818BFB912233c491871b3d84c89A494BD9e" as `0x${string}`,
+    reputationRegistry: "0x8004B663056A597Dffe9eCcC1965A193B7388713" as `0x${string}`,
+    // TODO: Deploy ValidationRegistry on Hedera Testnet and update this address
+    validationRegistry: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+  },
+  // Base Sepolia (original deployment)
   baseSepolia: {
     identityRegistry: "0x8004A818BFB912233c491871b3d84c89A494BD9e" as `0x${string}`,
     reputationRegistry: "0x8004B663056A597Dffe9eCcC1965A193B7388713" as `0x${string}`,
-    // Deployed by Selantar on 2026-03-19 — official ERC-8004 Validation Registry not yet deployed on Base Sepolia
-    // Contract: ValidationRegistry (ERC-8004 spec compliant) — TX: 0xd770f4ab10efb44f90d1517d525cae3ddabf772b6246db977b148de3282313cd
     validationRegistry: "0xd6f7d27ce23830c7a59acfca20197f9769a17120" as `0x${string}`,
   },
   // Base Mainnet (production)

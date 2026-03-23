@@ -136,7 +136,7 @@ function ToolSteps({ tools, txHash }: { tools: string[]; txHash?: string }) {
             {txHash.slice(0, 14)}...{txHash.slice(-4)}
           </span>
           <a
-            href={`https://sepolia.basescan.org/tx/${txHash}`}
+            href={`https://hashscan.io/testnet/transaction/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-[9px] font-mono text-primary hover:underline"
@@ -346,7 +346,7 @@ export default function DemoMediationPage() {
             <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary">ERC-8004</span>
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-primary animate-subtle-pulse" />
-              <span className="text-[11px] font-mono text-muted-foreground/50">Base Sepolia</span>
+              <span className="text-[11px] font-mono text-muted-foreground/50">Hedera Testnet</span>
             </div>
           </div>
         </motion.div>
@@ -697,7 +697,7 @@ export default function DemoMediationPage() {
                     <div key={label} className="flex items-center justify-between">
                       <span className="text-[9px] text-muted-foreground/60">{label}</span>
                       <a
-                        href="https://sepolia.basescan.org/tx/0x9f7c501eaa544a56144e9018f1f0d49182943e7c84500efd751571b4c85b1b52"
+                        href="https://hashscan.io/testnet/transaction/0x9f7c501eaa544a56144e9018f1f0d49182943e7c84500efd751571b4c85b1b52"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-[9px] font-mono text-primary hover:underline"

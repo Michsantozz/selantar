@@ -470,12 +470,12 @@ function EscrowMicroAnim() {
 function ReceiptMicroAnim() {
   return (
     <div className="absolute right-4 top-4 flex flex-col gap-1 opacity-40 group-hover:opacity-80 transition-opacity duration-500">
-      <span className="font-mono text-[8px] text-emerald/60">tx confirmed</span>
-      <span className="font-mono text-[9px] text-muted-foreground/60 tracking-tight">
-        0x7a3f...b4e2
-      </span>
+      <span className="font-mono text-[8px] text-emerald/60">tx confirmed · Hedera Testnet</span>
+      <a href="https://hashscan.io/testnet/transaction/0xe290eedd9382668979d523687975914feda4d601c78e188da2510a890cd2761f" target="_blank" rel="noopener noreferrer" className="font-mono text-[9px] text-muted-foreground/60 tracking-tight hover:text-emerald/80 transition-colors">
+        0xe290ee...cd2761f
+      </a>
       <span className="font-mono text-[9px] text-muted-foreground/40 tracking-tight">
-        block #19847231
+        Agent #36 · ERC-8004
       </span>
     </div>
   );
@@ -681,7 +681,7 @@ function ERC8004Section() {
               {
                 title: "Identity Registry",
                 description:
-                  "Registered as an autonomous agent on Base. Every action traceable to a verified on-chain identity.",
+                  "Registered as an autonomous agent on Hedera. Every action traceable to a verified on-chain identity.",
                 icon: Fingerprint,
                 badge: "REGISTERED",
               },
@@ -897,7 +897,7 @@ function CTASection() {
               </Link>
 
               <a
-                href="https://sepolia.basescan.org/address/0x377711a26B52F4AD8C548AAEF8297E0563b87Db4"
+                href="https://hashscan.io/testnet/account/0xFE5561A1a064ae13DbcF23BA1e3ff85Fc3da7B04"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-wider text-foreground transition-colors hover:text-primary"
@@ -929,7 +929,7 @@ function Footer() {
         <div className="flex items-center gap-6">
           <span className="text-xs text-muted-foreground">
             Built for{" "}
-            <span className="font-medium text-foreground">The Synthesis</span>
+            <span className="font-medium text-foreground">Hedera Hello Future Apex</span>
           </span>
           <span className="h-3 w-px bg-border" />
           <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium uppercase tracking-wider text-primary">
