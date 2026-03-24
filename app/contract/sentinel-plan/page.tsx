@@ -32,9 +32,9 @@ import {
   XIcon,
   ClockIcon,
   CircleDotIcon,
-  SendIcon,
 } from "lucide-react";
 import { DeployCinematic } from "./_components/deploy-cinematic";
+import { AgentActivityPanel, type AgentEvent } from "./_components/agent-activity-panel";
 
 // ── Evolution API ─────────────────────────────────────────────────────────────
 
@@ -891,6 +891,11 @@ function useSentinelPlanSim() {
   const [stepIdx, setStepIdx] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [agentEvents, setAgentEvents] = useState<AgentEvent[]>([]);
+
+  const addAgentEvent = useCallback((event: AgentEvent) => {
+    setAgentEvents((prev) => [...prev, event]);
+  }, []);
 
   const updateNodeData = useCallback((id: string, patch: Record<string, unknown>) => {
     setNodes((prev) => prev.map((n) => n.id === id ? { ...n, data: { ...n.data, ...patch } } : n));
@@ -972,8 +977,22 @@ function useSentinelPlanSim() {
             if (step.timestamp) patch.timestamp = step.timestamp;
             updateNodeData(step.targetId, patch);
 
-            // Fetch real GitHub data when github node is accepted
+            // ── Feature 1: GitHub real data with AI Elements ──
             if (step.targetId === "act-github" && step.status === "accepted") {
+              addAgentEvent({
+                id: `github-monitor-${Date.now()}`,
+                timestamp: step.timestamp?.split(" · ")[1] ?? "10:14",
+                agent: "sentinel",
+                type: "tool",
+                title: "monitorGitHub",
+                status: "running",
+                steps: [
+                  { text: "Connecting to GitHub API...", done: true },
+                  { text: "Fetching latest commits...", done: false },
+                  { text: "Checking 5-day inactivity threshold...", done: false },
+                ],
+              });
+
               fetch("https://api.github.com/repos/Michsantozz/openclaw/commits?per_page=1")
                 .then((r) => r.json())
                 .then((commits) => {
@@ -989,8 +1008,143 @@ function useSentinelPlanSim() {
                     target: "Michsantozz/openclaw",
                     description: `Last commit: "${msg}" by ${author} · ${date} · ${sha}`,
                   });
+
+                  // Update event to done with real data
+                  setAgentEvents((prev) => prev.map((e) =>
+                    e.id.startsWith("github-monitor-") && e.status === "running"
+                      ? {
+                          ...e,
+                          status: "done" as const,
+                          steps: [
+                            { text: "Connecting to GitHub API...", done: true },
+                            { text: "Fetching latest commits...", done: true },
+                            { text: "Checking 5-day inactivity threshold...", done: true },
+                          ],
+                          output: `✓ Repo: Michsantozz/openclaw\n  Last commit: "${msg}"\n  Author: ${author} · ${date} · ${sha}\n  Inactivity: OK (recent activity detected)`,
+                        }
+                      : e
+                  ));
+
+                  // Sentinel thinking event
+                  addAgentEvent({
+                    id: `github-think-${Date.now()}`,
+                    timestamp: step.timestamp?.split(" · ")[1] ?? "10:14",
+                    agent: "sentinel",
+                    type: "thinking",
+                    title: "Analyzing commit activity",
+                    status: "done",
+                    output: `Developer is active — last commit was recent. No inactivity alert needed. Will continue monitoring daily.`,
+                  });
                 })
-                .catch(() => {/* silently fail */});
+                .catch(() => {
+                  setAgentEvents((prev) => prev.map((e) =>
+                    e.id.startsWith("github-monitor-") && e.status === "running"
+                      ? { ...e, status: "error" as const }
+                      : e
+                  ));
+                });
+            }
+
+            // ── Feature 2: Declined/Rejected → Agent-to-agent WhatsApp ──
+            if (step.targetId === "act-api" && step.status === "declined") {
+              // Clara thinks about the decline
+              addAgentEvent({
+                id: `clara-think-decline-${Date.now()}`,
+                timestamp: step.timestamp?.split(" · ")[1] ?? "10:12",
+                agent: "clara",
+                type: "thinking",
+                title: "Processing action decline",
+                status: "done",
+                output: `The developer declined the API audit — endpoints are not ready yet. I need to notify Dr. Suasuna that M3 delivery may be delayed and suggest adjusting the timeline.`,
+              });
+
+              // Clara asks OpenClaw to notify via WhatsApp
+              const whatsappMsg = `Olá Dr. Suasuna, aqui é a Clara do Selantar.\n\nO desenvolvedor Matheus informou que os endpoints da API de agendamento ainda não estão prontos para auditoria.\n\nIsso pode impactar o prazo do Milestone 3 (API Integration — 28 Abr).\n\nRecomendo ajustarmos o cronograma em +5 dias úteis. Posso negociar isso com o Matheus, basta confirmar.\n\nSelantar · Mediação Autônoma`;
+
+              setTimeout(() => {
+                addAgentEvent({
+                  id: `clara-notify-decline-${Date.now()}`,
+                  timestamp: step.timestamp?.split(" · ")[1] ?? "10:12",
+                  agent: "clara",
+                  type: "notify",
+                  title: "Notifying client about API delay",
+                  status: "running",
+                  whatsappSent: false,
+                  output: whatsappMsg,
+                });
+
+                // Actually send via Evolution API
+                sendWhatsApp(whatsappMsg, 1200).then(() => {
+                  setAgentEvents((prev) => prev.map((e) =>
+                    e.id.startsWith("clara-notify-decline-") && e.status === "running"
+                      ? { ...e, status: "done" as const, whatsappSent: true }
+                      : e
+                  ));
+                });
+              }, 1500);
+            }
+
+            if (step.targetId === "act-whatsapp-m3" && step.status === "rejected") {
+              addAgentEvent({
+                id: `clara-think-reject-${Date.now()}`,
+                timestamp: step.timestamp?.split(" · ")[1] ?? "10:06",
+                agent: "clara",
+                type: "thinking",
+                title: "Action removed from plan",
+                status: "done",
+                output: `The user removed the WhatsApp M3 follow-up. The client prefers direct communication for this milestone. I'll notify the developer that SLA enforcement for M3 will be handled differently.`,
+              });
+
+              const rejectMsg = `Oi Matheus, aqui é a Clara do Selantar.\n\nA ação de acompanhamento automático via WhatsApp para o Milestone 3 foi removida do plano pelo Dr. Suasuna.\n\nEle prefere acompanhar a entrega da API diretamente. Mantenha o prazo de 28 de Abril e qualquer atualização mande diretamente pra ele.\n\nSelantar · Mediação Autônoma`;
+
+              setTimeout(() => {
+                addAgentEvent({
+                  id: `clara-notify-reject-${Date.now()}`,
+                  timestamp: step.timestamp?.split(" · ")[1] ?? "10:06",
+                  agent: "clara",
+                  type: "notify",
+                  title: "Notifying developer about plan change",
+                  status: "running",
+                  whatsappSent: false,
+                  output: rejectMsg,
+                });
+
+                sendWhatsApp(rejectMsg, 1200).then(() => {
+                  setAgentEvents((prev) => prev.map((e) =>
+                    e.id.startsWith("clara-notify-reject-") && e.status === "running"
+                      ? { ...e, status: "done" as const, whatsappSent: true }
+                      : e
+                  ));
+                });
+              }, 1200);
+            }
+
+            // ── Generic status events for approved/sent ──
+            if (step.status === "approved" && step.targetId) {
+              addAgentEvent({
+                id: `approved-${step.targetId}-${Date.now()}`,
+                timestamp: step.timestamp?.split(" · ")[1] ?? "",
+                agent: "sentinel",
+                type: "message",
+                title: `Action approved: ${step.targetId.replace("act-", "")}`,
+                status: "done",
+                output: `Action dispatched to ${step.sentTo || "target"}.`,
+              });
+            }
+
+            if (step.status === "sent" && step.targetId && step.sentTo) {
+              addAgentEvent({
+                id: `sent-${step.targetId}-${Date.now()}`,
+                timestamp: step.timestamp?.split(" · ")[1] ?? "",
+                agent: "sentinel",
+                type: "notify",
+                title: `Sent to ${step.sentTo}`,
+                status: "done",
+                whatsappSent: step.targetId.includes("whatsapp"),
+                output: step.targetId.includes("whatsapp")
+                  ? `WhatsApp notification delivered to ${step.sentTo}.`
+                  : `Notification sent to ${step.sentTo}.`,
+              });
             }
           }
           break;
@@ -1010,15 +1164,15 @@ function useSentinelPlanSim() {
     return () => clearTimeout(timer);
   }, [stepIdx, isRunning, updateNodeData, revealNode, revealEdge]);
 
-  return { nodes, edges, isRunning, progress, stepIdx, startSim };
+  return { nodes, edges, isRunning, progress, stepIdx, startSim, agentEvents };
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 
 export default function SentinelPlanPage() {
-  const { nodes, edges, isRunning, progress, stepIdx, startSim } = useSentinelPlanSim();
-  const [chatOpen, setChatOpen] = useState(false);
+  const { nodes, edges, isRunning, progress, stepIdx, startSim, agentEvents } = useSentinelPlanSim();
+  const [activityOpen, setActivityOpen] = useState(true);
   const [approving, setApproving] = useState(false);
   const [deploying, setDeploying] = useState(false);
   const router = useRouter();
@@ -1150,107 +1304,8 @@ export default function SentinelPlanPage() {
         </div>
       </div>
 
-      {/* ── Canvas + Chat Sidebar ── */}
+      {/* ── Canvas + Agent Activity Panel ── */}
       <div className="flex flex-1 min-h-0">
-        {/* Chat Sidebar (left) */}
-        {chatOpen && (
-          <div
-            className="flex flex-col border-r border-border bg-card/50 backdrop-blur-sm shrink-0 min-h-0"
-            style={{ width: 380 }}
-          >
-            {/* Header */}
-            <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-              <div
-                className="flex size-8 items-center justify-center rounded-lg"
-                style={{ background: `oklch(0.7 0.18 50 / 0.12)`, border: `1px solid oklch(0.7 0.18 50 / 0.25)` }}
-              >
-                <ShieldCheckIcon className="size-4" style={{ color: ACCENT }} />
-              </div>
-              <div className="flex-1">
-                <p className="text-[13px] font-semibold text-foreground">Sentinel Chat</p>
-                <p className="text-[10px] text-muted-foreground/40">Contract assistant</p>
-              </div>
-              <button
-                onClick={() => setChatOpen(false)}
-                className="flex size-6 items-center justify-center rounded-md transition-all hover:bg-muted/20"
-              >
-                <XIcon className="size-3.5 text-muted-foreground/50" />
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 flex flex-col gap-3">
-              <div className="flex gap-2.5">
-                <div
-                  className="flex size-6 shrink-0 items-center justify-center rounded-full mt-0.5"
-                  style={{ background: `oklch(0.7 0.18 50 / 0.12)`, border: `1px solid oklch(0.7 0.18 50 / 0.2)` }}
-                >
-                  <SparklesIcon className="size-2.5" style={{ color: ACCENT }} />
-                </div>
-                <div
-                  className="rounded-xl rounded-tl-sm border px-3 py-2"
-                  style={{ borderColor: `${MUTED}30`, background: `${MUTED}08` }}
-                >
-                  <p className="text-[11px] leading-relaxed text-foreground/75">
-                    I analyzed the Suassuna Clinic contract. I identified 4 milestones and suggested 6 monitoring actions. What would you like to adjust?
-                  </p>
-                  <p className="mt-1 text-[9px] text-muted-foreground/30">10:00</p>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <div
-                  className="rounded-xl rounded-tr-sm px-3 py-2"
-                  style={{ background: `oklch(0.7 0.18 50 / 0.08)`, border: `1px solid oklch(0.7 0.18 50 / 0.15)` }}
-                >
-                  <p className="text-[11px] leading-relaxed text-foreground/75">
-                    The dev has a history of delays, I want more frequent follow-ups
-                  </p>
-                  <p className="mt-1 text-[9px] text-right" style={{ color: `oklch(0.7 0.18 50 / 0.35)` }}>10:02</p>
-                </div>
-              </div>
-
-              <div className="flex gap-2.5">
-                <div
-                  className="flex size-6 shrink-0 items-center justify-center rounded-full mt-0.5"
-                  style={{ background: `oklch(0.7 0.18 50 / 0.12)`, border: `1px solid oklch(0.7 0.18 50 / 0.2)` }}
-                >
-                  <SparklesIcon className="size-2.5" style={{ color: ACCENT }} />
-                </div>
-                <div
-                  className="rounded-xl rounded-tl-sm border px-3 py-2"
-                  style={{ borderColor: `${MUTED}30`, background: `${MUTED}08` }}
-                >
-                  <p className="text-[11px] leading-relaxed text-foreground/75">
-                    Understood. I'll adjust the GitHub monitor to <span className="font-semibold" style={{ color: ACCENT }}>2x per day</span> and add a commit check 48h before each deadline.
-                  </p>
-                  <p className="mt-1 text-[9px] text-muted-foreground/30">10:02</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Input */}
-            <div className="shrink-0 border-t border-border px-3 py-3">
-              <div
-                className="flex items-center gap-2 rounded-xl border px-3 py-2"
-                style={{ borderColor: `${MUTED}40`, background: `${MUTED}06` }}
-              >
-                <input
-                  type="text"
-                  placeholder="Talk to Sentinel..."
-                  className="flex-1 bg-transparent text-[11px] text-foreground outline-none placeholder:text-muted-foreground/25"
-                />
-                <button
-                  className="flex size-7 items-center justify-center rounded-lg transition-all hover:brightness-125"
-                  style={{ background: ACCENT }}
-                >
-                  <SendIcon className="size-3" style={{ color: "oklch(0.08 0.01 50)" }} />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Canvas */}
         <div className="relative flex-1 min-w-0">
           <ReactFlow
@@ -1270,22 +1325,29 @@ export default function SentinelPlanPage() {
           >
             <Background color="#27272a" gap={28} size={1} />
           </ReactFlow>
-
         </div>
+
+        {/* Agent Activity Panel (right) */}
+        {activityOpen && (
+          <AgentActivityPanel
+            events={agentEvents}
+            onClose={() => setActivityOpen(false)}
+          />
+        )}
       </div>
 
-      {/* Floating chat button */}
-      {!chatOpen && (
+      {/* Floating button to reopen activity panel */}
+      {!activityOpen && (
         <div
           style={{
             position: "fixed",
             bottom: 32,
-            left: 32,
+            right: 32,
             zIndex: 9999,
           }}
         >
           <button
-            onClick={() => setChatOpen(true)}
+            onClick={() => setActivityOpen(true)}
             className="group flex items-center gap-3 rounded-full border border-border/50 bg-card px-5 py-3 text-foreground shadow-lg backdrop-blur-md transition-all duration-300 ease-out hover:border-accent/40 hover:shadow-xl hover:shadow-accent/5 active:scale-95"
           >
             <div
@@ -1298,8 +1360,8 @@ export default function SentinelPlanPage() {
               <SparklesIcon className="size-4" style={{ color: "oklch(0.08 0.01 50)" }} />
             </div>
             <div className="pr-1">
-              <p className="text-[12px] font-semibold leading-tight">Talk to Sentinel</p>
-              <p className="text-[10px] text-muted-foreground/50">Adjust plan</p>
+              <p className="text-[12px] font-semibold leading-tight">Agent Activity</p>
+              <p className="text-[10px] text-muted-foreground/50">{agentEvents.length} events</p>
             </div>
           </button>
         </div>

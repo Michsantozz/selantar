@@ -3,6 +3,7 @@ import { keccak256, toBytes, parseAbi } from "viem";
 import { getWalletClient } from "@/lib/wallet";
 
 import { ERC8004_ADDRESSES } from "@/lib/erc8004/addresses";
+import { getExplorerTxUrl } from "@/lib/hedera/explorer";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
       contractHash,
       validationTxHash,
       network: "hedera-testnet",
-      explorerUrl: `https://hashscan.io/testnet/transaction/${validationTxHash}`,
+      explorerUrl: getExplorerTxUrl(validationTxHash),
     });
   } catch (err) {
     console.error("[create-escrow] Error:", err);

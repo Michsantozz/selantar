@@ -130,12 +130,13 @@ function HeroSection() {
             <BlurFade delay={0.8}>
               <div className="mt-14 flex items-center gap-8 border-t border-border/40 pt-8">
                 {[
-                  { value: "5", label: "tools execute on-chain" },
-                  { value: "3", label: "ERC standards integrated" },
+                  { value: "4", label: "agents in the network" },
+                  { value: "85", suffix: "%", label: "on-chain trust score" },
+                  { value: "10", suffix: "+", label: "HBAR settled" },
                   { value: "0", label: "humans required" },
-                ].map(({ value, label }) => (
-                  <div key={value} className="flex flex-col">
-                    <span className="font-mono text-2xl font-medium text-foreground">{value}</span>
+                ].map(({ value, suffix, label }) => (
+                  <div key={label} className="flex flex-col">
+                    <span className="font-mono text-2xl font-medium text-foreground">{value}{suffix}</span>
                     <span className="mt-1 text-xs leading-snug text-muted-foreground max-w-[120px]">{label}</span>
                   </div>
                 ))}
@@ -729,6 +730,89 @@ function ERC8004Section() {
 }
 
 /* ═══════════════════════════════════════════════
+   NETWORK EFFECT — More agents = more trust
+   ═══════════════════════════════════════════════ */
+function NetworkEffectSection() {
+  const metrics = [
+    { value: "1", label: "Mediator Agent", sub: "Clara — autonomous dispute resolution", color: "oklch(0.7 0.18 280)" },
+    { value: "1", label: "Monitor Agent", sub: "Sentinel — proactive contract surveillance", color: "oklch(0.7 0.18 50)" },
+    { value: "1", label: "Messenger Agent", sub: "OpenClaw — WhatsApp delivery via Evolution API", color: "oklch(0.72 0.17 162)" },
+    { value: "36", label: "ERC-8004 Agent ID", sub: "Registered on Hedera Testnet Identity Registry", color: "oklch(0.7 0.15 200)" },
+  ];
+
+  return (
+    <section className="relative py-14 lg:py-22 border-t border-border bg-card/20">
+      <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
+        <BlurFade delay={0.1} inView>
+          <SectionLabel label="Network effect" />
+        </BlurFade>
+        <BlurFade delay={0.2} inView>
+          <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
+            More agents enter.
+            <br />
+            <span className="font-display italic text-primary">
+              Trust compounds.
+            </span>
+          </h2>
+        </BlurFade>
+        <BlurFade delay={0.3} inView>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
+            Every mediation resolved adds reputation data to the Hedera ledger.
+            Every agent registered strengthens the trust network.
+            The more agents participate, the more reliable and valuable the system becomes.
+          </p>
+        </BlurFade>
+
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {metrics.map(({ value, label, sub, color }, i) => (
+            <BlurFade key={label} delay={0.3 + i * 0.1} inView>
+              <div className="group relative overflow-hidden rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5 transition-all hover:border-primary/20 hover:bg-card/80">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-mono text-4xl font-medium" style={{ color }}>{value}</span>
+                </div>
+                <p className="mt-2 text-sm font-medium text-foreground">{label}</p>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{sub}</p>
+                <div className="absolute -right-4 -top-4 size-24 rounded-full opacity-[0.03]" style={{ background: color }} />
+              </div>
+            </BlurFade>
+          ))}
+        </div>
+
+        <BlurFade delay={0.7} inView>
+          <div className="mt-10 rounded-xl border border-primary/10 bg-primary/[0.02] p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                <TrendingUp className="size-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Live Reputation Score</p>
+                <p className="text-xs text-muted-foreground">ERC-8004 Reputation Registry on Hedera</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 sm:ml-auto">
+              <div className="flex flex-col items-center">
+                <span className="font-mono text-2xl font-medium text-primary">85</span>
+                <span className="text-[10px] text-muted-foreground">Trust Score</span>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="flex flex-col items-center">
+                <span className="font-mono text-2xl font-medium text-foreground">4</span>
+                <span className="text-[10px] text-muted-foreground">Verified TXs</span>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="flex flex-col items-center">
+                <span className="font-mono text-2xl font-medium text-foreground">10+</span>
+                <span className="text-[10px] text-muted-foreground">HBAR Settled</span>
+              </div>
+            </div>
+          </div>
+        </BlurFade>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════
    VISION — Vertical timeline
    ═══════════════════════════════════════════════ */
 function VisionSection() {
@@ -953,6 +1037,7 @@ export default function LandingPage() {
       <BentoSection />
       <PipelineSection />
       <ERC8004Section />
+      <NetworkEffectSection />
       <VisionSection />
       <CTASection />
       <Footer />

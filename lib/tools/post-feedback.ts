@@ -4,6 +4,7 @@ import { getClientWalletClient } from "@/lib/wallet";
 import { postMediationFeedback } from "@/lib/erc8004/reputation";
 import { notifyOpenClaw } from "@/lib/notify-openclaw";
 import { getExplorerTxUrl } from "@/lib/hedera/explorer";
+import { logToHCS } from "@/lib/hedera/hcs";
 
 export const postFeedback = tool({
   description:
@@ -41,6 +42,8 @@ export const postFeedback = tool({
         tx: feedbackTxHash,
         explorer: getExplorerTxUrl(feedbackTxHash),
       });
+
+      void logToHCS("feedback_posted", { feedbackTxHash, satisfactionScore, disputeType });
 
       return {
         status: "posted",

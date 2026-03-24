@@ -4,6 +4,8 @@ import { getWalletClient } from "@/lib/wallet";
 import { registerVerdictAsValidation } from "@/lib/erc8004/validation";
 import { notifyOpenClaw } from "@/lib/notify-openclaw";
 import { getExplorerTxUrl } from "@/lib/hedera/explorer";
+import { logToHCS } from "@/lib/hedera/hcs";
+import { mintMediationReceipt } from "@/lib/hedera/hts";
 
 export const registerVerdict = tool({
   description:
@@ -43,6 +45,9 @@ export const registerVerdict = tool({
         tx: validationTxHash,
         explorer: getExplorerTxUrl(validationTxHash),
       });
+
+      void logToHCS("verdict_registered", { validationTxHash, contractRef, evidenceCount: evidence.length });
+      void mintMediationReceipt({ contractRef, settlementTxHash, clientAmount, developerAmount, evidenceCount: evidence.length });
 
       return {
         status: "registered",
