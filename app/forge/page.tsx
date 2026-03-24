@@ -119,16 +119,7 @@ function ParseCard() {
 
         <div className="flex-1" />
 
-        {/* CTA */}
-        <div className="mt-8">
-          <Link
-            href="/forge/analyze"
-            className="flex w-full items-center justify-center gap-2.5 rounded-md border border-primary/20 bg-primary/[0.04] py-3 text-[13px] font-medium uppercase tracking-[0.12em] text-primary transition-all duration-500 hover:bg-primary/[0.08] hover:border-primary/30"
-          >
-            Analyze a Contract
-            <ArrowRight className="size-3" />
-          </Link>
-        </div>
+        {/* CTA removed — demo cards link directly to /contractv2 */}
       </div>
     </motion.div>
   );
