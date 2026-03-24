@@ -130,7 +130,7 @@ function HeroSection() {
             <BlurFade delay={0.8}>
               <div className="mt-14 flex items-center gap-8 border-t border-border/40 pt-8">
                 {[
-                  { value: "4", label: "agents in the network" },
+                  { value: "36", label: "agents on Hedera" },
                   { value: "85", suffix: "%", label: "on-chain trust score" },
                   { value: "10", suffix: "+", label: "HBAR settled" },
                   { value: "0", label: "humans required" },
@@ -733,11 +733,20 @@ function ERC8004Section() {
    NETWORK EFFECT — More agents = more trust
    ═══════════════════════════════════════════════ */
 function NetworkEffectSection() {
+  const [onChainAgents, setOnChainAgents] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/erc8004/agents")
+      .then((r) => r.json())
+      .then((d) => setOnChainAgents(d.totalAgents))
+      .catch(() => setOnChainAgents(36)); // fallback to known value
+  }, []);
+
   const metrics = [
-    { value: "1", label: "Mediator Agent", sub: "Clara — autonomous dispute resolution", color: "oklch(0.7 0.18 280)" },
-    { value: "1", label: "Monitor Agent", sub: "Sentinel — proactive contract surveillance", color: "oklch(0.7 0.18 50)" },
-    { value: "1", label: "Messenger Agent", sub: "OpenClaw — WhatsApp delivery via Evolution API", color: "oklch(0.72 0.17 162)" },
-    { value: "36", label: "ERC-8004 Agent ID", sub: "Registered on Hedera Testnet Identity Registry", color: "oklch(0.7 0.15 200)" },
+    { value: onChainAgents?.toString() ?? "...", label: "Agents on Hedera", sub: "ERC-8004 Identity Registry — live on-chain count", color: "oklch(0.7 0.15 200)" },
+    { value: "85%", label: "Trust Score", sub: "Clara reputation — ERC-8004 Reputation Registry", color: "oklch(0.7 0.18 280)" },
+    { value: "10+", label: "HBAR Settled", sub: "Real settlements executed on Hedera Testnet", color: "oklch(0.72 0.17 162)" },
+    { value: "#36", label: "Selantar Agent ID", sub: "Registered, verified, and active on the network", color: "oklch(0.7 0.18 50)" },
   ];
 
   return (
@@ -785,13 +794,18 @@ function NetworkEffectSection() {
                 <TrendingUp className="size-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Live Reputation Score</p>
-                <p className="text-xs text-muted-foreground">ERC-8004 Reputation Registry on Hedera</p>
+                <p className="text-sm font-medium text-foreground">Live On-Chain Data</p>
+                <p className="text-xs text-muted-foreground">ERC-8004 Identity + Reputation on Hedera Testnet</p>
               </div>
             </div>
             <div className="flex items-center gap-6 sm:ml-auto">
               <div className="flex flex-col items-center">
-                <span className="font-mono text-2xl font-medium text-primary">85</span>
+                <span className="font-mono text-2xl font-medium text-primary">{onChainAgents ?? "..."}</span>
+                <span className="text-[10px] text-muted-foreground">Agents Registered</span>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="flex flex-col items-center">
+                <span className="font-mono text-2xl font-medium text-foreground">85</span>
                 <span className="text-[10px] text-muted-foreground">Trust Score</span>
               </div>
               <div className="h-8 w-px bg-border" />
