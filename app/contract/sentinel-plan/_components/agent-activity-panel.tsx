@@ -25,12 +25,12 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { cn } from "@/lib/utils";
 
-// ── Colors (match sentinel-plan) ──
-const ACCENT = "oklch(0.72 0.19 154)";
-const GREEN = "oklch(0.72 0.17 162)";
-const RED = "oklch(0.65 0.2 25)";
-const MUTED = "oklch(0.55 0.02 260)";
-const CLARA_COLOR = "oklch(0.7 0.18 280)";
+// ── Colors (from DESIGN-SYSTEM.md) ──
+const ACCENT = "oklch(0.72 0.17 55)";   // burnt amber — primary accent
+const GREEN = "oklch(0.72 0.17 162)";   // emerald — success states
+const RED = "oklch(0.62 0.22 25)";      // destructive
+const MUTED = "oklch(0.55 0.008 60)";   // muted-foreground
+const CLARA_COLOR = "oklch(0.7 0.18 280)"; // violet — Clara identity
 
 // ── Types ──
 
@@ -166,21 +166,19 @@ function EventCard({ event }: { event: AgentEvent }) {
                 </ChainOfThoughtHeader>
                 <ChainOfThoughtContent>
                   {event.steps.map((step, i) => (
-                    <ChainOfThoughtStep key={i}>
-                      <div className="flex items-center gap-2">
-                        {step.done ? (
-                          <CheckCircleIcon className="size-3 shrink-0" style={{ color: GREEN }} />
-                        ) : (
-                          <span className="size-3 shrink-0 rounded-full border border-muted-foreground/20" />
-                        )}
+                    <ChainOfThoughtStep
+                      key={i}
+                      icon={step.done ? CheckCircleIcon : undefined}
+                      label={
                         <span className={cn(
                           "text-[10px]",
                           step.done ? "text-foreground/60" : "text-muted-foreground/40"
                         )}>
                           {step.text}
                         </span>
-                      </div>
-                    </ChainOfThoughtStep>
+                      }
+                      status={step.done ? "complete" : "pending"}
+                    />
                   ))}
                 </ChainOfThoughtContent>
               </ChainOfThought>

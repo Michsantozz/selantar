@@ -1211,96 +1211,103 @@ export default function SentinelPlanPage() {
   return (
     <div className="flex flex-col bg-background" style={{ height: "100dvh" }}>
       {/* ── Topbar ── */}
-      <div className="shrink-0 flex h-14 items-center gap-3 border-b border-border bg-card/50 px-6">
-        <div
-          className="flex size-9 items-center justify-center rounded-xl border"
-          style={{
-            background: isRunning ? `oklch(0.7 0.18 50 / 0.12)` : `oklch(0.7 0.18 50 / 0.08)`,
-            borderColor: `oklch(0.7 0.18 50 / 0.3)`,
-            boxShadow: isRunning ? `0 0 16px oklch(0.7 0.18 50 / 0.2)` : undefined,
-            transition: "all 0.5s",
-          }}
-        >
-          <ShieldCheckIcon className="size-4" style={{ color: ACCENT }} />
-        </div>
-        <div className="min-w-0">
-          <h1 className="text-sm font-semibold text-foreground tracking-tight">Sentinel</h1>
-          <p className="text-[10px] text-muted-foreground/50 uppercase tracking-widest">
-            Monitoring Plan
-          </p>
-        </div>
+      <div className="shrink-0 border-b border-border bg-card/50">
+        <div className="flex h-12 items-center gap-3 px-5">
+          {/* Left — Identity */}
+          <div
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border"
+            style={{
+              background: isRunning ? `oklch(0.7 0.18 50 / 0.12)` : `oklch(0.7 0.18 50 / 0.06)`,
+              borderColor: `oklch(0.7 0.18 50 / 0.25)`,
+              boxShadow: isRunning ? `0 0 12px oklch(0.7 0.18 50 / 0.15)` : undefined,
+              transition: "all 0.5s",
+            }}
+          >
+            <ShieldCheckIcon className="size-3.5" style={{ color: ACCENT }} />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xs font-semibold text-foreground tracking-tight leading-none">Sentinel</h1>
+            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest mt-0.5">
+              Monitoring Plan
+            </p>
+          </div>
 
-        <div className="ml-auto flex items-center gap-4">
-          {isRunning && phase && (
-            <div className="flex items-center gap-2 rounded-full border px-3 py-1"
-              style={{ borderColor: `oklch(0.7 0.18 50 / 0.2)`, background: `oklch(0.7 0.18 50 / 0.05)` }}>
-              <div className="size-1.5 rounded-full" style={{ background: ACCENT, animation: "sp-pulse 1s ease-in-out infinite" }} />
-              <span className="text-[11px] text-accent font-medium">{phase}</span>
-            </div>
-          )}
+          {/* Center — Phase + Progress */}
+          <div className="ml-auto flex items-center gap-3">
+            {isRunning && phase && (
+              <div className="hidden sm:flex items-center gap-1.5 rounded-md border px-2.5 py-1"
+                style={{ borderColor: `oklch(0.7 0.18 50 / 0.15)`, background: `oklch(0.7 0.18 50 / 0.04)` }}>
+                <div className="size-1.5 rounded-full" style={{ background: ACCENT, animation: "sp-pulse 1s ease-in-out infinite" }} />
+                <span className="text-[10px] font-medium" style={{ color: ACCENT }}>{phase}</span>
+              </div>
+            )}
 
-          {progress > 0 && (
-            <div className="flex items-center gap-2.5">
-              <div className="h-1.5 w-28 overflow-hidden rounded-full" style={{ background: `${MUTED}30` }}>
-                <div
-                  className="h-full rounded-full"
+            {progress > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="h-1 w-20 overflow-hidden rounded-full" style={{ background: `oklch(1 0 0 / 5%)` }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${progress}%`,
+                      background: progress === 100 ? GREEN : ACCENT,
+                      transition: "width 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+                    }}
+                  />
+                </div>
+                <span className="text-[9px] font-mono tabular-nums" style={{ color: progress === 100 ? GREEN : `oklch(0.55 0.02 260)` }}>
+                  {Math.round(progress)}%
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Right — Actions */}
+          <div className="flex items-center gap-2">
+            {!isRunning && progress === 100 && (
+              <>
+                <span className="hidden md:flex items-center gap-1.5 rounded-md border px-2.5 py-1"
+                  style={{ borderColor: `${GREEN}30`, background: `${GREEN}06` }}>
+                  <CheckCircleIcon className="size-2.5" style={{ color: GREEN }} />
+                  <span className="text-[10px] font-medium" style={{ color: GREEN }}>5 approved</span>
+                </span>
+
+                <button
+                  onClick={handleApprove}
+                  disabled={approving}
+                  className="flex items-center gap-1.5 rounded-lg border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-all disabled:opacity-50"
                   style={{
-                    width: `${progress}%`,
-                    background: progress === 100 ? GREEN : `linear-gradient(90deg, ${ACCENT}, oklch(0.75 0.15 60))`,
-                    transition: "width 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+                    borderColor: `${GREEN}40`,
+                    background: `${GREEN}08`,
+                    color: GREEN,
                   }}
-                />
-              </div>
-              <span className="text-[10px] font-mono tabular-nums" style={{ color: progress === 100 ? GREEN : MUTED }}>
-                {Math.round(progress)}%
-              </span>
-            </div>
-          )}
+                >
+                  {approving ? (
+                    <>
+                      <LoaderIcon className="size-3" style={{ animation: "sp-spin 1.5s linear infinite" }} />
+                      Activating
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircleIcon className="size-3" />
+                      Approve
+                      <ArrowRightIcon className="size-3" />
+                    </>
+                  )}
+                </button>
+              </>
+            )}
 
-          {!isRunning && progress === 100 && (
-            <>
-              <div className="flex items-center gap-1.5 rounded-full border px-3 py-1"
-                style={{ borderColor: `${GREEN}40`, background: `${GREEN}08` }}>
-                <CheckCircleIcon className="size-3" style={{ color: GREEN }} />
-                <span className="text-[11px] font-semibold" style={{ color: GREEN }}>5 actions approved</span>
-              </div>
-
+            {isRunning && (
               <button
-                onClick={handleApprove}
-                disabled={approving}
-                className="flex items-center gap-2 rounded-xl border px-5 py-2 text-xs font-semibold transition-all disabled:opacity-50"
-                style={{
-                  borderColor: `${GREEN}50`,
-                  background: `${GREEN}10`,
-                  color: GREEN,
-                }}
+                disabled
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[10px] font-medium opacity-30 cursor-not-allowed"
+                style={{ borderColor: `oklch(1 0 0 / 10%)`, color: `oklch(0.55 0.02 260)` }}
               >
-                {approving ? (
-                  <>
-                    <LoaderIcon className="size-3" style={{ animation: "sp-spin 1.5s linear infinite" }} />
-                    Activating...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircleIcon className="size-3" />
-                    Approve plan and activate contract
-                    <ArrowRightIcon className="size-3" />
-                  </>
-                )}
+                <LoaderIcon className="size-3" style={{ animation: "sp-spin 1.5s linear infinite" }} />
+                Planning...
               </button>
-            </>
-          )}
-
-          {isRunning && (
-            <button
-              disabled
-              className="flex items-center gap-2 rounded-xl border px-4 py-2 text-xs font-semibold opacity-30 cursor-not-allowed"
-              style={{ borderColor: `${MUTED}60`, color: MUTED }}
-            >
-              <LoaderIcon className="size-3" style={{ animation: "sp-spin 1.5s linear infinite" }} />
-              Planning...
-            </button>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

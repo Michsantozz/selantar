@@ -134,9 +134,9 @@ function HeroSection() {
                   { value: "3", label: "Hedera services used" },
                   { value: "9", label: "verified on-chain TXs" },
                   { value: "0", label: "humans required" },
-                ].map(({ value, suffix, label }) => (
+                ].map(({ value, label }) => (
                   <div key={label} className="flex flex-col">
-                    <span className="font-mono text-2xl font-medium text-foreground">{value}{suffix}</span>
+                    <span className="font-mono text-2xl font-medium text-foreground">{value}</span>
                     <span className="mt-1 text-xs leading-snug text-muted-foreground max-w-[120px]">{label}</span>
                   </div>
                 ))}
@@ -773,25 +773,29 @@ function OnChainTrustSection() {
 
         {/* Per mediation breakdown + projection */}
         <BlurFade delay={0.8} inView>
-          <div className="mt-6 rounded-xl border border-border bg-card/30 p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 shrink-0">
+          <div className="mt-6 rounded-xl border border-primary/10 bg-primary/[0.03] p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70 shrink-0">
                 Per mediation
               </p>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                 {[
-                  "3 EVM TXs",
-                  "5 HCS messages",
-                  "1 NFT receipt",
-                  "2 new accounts",
-                  "1 trust entry",
-                ].map((item) => (
-                  <span key={item} className="text-xs text-muted-foreground/60 font-mono">{item}</span>
+                  { num: "3", label: "EVM TXs" },
+                  { num: "5", label: "HCS msgs" },
+                  { num: "1", label: "NFT" },
+                  { num: "2", label: "accounts" },
+                  { num: "1", label: "trust" },
+                ].map(({ num, label }) => (
+                  <span key={label} className="text-xs text-foreground/70 font-mono">
+                    <span className="text-foreground font-medium">{num}</span>{" "}
+                    <span className="text-muted-foreground">{label}</span>
+                  </span>
                 ))}
               </div>
-              <div className="sm:ml-auto shrink-0">
-                <p className="text-[10px] text-muted-foreground/40">
-                  100/month = <span className="text-foreground/60">1,200 Hedera ops</span>
+              <div className="sm:ml-auto shrink-0 rounded-md border border-primary/20 bg-primary/[0.06] px-3 py-1.5">
+                <p className="text-[11px] font-mono">
+                  <span className="text-muted-foreground">100/month =</span>{" "}
+                  <span className="text-primary font-medium">1,200 Hedera ops</span>
                 </p>
               </div>
             </div>
