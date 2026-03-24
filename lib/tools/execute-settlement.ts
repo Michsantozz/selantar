@@ -3,6 +3,8 @@ import { z } from "zod";
 import { parseEther } from "viem";
 import { getWalletClient, getPublicClient } from "@/lib/wallet";
 import { notifyOpenClaw } from "@/lib/notify-openclaw";
+import { getExplorerTxUrl } from "@/lib/hedera/explorer";
+import { logToHCS } from "@/lib/hedera/hcs";
 
 export const executeSettlement = tool({
   description:
@@ -108,6 +110,8 @@ export const executeSettlement = tool({
           tx: clientData.data?.transaction_id ?? "pending",
         });
 
+        void logToHCS("settlement_executed", { method: "locus", contractRef, clientAmount, developerAmount, txId: clientData.data?.transaction_id });
+
         return locusResult;
       } catch (locusError) {
         console.warn("Locus path failed, falling back to ERC-7715/delegation:", locusError);
@@ -151,7 +155,7 @@ export const executeSettlement = tool({
           reasoning,
           chain: "Hedera Testnet",
           delegationScope: "ERC-7715 Intent Delegation — agent resolved dispute and executed settlement autonomously",
-          explorer: `https://hashscan.io/testnet/transaction/${userOpHash}`,
+          explorer: getExplorerTxUrl(userOpHash),
           timestamp: new Date().toISOString(),
         };
       } catch (erc7715Error) {
@@ -198,7 +202,7 @@ export const executeSettlement = tool({
           delegationScope: "Intent Delegation — dispute resolution delegated to agent, settlement determined autonomously",
           delegator: clientSmartAccount.address,
           delegate: agentSmartAccount.address,
-          explorer: `https://hashscan.io/testnet/transaction/${userOpHash}`,
+          explorer: getExplorerTxUrl(userOpHash),
           timestamp: new Date().toISOString(),
         };
       } catch (delegationError) {
@@ -230,8 +234,10 @@ export const executeSettlement = tool({
         desenvolvedor: `$${developerAmount}`,
         contrato: contractRef,
         tx: hash,
-        explorer: `https://hashscan.io/testnet/transaction/${hash}`,
+        explorer: getExplorerTxUrl(hash),
       });
+
+      void logToHCS("settlement_executed", { method: "direct", contractRef, clientAmount, developerAmount, txHash: hash });
 
       return {
         status: "executed",
@@ -243,7 +249,7 @@ export const executeSettlement = tool({
         contractRef,
         reasoning,
         chain: "Hedera Testnet",
-        explorer: `https://hashscan.io/testnet/transaction/${hash}`,
+        explorer: getExplorerTxUrl(hash),
         timestamp: new Date().toISOString(),
       };
     } catch {

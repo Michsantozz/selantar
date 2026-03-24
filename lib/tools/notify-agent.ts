@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { getExplorerTxUrl } from "@/lib/hedera/explorer";
 
 const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL ?? "https://whats.vensa.pro";
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY ?? "429683C4C977415CAAFCCE10F7D57E11";
@@ -52,7 +53,7 @@ export const notifyAgent = tool({
 
     if (txHash) {
       lines.push("", `🔗 TX: ${txHash}`);
-      lines.push(`https://hashscan.io/testnet/transaction/${txHash}`);
+      lines.push(getExplorerTxUrl(txHash));
     }
 
     const text = lines.join("\n");

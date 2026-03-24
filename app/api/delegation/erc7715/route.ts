@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseEther } from "viem";
 import { redeemWithPermissionsContext } from "@/lib/delegation/erc7715";
+import { getExplorerTxUrl } from "@/lib/hedera/explorer";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       userOpHash,
-      explorer: `https://hashscan.io/testnet/transaction/${userOpHash}`,
+      explorer: getExplorerTxUrl(userOpHash),
     });
   } catch (error) {
     console.error("ERC-7715 redeem failed:", error);

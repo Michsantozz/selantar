@@ -726,7 +726,7 @@ function OnChainTrustSection() {
         <div className="mt-10 grid gap-4 lg:grid-cols-[1fr_auto]">
           {/* Numbers grid */}
           <BlurFade delay={0.6} inView>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-px rounded-xl overflow-hidden border border-primary/10">
+            <div className="grid grid-cols-3 sm:grid-cols-5 rounded-xl overflow-hidden border border-primary/10 divide-x divide-primary/10">
               {[
                 { value: "9", label: "On-chain TXs", sub: "Across 3 services", accent: true },
                 { value: "3", label: "Services", sub: "EVM · HCS · HTS", accent: true },
@@ -734,7 +734,7 @@ function OnChainTrustSection() {
                 { value: "5", label: "AI Tools", sub: "Autonomous exec", accent: false },
                 { value: "12", label: "Ops/mediation", sub: "Hedera activity", accent: false },
               ].map(({ value, label, sub, accent }) => (
-                <div key={label} className="flex flex-col justify-between bg-card/60 p-4">
+                <div key={label} className="flex flex-col justify-between p-4">
                   <span
                     className="font-mono text-2xl font-medium leading-none"
                     style={{ color: accent ? "oklch(0.72 0.17 55)" : undefined }}
@@ -927,6 +927,135 @@ function VisionSection() {
 }
 
 /* ═══════════════════════════════════════════════
+   PITCH — Demo video + Pitch deck (Forge-style cards)
+   ═══════════════════════════════════════════════ */
+function PitchSection() {
+  return (
+    <section className="relative py-14 lg:py-22 border-t border-border overflow-hidden">
+      <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
+        <div className="mb-10 max-w-2xl">
+          <BlurFade delay={0.1} inView>
+            <SectionLabel label="Pitch Materials" />
+          </BlurFade>
+          <BlurFade delay={0.2} inView>
+            <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
+              See it{" "}
+              <span className="font-display italic text-primary">in action.</span>
+            </h2>
+          </BlurFade>
+          <BlurFade delay={0.3} inView>
+            <p className="mt-6 text-base leading-relaxed text-muted-foreground">
+              Full walkthrough and deck. Everything a judge needs to understand Selantar.
+            </p>
+          </BlurFade>
+        </div>
+
+        {/* Two cards — Forge style */}
+        <div className="grid gap-5 lg:grid-cols-2">
+
+          {/* Card 1 — Demo Video */}
+          <BlurFade delay={0.25} inView>
+            <Link
+              href="/pitch/video"
+              className="group flex flex-col rounded-xl border border-border bg-card transition-colors duration-500 hover:border-primary/15"
+            >
+              {/* Card header strip */}
+              <div className="flex items-center justify-between px-7 py-5">
+                <div className="flex items-center gap-2.5">
+                  <span className="size-[6px] rounded-full bg-primary" />
+                  <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Demo Video
+                  </span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground/25">
+                  01 — Walkthrough
+                </span>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Body */}
+              <div className="flex flex-1 flex-col px-7 pt-8 pb-7">
+                <h3 className="text-[1.65rem] font-normal tracking-tight leading-[1.15] text-foreground">
+                  Watch the full demo. ▶
+                  <br />
+                  <span className="text-muted-foreground/60">
+                    From PDF to settlement.
+                  </span>
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground/50 max-w-[360px]">
+                  Upload, audit, mediation, and on-chain execution — end to end
+                  in under 5 minutes. See the AI think under real pressure.
+                </p>
+
+                <div className="flex-1" />
+
+                {/* CTA */}
+                <div className="mt-8 flex items-center justify-between rounded-md border border-primary/20 bg-primary/[0.04] px-5 py-3 transition-all duration-500 group-hover:bg-primary/[0.08] group-hover:border-primary/30">
+                  <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-primary">
+                    Watch Demo
+                  </span>
+                  <ArrowRight className="size-3 text-primary transition-transform duration-500 group-hover:translate-x-0.5" />
+                </div>
+              </div>
+            </Link>
+          </BlurFade>
+
+          {/* Card 2 — Pitch Deck */}
+          <BlurFade delay={0.35} inView>
+            <Link
+              href="/pitch/deck"
+              className="group flex flex-col rounded-xl border border-border bg-card transition-colors duration-500 hover:border-primary/15"
+            >
+              {/* Card header strip */}
+              <div className="flex items-center justify-between px-7 py-5">
+                <div className="flex items-center gap-2.5">
+                  <span className="size-[6px] rounded-full bg-primary" />
+                  <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Pitch Deck
+                  </span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground/25">
+                  02 — 14 Slides
+                </span>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Body */}
+              <div className="flex flex-1 flex-col px-7 pt-8 pb-7">
+                <h3 className="text-[1.65rem] font-normal tracking-tight leading-[1.15] text-foreground">
+                  The full pitch. 📑
+                  <br />
+                  <span className="text-muted-foreground/60">
+                    Architecture to market.
+                  </span>
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground/50 max-w-[360px]">
+                  14 slides covering the problem, solution, on-chain proof,
+                  ERC-8004 integration, Hedera metrics, and the trust economy vision.
+                </p>
+
+                <div className="flex-1" />
+
+                {/* CTA */}
+                <div className="mt-8 flex items-center justify-between rounded-md border border-primary/20 bg-primary/[0.04] px-5 py-3 transition-all duration-500 group-hover:bg-primary/[0.08] group-hover:border-primary/30">
+                  <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-primary">
+                    View Deck
+                  </span>
+                  <ArrowRight className="size-3 text-primary transition-transform duration-500 group-hover:translate-x-0.5" />
+                </div>
+              </div>
+            </Link>
+          </BlurFade>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════
    CTA — Centered with ShimmerButton
    ═══════════════════════════════════════════════ */
 function CTASection() {
@@ -1032,6 +1161,7 @@ export default function LandingPage() {
       <PipelineSection />
       <OnChainTrustSection />
       <VisionSection />
+      <PitchSection />
       <CTASection />
       <Footer />
     </>

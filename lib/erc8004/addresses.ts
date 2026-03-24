@@ -6,12 +6,12 @@
 export const ERC8004_ADDRESSES = {
   // Hedera Testnet (Apex Hackathon — active)
   // Identity + Reputation: official ERC-8004 vanity deploys (same addresses cross-chain)
-  // Validation: TODO — deploy our own (same as we did on Base Sepolia)
+  // Validation: deployed by Selantar (custom implementation of IValidationRegistry)
   hederaTestnet: {
     identityRegistry: "0x8004A818BFB912233c491871b3d84c89A494BD9e" as `0x${string}`,
     reputationRegistry: "0x8004B663056A597Dffe9eCcC1965A193B7388713" as `0x${string}`,
-    // TODO: Deploy ValidationRegistry on Hedera Testnet and update this address
-    validationRegistry: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+    // Deployed by Selantar — TX: 0x8048e03744e2811ebeeb69a559848076bccb3ac9e81789d83d82a18bc20ad013
+    validationRegistry: "0xf3dd86fcc060639d3dd56fbf652b171aeabb1b58" as `0x${string}`,
   },
   // Base Sepolia (original deployment)
   baseSepolia: {

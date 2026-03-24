@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { notifyOpenClaw } from "@/lib/notify-openclaw";
+import { logToHCS } from "@/lib/hedera/hcs";
 
 export const proposeSettlement = tool({
   description:
@@ -41,6 +42,8 @@ export const proposeSettlement = tool({
       cliente: `$${clientAmount.toFixed(2)} (${clientPercentage}%)`,
       desenvolvedor: `$${developerAmount.toFixed(2)} (${100 - clientPercentage}%)`,
     });
+
+    void logToHCS("settlement_proposed", { totalAmount, clientAmount: clientAmount.toFixed(2), developerAmount: developerAmount.toFixed(2), clientPercentage });
 
     return result;
   },

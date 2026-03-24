@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { notifyOpenClaw } from "@/lib/notify-openclaw";
+import { logToHCS } from "@/lib/hedera/hcs";
 
 export const analyzeEvidence = tool({
   description:
@@ -80,6 +81,8 @@ export const analyzeEvidence = tool({
       score: `${score}/100`,
       achados: findings.length,
     });
+
+    void logToHCS("evidence_analyzed", { evidenceType, perspective, credibilityScore: score, findings: findings.length });
 
     return result;
   },
