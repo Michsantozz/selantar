@@ -646,7 +646,7 @@ function PipelineSection() {
 /* ═══════════════════════════════════════════════
    ERC-8004 — On-chain trust layer (with dot pattern)
    ═══════════════════════════════════════════════ */
-function ERC8004Section() {
+function OnChainTrustSection() {
   return (
     <section id="on-chain" className="relative py-14 lg:py-22 overflow-hidden">
       <DotPattern
@@ -656,224 +656,147 @@ function ERC8004Section() {
         className="text-primary/[0.06] [mask-image:radial-gradient(600px_circle_at_30%_50%,white,transparent)]"
       />
       <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
-        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <BlurFade delay={0.1} inView>
-              <SectionLabel label="On-chain trust" />
-            </BlurFade>
-            <BlurFade delay={0.2} inView>
-              <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
-                Credit is never
-                <br />
+        {/* Header — emotional narrative */}
+        <div className="max-w-2xl">
+          <BlurFade delay={0.1} inView>
+            <SectionLabel label="On-chain trust" />
+          </BlurFade>
+          <BlurFade delay={0.2} inView>
+            <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
+              Credit is never
+              <br />
+              <span className="font-display italic text-primary">
                 a cold number.
-              </h2>
-            </BlurFade>
-            <BlurFade delay={0.3} inView>
-              <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground">
-                We look past statistics to see the human behind the deal.
-                Every mediation builds an on-chain bureau. Not just
-                payments, but professional truth. This truth unlocks a new economy.
-              </p>
-            </BlurFade>
-          </div>
+              </span>
+            </h2>
+          </BlurFade>
+          <BlurFade delay={0.3} inView>
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
+              Every mediation builds an on-chain bureau on Hedera — not just
+              payments, but professional truth. Three registries. Three services.
+              One immutable reputation that follows the agent forever.
+            </p>
+          </BlurFade>
+        </div>
 
-          <div className="divide-y divide-border">
-            {[
-              {
-                title: "Identity Registry",
-                description:
-                  "Registered as an autonomous agent on Hedera. Every action traceable to a verified on-chain identity.",
-                icon: Fingerprint,
-                badge: "REGISTERED",
-              },
-              {
-                title: "Reputation Registry",
-                description:
-                  "Each settlement builds reputation. Verified professional truth that unlocks real liquidity.",
-                icon: TrendingUp,
-                badge: "ACTIVE",
-              },
-              {
-                title: "Validation Registry",
-                description:
-                  "Every verdict stored as cryptographic evidence. Permanent, auditable, impossible to erase.",
-                icon: BadgeCheck,
-                badge: "VERIFIED",
-              },
-            ].map(({ title, description, icon: Icon, badge }, i) => (
-              <BlurFade key={title} delay={0.2 + i * 0.1} inView>
-                <div className="flex items-start justify-between gap-6 py-6">
-                  <div className="flex items-start gap-4">
-                    <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-foreground">
-                          {title}
-                        </span>
-                        <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary">
-                          {badge}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {description}
-                      </p>
-                    </div>
+        {/* 3 Registries as cards */}
+        <div className="mt-12 grid gap-4 lg:grid-cols-3">
+          {[
+            {
+              title: "Identity Registry",
+              icon: Fingerprint,
+              badge: "AGENT #36",
+              description: "Registered as an autonomous agent on Hedera. Every action traceable to a verified on-chain identity.",
+              detail: "EVM · 0x8004A8...BD9e",
+            },
+            {
+              title: "Reputation Registry",
+              icon: TrendingUp,
+              badge: "SCORE 85",
+              description: "Each settlement builds reputation. Verified professional truth that unlocks real liquidity.",
+              detail: "EVM · 0x8004B6...8713",
+            },
+            {
+              title: "Validation Registry",
+              icon: BadgeCheck,
+              badge: "DEPLOYED",
+              description: "Every verdict stored as cryptographic evidence. Permanent, auditable, impossible to erase.",
+              detail: "EVM · 0xf3dd86...1b58",
+            },
+          ].map(({ title, icon: Icon, badge, description, detail }, i) => (
+            <BlurFade key={title} delay={0.3 + i * 0.1} inView>
+              <div className="group rounded-xl border border-border bg-card/50 p-6 transition-all hover:border-primary/20 hover:bg-card/80 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-primary/[0.08] border border-primary/15">
+                    <Icon className="size-4 text-primary" />
+                  </div>
+                  <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary">
+                    {badge}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-foreground">{title}</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground flex-1">{description}</p>
+                <p className="mt-3 text-[9px] font-mono text-muted-foreground/40">{detail}</p>
+              </div>
+            </BlurFade>
+          ))}
+        </div>
+
+        {/* Metric strip + HashScan CTA */}
+        <div className="mt-10 grid gap-4 lg:grid-cols-[1fr_auto]">
+          {/* Numbers grid */}
+          <BlurFade delay={0.6} inView>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-px rounded-xl overflow-hidden border border-primary/10">
+              {[
+                { value: "9", label: "On-chain TXs", sub: "Across 3 services", accent: true },
+                { value: "3", label: "Services", sub: "EVM · HCS · HTS", accent: true },
+                { value: "85", label: "Trust", sub: "Reputation score", accent: false },
+                { value: "5", label: "AI Tools", sub: "Autonomous exec", accent: false },
+                { value: "12", label: "Ops/mediation", sub: "Hedera activity", accent: false },
+              ].map(({ value, label, sub, accent }) => (
+                <div key={label} className="flex flex-col justify-between bg-card/60 p-4">
+                  <span
+                    className="font-mono text-2xl font-medium leading-none"
+                    style={{ color: accent ? "oklch(0.72 0.17 55)" : undefined }}
+                  >
+                    {value}
+                  </span>
+                  <div className="mt-2">
+                    <p className="text-[10px] font-medium text-foreground/80">{label}</p>
+                    <p className="text-[8px] text-muted-foreground/50">{sub}</p>
                   </div>
                 </div>
-              </BlurFade>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+              ))}
+            </div>
+          </BlurFade>
 
-/* ═══════════════════════════════════════════════
-   NETWORK EFFECT — More agents = more trust
-   ═══════════════════════════════════════════════ */
-function NetworkEffectSection() {
-  return (
-    <section className="relative py-14 lg:py-22 border-t border-border bg-card/20 overflow-hidden">
-      <DotPattern
-        width={24}
-        height={24}
-        cr={0.8}
-        className="text-primary/[0.04] [mask-image:radial-gradient(500px_circle_at_70%_30%,white,transparent)]"
-      />
-      <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
-        <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
-          {/* Left — Copy */}
-          <div>
-            <BlurFade delay={0.1} inView>
-              <SectionLabel label="Every network starts somewhere" />
-            </BlurFade>
-            <BlurFade delay={0.2} inView>
-              <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
-                One mediation.
-                <br />
-                <span className="font-display italic text-primary">
-                  Three Hedera services.
-                </span>
-              </h2>
-            </BlurFade>
-            <BlurFade delay={0.3} inView>
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-                We are day one. Every mediation Clara resolves generates real
-                activity on Hedera — EVM transactions, consensus messages, and
-                token receipts. The flywheel is ready to spin.
+          {/* HashScan CTA */}
+          <BlurFade delay={0.7} inView>
+            <a
+              href="https://hashscan.io/testnet/account/0xFE5561A1a064ae13DbcF23BA1e3ff85Fc3da7B04"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-primary/20 bg-primary/[0.04] px-5 py-4 h-full transition-all hover:border-primary/40 hover:bg-primary/[0.08]"
+            >
+              <BorderBeam size={120} duration={4} borderWidth={1.5} colorFrom="oklch(0.72 0.17 55)" colorTo="oklch(0.72 0.17 55 / 0)" />
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Fingerprint className="size-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Agent #36</p>
+                <p className="text-[10px] text-muted-foreground">Verify on HashScan</p>
+              </div>
+              <ExternalLink className="size-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-primary ml-auto" />
+            </a>
+          </BlurFade>
+        </div>
+
+        {/* Per mediation breakdown + projection */}
+        <BlurFade delay={0.8} inView>
+          <div className="mt-6 rounded-xl border border-border bg-card/30 p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 shrink-0">
+                Per mediation
               </p>
-            </BlurFade>
-
-            {/* HashScan CTA */}
-            <BlurFade delay={0.4} inView>
-              <a
-                href="https://hashscan.io/testnet/account/0xFE5561A1a064ae13DbcF23BA1e3ff85Fc3da7B04"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative mt-8 inline-flex items-center gap-3 overflow-hidden rounded-xl border border-primary/20 bg-primary/[0.04] px-5 py-3.5 transition-all hover:border-primary/40 hover:bg-primary/[0.08] hover:shadow-[0_4px_24px_oklch(0.72_0.17_55/0.08)]"
-              >
-                <BorderBeam size={120} duration={4} borderWidth={1.5} colorFrom="oklch(0.72 0.17 55)" colorTo="oklch(0.72 0.17 55 / 0)" />
-                <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
-                  <Fingerprint className="size-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Agent #36 on HashScan</p>
-                  <p className="text-[10px] text-muted-foreground">See every transaction live on Hedera Testnet</p>
-                </div>
-                <ExternalLink className="size-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
-              </a>
-            </BlurFade>
-
-            {/* Projection */}
-            <BlurFade delay={0.5} inView>
-              <div className="mt-8 rounded-lg border border-border/40 bg-card/30 px-4 py-3">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  <span className="text-foreground font-medium">Simple math:</span>{" "}
-                  100 mediations/month = 200 new accounts, 300 EVM TXs,
-                  500 HCS messages, 100 NFT receipts on Hedera.
-                </p>
-              </div>
-            </BlurFade>
-          </div>
-
-          {/* Right — Metric grid */}
-          <div className="flex flex-col gap-6">
-            {/* Built — individual metric cells */}
-            <div>
-              <BlurFade delay={0.3} inView>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-primary/50 mb-3 flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-primary" />
-                  Built &amp; verified on HashScan
-                </p>
-              </BlurFade>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-px rounded-xl overflow-hidden border border-primary/10">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 {[
-                  { value: "9", label: "On-chain TXs", sub: "Across 3 services", accent: true },
-                  { value: "3", label: "Hedera Services", sub: "EVM · HCS · HTS", accent: true },
-                  { value: "#36", label: "Agent ID", sub: "Identity Registry", accent: false },
-                  { value: "85", label: "Trust Score", sub: "Reputation on-chain", accent: false },
-                  { value: "5", label: "AI Tools", sub: "Autonomous exec", accent: false },
-                ].map(({ value, label, sub, accent }, i) => (
-                  <BlurFade key={label} delay={0.35 + i * 0.06} inView>
-                    <div className="flex flex-col justify-between bg-card/60 p-4 h-full">
-                      <span
-                        className="font-mono text-3xl font-medium leading-none"
-                        style={{ color: accent ? "oklch(0.72 0.17 55)" : undefined }}
-                      >
-                        {value}
-                      </span>
-                      <div className="mt-3">
-                        <p className="text-[11px] font-medium text-foreground/80">{label}</p>
-                        <p className="text-[9px] text-muted-foreground/50 mt-0.5">{sub}</p>
-                      </div>
-                    </div>
-                  </BlurFade>
+                  "3 EVM TXs",
+                  "5 HCS messages",
+                  "1 NFT receipt",
+                  "2 new accounts",
+                  "1 trust entry",
+                ].map((item) => (
+                  <span key={item} className="text-xs text-muted-foreground/60 font-mono">{item}</span>
                 ))}
               </div>
-            </div>
-
-            {/* Per mediation — same grid style, muted */}
-            <div>
-              <BlurFade delay={0.55} inView>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 mb-3 flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-muted-foreground/30" />
-                  Each mediation generates
+              <div className="sm:ml-auto shrink-0">
+                <p className="text-[10px] text-muted-foreground/40">
+                  100/month = <span className="text-foreground/60">1,200 Hedera ops</span>
                 </p>
-              </BlurFade>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-px rounded-xl overflow-hidden border border-border">
-                {[
-                  { value: "3", label: "EVM TXs", sub: "Settle · Rep · Valid" },
-                  { value: "5", label: "HCS Messages", sub: "Audit per tool step" },
-                  { value: "1", label: "NFT Receipt", sub: "SLNTR on HTS" },
-                  { value: "2", label: "New Accounts", sub: "Client + Dev wallets" },
-                  { value: "1", label: "Trust Entry", sub: "Permanent record" },
-                ].map(({ value, label, sub }, i) => (
-                  <BlurFade key={label} delay={0.6 + i * 0.06} inView>
-                    <div className="flex flex-col justify-between bg-card/30 p-4 h-full">
-                      <span className="font-mono text-3xl font-medium leading-none text-muted-foreground/60">
-                        {value}
-                      </span>
-                      <div className="mt-3">
-                        <p className="text-[11px] font-medium text-foreground/70">{label}</p>
-                        <p className="text-[9px] text-muted-foreground/40 mt-0.5">{sub}</p>
-                      </div>
-                    </div>
-                  </BlurFade>
-                ))}
               </div>
-
-              {/* Math footer */}
-              <BlurFade delay={0.85} inView>
-                <p className="mt-4 text-xs text-muted-foreground/50 leading-relaxed">
-                  <span className="text-foreground/70 font-medium">Simple math:</span>{" "}
-                  100 mediations/month = 200 new accounts, 300 EVM TXs,
-                  500 HCS messages, 100 NFT receipts on Hedera.
-                </p>
-              </BlurFade>
             </div>
           </div>
-        </div>
+        </BlurFade>
       </div>
     </section>
   );
@@ -1103,8 +1026,7 @@ export default function LandingPage() {
       <HowItWorksSection />
       <BentoSection />
       <PipelineSection />
-      <ERC8004Section />
-      <NetworkEffectSection />
+      <OnChainTrustSection />
       <VisionSection />
       <CTASection />
       <Footer />
