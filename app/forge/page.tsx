@@ -81,7 +81,7 @@ function ParseCard() {
             return (
               <Link
                 key={s.id}
-                href={`/forge/analyze?scenario=${s.id}`}
+                href="/contractv2"
                 className="group/demo flex items-center gap-4 rounded-lg border border-border bg-background px-4 py-4 transition-all duration-500 hover:border-primary/25 hover:shadow-[0_4px_24px_oklch(0.72_0.17_55/0.04)]"
               >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/[0.06] border border-primary/10 text-lg">
