@@ -32,19 +32,19 @@ const severityConfig: Record<
   { badge: string; dot: string; label: string; icon: React.ReactNode }
 > = {
   high: {
-    badge: "border-destructive/30 bg-destructive/10 text-destructive",
+    badge: "border-destructive/20 bg-destructive/[0.06] text-destructive",
     dot: "bg-destructive",
     label: "High Risk",
     icon: <ShieldAlertIcon className="size-3" />,
   },
   medium: {
-    badge: "border-accent/30 bg-accent/10 text-accent",
+    badge: "border-accent/20 bg-accent/[0.06] text-accent",
     dot: "bg-accent",
     label: "Medium",
     icon: <ShieldAlertIcon className="size-3" />,
   },
   low: {
-    badge: "border-emerald/30 bg-emerald/10 text-emerald",
+    badge: "border-emerald/20 bg-emerald/[0.06] text-emerald",
     dot: "bg-emerald",
     label: "Low",
     icon: <ShieldCheckIcon className="size-3" />,
@@ -135,33 +135,33 @@ function RiskCard({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-card transition-all",
-        risk.accepted === true && "border-emerald/20 opacity-70",
-        risk.accepted === false && "border-destructive/20",
-        risk.accepted === null && "border-border"
+        "rounded-lg border transition-all",
+        risk.accepted === true && "border-emerald/15 bg-emerald/[0.02]",
+        risk.accepted === false && "border-destructive/15 bg-destructive/[0.02]",
+        risk.accepted === null && "border-border bg-transparent"
       )}
     >
       {/* Header */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-start gap-3 px-5 py-4 text-left"
+        className="flex w-full items-start gap-3 px-4 py-3.5 text-left"
       >
         {/* Severity dot */}
-        <span className={cn("mt-2 size-2.5 shrink-0 rounded-full", cfg.dot)} />
+        <span className={cn("mt-[7px] size-2 shrink-0 rounded-full", cfg.dot)} />
 
         {/* Content */}
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-snug text-foreground">
+          <p className="text-[13px] font-medium leading-snug text-foreground">
             {risk.title}
           </p>
-          <div className="mt-1.5 flex items-center gap-3">
-            <span className="font-mono text-xs text-muted-foreground/60">
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[10px] text-muted-foreground/40">
               {risk.clause}
             </span>
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider",
+                "inline-flex items-center gap-1 rounded-md border px-1.5 py-px text-[10px] font-semibold uppercase tracking-[0.1em]",
                 cfg.badge
               )}
             >
@@ -171,14 +171,14 @@ function RiskCard({
 
             {/* Decision badge */}
             {risk.accepted === true && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald">
-                <CheckIcon className="size-3" />
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald/80 uppercase tracking-wider">
+                <CheckIcon className="size-2.5" />
                 Accepted
               </span>
             )}
             {risk.accepted === false && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive">
-                <XIcon className="size-3" />
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-destructive/80 uppercase tracking-wider">
+                <XIcon className="size-2.5" />
                 Rejected
               </span>
             )}
@@ -187,7 +187,7 @@ function RiskCard({
 
         <ChevronDownIcon
           className={cn(
-            "mt-1.5 size-4 shrink-0 text-muted-foreground transition-transform",
+            "mt-1 size-3.5 shrink-0 text-muted-foreground/30 transition-transform",
             expanded && "rotate-180"
           )}
         />
@@ -195,58 +195,58 @@ function RiskCard({
 
       {/* Expanded */}
       {expanded && (
-        <div className="border-t border-border px-5 py-4">
+        <div className="border-t border-border/50 px-4 py-4 ml-5">
           {/* Description */}
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="text-[13px] leading-relaxed text-muted-foreground/80">
             {risk.description}
           </p>
 
           {/* Original clause */}
-          <div className="mt-4 rounded-md border border-border bg-muted/20 px-4 py-3">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50">
+          <div className="mt-4 rounded-md border border-border/60 bg-muted/[0.08] px-4 py-3">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/35 mb-1.5">
               Original Clause
             </p>
-            <p className="mt-1.5 font-mono text-sm leading-relaxed text-muted-foreground">
+            <p className="font-mono text-[12px] leading-relaxed text-muted-foreground/70">
               &ldquo;{risk.originalText}&rdquo;
             </p>
           </div>
 
           {/* Clara suggestion */}
-          <div className="mt-3 rounded-md border border-accent/20 bg-accent/5 px-4 py-3">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-accent">
+          <div className="mt-2.5 rounded-md border border-accent/15 bg-accent/[0.03] px-4 py-3">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-accent/70 mb-1.5">
               Clara&apos;s Suggestion
             </p>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            <p className="text-[12px] leading-relaxed text-muted-foreground/80">
               {risk.suggestion}
             </p>
           </div>
 
           {/* Accept / Reject toggles */}
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex items-center gap-2">
             <button
               type="button"
               onClick={() => onToggle(risk.id, true)}
               className={cn(
-                "flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium uppercase tracking-wider transition-colors",
+                "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors",
                 risk.accepted === true
-                  ? "border-emerald/30 bg-emerald/10 text-emerald"
-                  : "border-border bg-transparent text-muted-foreground hover:border-emerald/30 hover:bg-emerald/5 hover:text-emerald"
+                  ? "border-emerald/25 bg-emerald/8 text-emerald"
+                  : "border-border bg-transparent text-muted-foreground/50 hover:border-emerald/20 hover:text-emerald"
               )}
             >
-              <CheckIcon className="size-3.5" />
-              Accept Suggestion
+              <CheckIcon className="size-3" />
+              Accept
             </button>
             <button
               type="button"
               onClick={() => onToggle(risk.id, false)}
               className={cn(
-                "flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium uppercase tracking-wider transition-colors",
+                "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors",
                 risk.accepted === false
-                  ? "border-destructive/30 bg-destructive/10 text-destructive"
-                  : "border-border bg-transparent text-muted-foreground hover:border-destructive/30 hover:bg-destructive/5 hover:text-destructive"
+                  ? "border-destructive/25 bg-destructive/8 text-destructive"
+                  : "border-border bg-transparent text-muted-foreground/50 hover:border-destructive/20 hover:text-destructive"
               )}
             >
-              <XIcon className="size-3.5" />
+              <XIcon className="size-3" />
               Keep Original
             </button>
           </div>
@@ -268,51 +268,45 @@ function RiskSummary({ risks }: { risks: RiskItem[] }) {
   const low = risks.filter((r) => r.severity === "low").length;
 
   return (
-    <div className="rounded-lg border border-border bg-card px-5 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-destructive" />
-            <span className="text-sm text-muted-foreground">
-              {high} high
-            </span>
+    <div className="rounded-lg border border-border bg-card/40 p-4">
+      {/* Severity counts */}
+      <div className="flex items-center gap-4">
+        {[
+          { count: high, color: "bg-destructive", label: "high" },
+          { count: medium, color: "bg-accent", label: "medium" },
+          { count: low, color: "bg-emerald", label: "low" },
+        ].map(({ count, color, label }) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <span className={cn("size-2 rounded-full", color)} />
+            <span className="tabular-nums text-[13px] font-semibold text-foreground">{count}</span>
+            <span className="text-[11px] text-muted-foreground/50">{label}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-accent" />
-            <span className="text-sm text-muted-foreground">
-              {medium} medium
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-emerald" />
-            <span className="text-sm text-muted-foreground">
-              {low} low
-            </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-emerald">{accepted} accepted</span>
-          <span className="text-destructive">{rejected} rejected</span>
-          <span className="text-muted-foreground">{pending} pending</span>
-        </div>
+        ))}
       </div>
 
-      {/* Progress */}
-      <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-muted">
+      {/* Decision counts */}
+      <div className="mt-3 flex items-center gap-3 text-[11px]">
+        <span className="tabular-nums text-emerald/80 font-medium">{accepted} accepted</span>
+        <span className="text-destructive/80 tabular-nums font-medium">{rejected} rejected</span>
+        <span className="text-muted-foreground/40 tabular-nums">{pending} pending</span>
+      </div>
+
+      {/* Progress bar */}
+      <div className="mt-3 flex h-[3px] overflow-hidden rounded-full bg-muted/40">
         {accepted > 0 && (
           <div
-            className="h-full bg-emerald transition-all duration-300"
+            className="h-full bg-emerald/70 transition-all duration-500"
             style={{ width: `${(accepted / total) * 100}%` }}
           />
         )}
         {rejected > 0 && (
           <div
-            className="h-full bg-destructive transition-all duration-300"
+            className="h-full bg-destructive/70 transition-all duration-500"
             style={{ width: `${(rejected / total) * 100}%` }}
           />
         )}
       </div>
-      <p className="mt-2 text-xs text-muted-foreground/60">
+      <p className="mt-2 text-[10px] text-muted-foreground/35 tabular-nums">
         {total - pending} of {total} clauses reviewed
       </p>
     </div>
@@ -337,7 +331,7 @@ export function RiskReview() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex-1 overflow-auto p-4">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           <RiskSummary risks={risks} />
           {risks.map((r) => (
             <RiskCard key={r.id} risk={r} onToggle={handleToggle} />

@@ -40,7 +40,7 @@ const explorerUrl =
 
 export function Navbar() {
   const pathname = usePathname();
-  if (pathname.startsWith('/contract/')) return null;
+  if (pathname.startsWith('/contract')) return null;
   if (pathname.startsWith('/pitch')) return null;
   const isLanding = pathname === "/";
   const [wallet, setWallet] = useState<string | null>(null);

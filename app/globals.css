@@ -109,13 +109,13 @@
 :root {
   /* === Selantar — Void palette === */
 
-  --background: #000000;
+  --background: #0a0a0b;
   --foreground: #f2f2f7;
 
-  --card: #0a0a0a;
+  --card: #0f0f10;
   --card-foreground: #f2f2f7;
 
-  --popover: #111111;
+  --popover: #131314;
   --popover-foreground: #f2f2f7;
 
   --primary: #e2863a;

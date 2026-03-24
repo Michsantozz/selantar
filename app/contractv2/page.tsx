@@ -12,7 +12,7 @@ const MilestoneBuilder = dynamic(
   { ssr: false }
 );
 import { ContractHeader } from "./_components/contract-header";
-import { FileTextIcon, SparklesIcon, ChevronLeftIcon, MoreHorizontalIcon, CheckIcon } from "lucide-react";
+import { FileTextIcon, ChevronLeftIcon, MoreHorizontalIcon, CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -22,6 +22,8 @@ const STEPS = [
   { id: 4, label: "Deploy", done: false },
 ];
 
+const COL_LABELS = ["Risk Review", "Milestones", "Deploy Preview"] as const;
+
 export default function ContractV2Page() {
   const [activeStep, setActiveStep] = useState(2);
 
@@ -29,72 +31,84 @@ export default function ContractV2Page() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0, 0, 0.2, 1] }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="flex flex-col bg-background"
       style={{ height: "100dvh" }}
     >
 
-      {/* 1st — Nav + status + PDF source */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
+      {/* ── Top bar ── */}
+      <motion.header
+        initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1, ease: [0, 0, 0.2, 1] }}
-        className="shrink-0 h-12 border-b border-border bg-card/30 flex items-center justify-between px-6"
+        transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        className="shrink-0 h-11 border-b border-border flex items-center justify-between px-6"
       >
         <div className="flex items-center gap-3">
-          <Link href="/forge" className="group flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeftIcon className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
-            <span className="text-xs uppercase tracking-wider">Selantar</span>
+          <Link href="/forge" className="group flex items-center gap-1 text-muted-foreground/60 hover:text-foreground transition-colors">
+            <ChevronLeftIcon className="size-3 transition-transform group-hover:-translate-x-0.5" />
+            <span className="text-[10px] uppercase tracking-[0.15em] font-medium">Selantar</span>
           </Link>
-          <div className="w-px h-4 bg-border" />
+          <div className="w-px h-3.5 bg-border" />
           <div className="flex items-center gap-2">
-            <div className="flex size-6 items-center justify-center rounded-md bg-accent/10 border border-accent/20">
-              <FileTextIcon className="size-3 text-accent" />
+            <div className="flex size-5 items-center justify-center rounded bg-accent/8 border border-accent/15">
+              <FileTextIcon className="size-2.5 text-accent" />
             </div>
-            <span className="text-sm font-medium text-foreground">Contract review</span>
-            <span className="text-xs text-muted-foreground">contract-v2.pdf</span>
+            <span className="text-[13px] font-medium text-foreground">Contract review</span>
+            <span className="text-[11px] text-muted-foreground/50 font-mono">contract-v2.pdf</span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 rounded-full border border-emerald/20 bg-emerald/8 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald">
-            <span className="size-1.5 rounded-full bg-emerald" />
+        <div className="flex items-center gap-2.5">
+          <span className="flex items-center gap-1.5 rounded-full border border-emerald/15 bg-emerald/[0.06] px-2.5 py-[3px] text-[9px] font-semibold uppercase tracking-[0.15em] text-emerald">
+            <span className="size-[5px] rounded-full bg-emerald animate-subtle-pulse" />
             AI Analysis Complete
           </span>
-          <button className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground transition-colors">
-            <MoreHorizontalIcon className="size-4" />
+          <button className="flex size-6 items-center justify-center rounded border border-border/60 text-muted-foreground/40 hover:text-foreground transition-colors">
+            <MoreHorizontalIcon className="size-3.5" />
           </button>
         </div>
-      </motion.div>
+      </motion.header>
 
-      {/* 2nd — Contract object + parties + value + deadline */}
+      {/* ── Contract header ── */}
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3, ease: [0, 0, 0.2, 1] }}
+        transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
         className="shrink-0"
       >
         <ContractHeader />
       </motion.div>
 
-      {/* 3rd — Wizard steps */}
-      <div className="shrink-0 flex items-center gap-1 px-6 py-2.5 border-b border-border bg-card/20">
+      {/* ── Wizard stepper ── */}
+      <div className="shrink-0 flex items-center gap-0 px-6 h-10 border-b border-border">
         {STEPS.map((step, i) => {
           const isActive = step.id === activeStep;
           const isDone = step.done || step.id < activeStep;
           return (
-            <div key={step.id} className="flex items-center gap-1">
-              {i > 0 && <div className="w-6 h-px bg-border mx-1" />}
+            <div key={step.id} className="flex items-center">
+              {i > 0 && (
+                <div className={cn(
+                  "w-8 h-px mx-2",
+                  isDone || (STEPS[i - 1]?.done || (STEPS[i - 1]?.id ?? 0) < activeStep)
+                    ? "bg-emerald/30"
+                    : "bg-border/50"
+                )} />
+              )}
               <button
                 onClick={() => setActiveStep(step.id)}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors",
-                  isActive && "bg-accent/10 text-accent border border-accent/20",
-                  isDone && !isActive && "text-emerald",
-                  !isActive && !isDone && "text-muted-foreground/40"
+                  "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all",
+                  isActive && "bg-accent/8 text-accent",
+                  isDone && !isActive && "text-emerald/80 hover:text-emerald",
+                  !isActive && !isDone && "text-muted-foreground/30 hover:text-muted-foreground/50"
                 )}
               >
-                {isDone && !isActive && <CheckIcon className="size-3 text-emerald" />}
-                {isActive && <span className="size-1.5 rounded-full bg-accent" />}
+                {isDone && !isActive ? (
+                  <CheckIcon className="size-3 text-emerald/70" />
+                ) : isActive ? (
+                  <span className="size-[5px] rounded-full bg-accent" />
+                ) : (
+                  <span className="size-[5px] rounded-full bg-muted-foreground/20" />
+                )}
                 <span>{step.id}</span>
                 <span>{step.label}</span>
               </button>
@@ -103,52 +117,29 @@ export default function ContractV2Page() {
         })}
       </div>
 
-      {/* 4th/5th/6th — Content columns */}
+      {/* ── Three-column content ── */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5, ease: [0, 0, 0.2, 1] }}
+        transition={{ duration: 0.5, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
         className="flex-1 grid divide-x divide-border overflow-hidden min-h-0"
-        style={{ gridTemplateColumns: "1fr 1fr 1.2fr" }}>
+        style={{ gridTemplateColumns: "1fr 1.1fr 1.15fr" }}>
 
-        {/* Col 1 — Risk Review (4th) */}
-        <div id="cv2-risk-col" className="flex flex-col min-h-0">
-          <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
-            <div className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-accent" />
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Risk Review</span>
+        {[
+          { label: COL_LABELS[0], content: <RiskReview /> },
+          { label: COL_LABELS[1], content: <MilestoneBuilder /> },
+          { label: COL_LABELS[2], content: <DeployReview /> },
+        ].map((col, i) => (
+          <div key={col.label} className="flex flex-col min-h-0">
+            {/* Column header — minimal, typographic */}
+            <div className="shrink-0 h-8 flex items-center px-5 border-b border-border/60">
+              <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/35 font-medium">{col.label}</span>
+            </div>
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {col.content}
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-5 min-h-0">
-            <RiskReview />
-          </div>
-        </div>
-
-        {/* Col 2 — Milestones (5th) */}
-        <div id="cv2-milestones-col" className="flex flex-col min-h-0">
-          <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
-            <div className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-accent" />
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Milestones</span>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-5 min-h-0">
-            <MilestoneBuilder />
-          </div>
-        </div>
-
-        {/* Col 3 — Deploy Preview + Clara (6th) */}
-        <div id="cv2-deploy-col" className="flex flex-col min-h-0">
-          <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
-            <div className="flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-accent" />
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Deploy Preview</span>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-5 min-h-0">
-            <DeployReview />
-          </div>
-        </div>
+        ))}
 
       </motion.div>
     </motion.div>

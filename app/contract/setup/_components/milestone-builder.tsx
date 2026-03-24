@@ -79,7 +79,7 @@ function InlineEdit({ value, onSave, className }: {
       className={cn("group/e inline-flex cursor-text items-center gap-1", className)}
     >
       {value}
-      <PencilIcon className="size-2 opacity-0 group-hover/e:opacity-25 transition-opacity" />
+      <PencilIcon className="size-2 opacity-0 group-hover/e:opacity-20 transition-opacity" />
     </span>
   );
 
@@ -91,7 +91,7 @@ function InlineEdit({ value, onSave, className }: {
         if (e.key === "Enter") commit();
         if (e.key === "Escape") { setEditing(false); setDraft(value); }
       }}
-      className={cn("border-b border-accent bg-transparent outline-none pb-px w-full", className)}
+      className={cn("border-b border-accent/40 bg-transparent outline-none pb-px w-full", className)}
     />
   );
 }
@@ -102,16 +102,16 @@ function AllocationBar({ milestones }: { milestones: Milestone[] }) {
   const total = milestones.reduce((s, m) => s + m.value, 0);
   if (!total) return null;
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex h-px flex-1 overflow-hidden">
+    <div className="flex items-center gap-2.5">
+      <div className="flex h-[2px] flex-1 overflow-hidden rounded-full gap-[1px]">
         {milestones.map((m, i) => (
           <div key={m.id}
-            className={cn("h-full transition-all", PALETTE[i % PALETTE.length].strip)}
+            className={cn("h-full transition-all duration-300", PALETTE[i % PALETTE.length].strip)}
             style={{ width: `${(m.value / total) * 100}%` }}
           />
         ))}
       </div>
-      <span className="font-mono text-xs font-semibold text-foreground shrink-0">${total}</span>
+      <span className="font-mono text-[12px] font-bold text-foreground/90 shrink-0 tabular-nums">${total}</span>
     </div>
   );
 }
@@ -138,51 +138,51 @@ function MilestoneRow({ milestone, colorIndex, onUpdate, onRemove, isDragOverlay
       style={style}
       className={cn(
         "group",
-        isDragging && "pointer-events-none opacity-20",
-        isDragOverlay && "bg-card shadow-2xl shadow-black/40"
+        isDragging && "pointer-events-none opacity-15",
+        isDragOverlay && "bg-card shadow-xl shadow-black/30"
       )}
     >
       {/* Drag */}
       <TableCell className="w-8 px-2">
         <button type="button" {...attributes} {...listeners}
-          className="flex cursor-grab active:cursor-grabbing text-muted-foreground/20 hover:text-muted-foreground/60 transition-colors">
-          <GripVerticalIcon className="size-3.5" />
+          className="flex cursor-grab active:cursor-grabbing text-muted-foreground/15 hover:text-muted-foreground/40 transition-colors">
+          <GripVerticalIcon className="size-3" />
         </button>
       </TableCell>
 
       {/* Milestone */}
       <TableCell className="py-3">
-        <div className="flex items-start gap-2.5">
-          <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full", p.dot)} />
+        <div className="flex items-start gap-2">
+          <span className={cn("mt-[7px] size-[5px] shrink-0 rounded-full", p.dot)} />
           <div className="flex flex-col gap-0.5 min-w-0">
             <InlineEdit
               value={milestone.name}
               onSave={v => onUpdate(milestone.id, "name", v)}
-              className="text-sm font-semibold text-foreground"
+              className="text-[13px] font-semibold text-foreground"
             />
             <InlineEdit
               value={milestone.deliverables}
               onSave={v => onUpdate(milestone.id, "deliverables", v)}
-              className="text-xs text-muted-foreground/80"
+              className="text-[11px] text-muted-foreground/50"
             />
           </div>
         </div>
       </TableCell>
 
       {/* Due */}
-      <TableCell className="w-[110px] text-center py-3">
+      <TableCell className="w-[90px] text-center py-3">
         <div className="flex flex-col items-center">
-          <span className={cn("font-mono text-2xl font-black leading-none tabular-nums", p.text)}>
+          <span className={cn("font-mono text-xl font-black leading-none tabular-nums", p.text)}>
             {day}
           </span>
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 mt-0.5">
+          <span className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/35 mt-0.5">
             {mon}
           </span>
         </div>
       </TableCell>
 
       {/* Value */}
-      <TableCell className="w-[110px] text-center py-3">
+      <TableCell className="w-[90px] text-center py-3">
         <div className="flex flex-col items-center">
           <InlineEdit
             value={`$${milestone.value}`}
@@ -190,9 +190,9 @@ function MilestoneRow({ milestone, colorIndex, onUpdate, onRemove, isDragOverlay
               const n = parseInt(v.replace(/[^0-9]/g, ""));
               if (!isNaN(n)) onUpdate(milestone.id, "value", n);
             }}
-            className={cn("font-mono text-lg font-bold", p.text)}
+            className={cn("font-mono text-base font-bold tabular-nums", p.text)}
           />
-          <span className="text-[9px] uppercase tracking-widest text-muted-foreground/30 mt-0.5">
+          <span className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/25 mt-0.5">
             escrow
           </span>
         </div>
@@ -201,8 +201,8 @@ function MilestoneRow({ milestone, colorIndex, onUpdate, onRemove, isDragOverlay
       {/* Delete */}
       <TableCell className="w-8 px-2">
         <button type="button" onClick={() => onRemove(milestone.id)}
-          className="text-muted-foreground/0 group-hover:text-muted-foreground/25 hover:!text-destructive transition-colors">
-          <TrashIcon className="size-3.5" />
+          className="text-muted-foreground/0 group-hover:text-muted-foreground/20 hover:!text-destructive transition-colors">
+          <TrashIcon className="size-3" />
         </button>
       </TableCell>
     </TableRow>
@@ -249,19 +249,19 @@ export function MilestoneBuilder() {
     }]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 p-4">
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground/40">
-          <SparklesIcon className="size-3 text-accent" />
+        <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] text-muted-foreground/30 font-medium">
+          <SparklesIcon className="size-2.5 text-accent/60" />
           AI-parsed · click to edit
         </span>
         <AllocationBar milestones={milestones} />
       </div>
 
       {/* Table */}
-      <div className="rounded-md border border-border">
+      <div className="rounded-lg border border-border overflow-hidden">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -273,13 +273,13 @@ export function MilestoneBuilder() {
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="w-8" />
-                  <TableHead className="text-[10px] uppercase tracking-widest text-muted-foreground/40 font-medium">
+                  <TableHead className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground/30 font-medium">
                     Milestone
                   </TableHead>
-                  <TableHead className="w-[110px] text-center text-[10px] uppercase tracking-widest text-muted-foreground/40 font-medium">
+                  <TableHead className="w-[90px] text-center text-[9px] uppercase tracking-[0.2em] text-muted-foreground/30 font-medium">
                     Due
                   </TableHead>
-                  <TableHead className="w-[110px] text-center text-[10px] uppercase tracking-widest text-muted-foreground/40 font-medium">
+                  <TableHead className="w-[90px] text-center text-[9px] uppercase tracking-[0.2em] text-muted-foreground/30 font-medium">
                     Value
                   </TableHead>
                   <TableHead className="w-8" />
@@ -315,8 +315,8 @@ export function MilestoneBuilder() {
 
       {/* Add */}
       <button type="button" onClick={handleAdd}
-        className="flex items-center gap-1.5 text-[11px] text-muted-foreground/25 hover:text-accent transition-colors">
-        <PlusIcon className="size-3" />
+        className="flex items-center gap-1.5 text-[10px] text-muted-foreground/20 hover:text-accent/70 transition-colors font-medium">
+        <PlusIcon className="size-2.5" />
         Add milestone
       </button>
     </div>
