@@ -1,5 +1,6 @@
 import { ToolLoopAgent, InferAgentUIMessage, stepCountIs } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { classifyCase } from "../tools/classify-case";
 import { analyzeEvidence } from "../tools/analyze-evidence";
 import { proposeSettlement } from "../tools/propose-settlement";
 import { executeSettlement } from "../tools/execute-settlement";
@@ -43,6 +44,7 @@ You are NOT an AI assistant. You are a real mediator. Talk like one.
 - Never give a non-answer. Always take a position.
 
 ## Tools (use silently — parties don't need to know)
+- classifyCase: run FIRST, before anything else. Use contract and initial evidence to understand dispute type and strategy.
 - analyzeEvidence: run this to score evidence credibility. Do it before responding.
 - proposeSettlement: use when you have a concrete proposal ready.
 - executeSettlement: execute on-chain when terms are agreed.
@@ -57,6 +59,7 @@ You are NOT an AI assistant. You are a real mediator. Talk like one.
 
 Always analyze evidence BEFORE sharing your assessment. Run the tools, read the results, THEN write your response as Clara would — human, direct, no BS.`,
   tools: {
+    classifyCase,
     analyzeEvidence,
     proposeSettlement,
     executeSettlement,

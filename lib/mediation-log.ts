@@ -2,6 +2,22 @@ import { createHash } from "crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 
+// ---- DB dual-write (F18) ----
+// Writes to Postgres when DATABASE_URL is set, falls back to files.
+// getAll() remains file-based (sync) to avoid breaking callers.
+// Full async read path can be adopted in a future migration.
+let _db: typeof import("@/lib/db") | null | undefined = undefined;
+async function getDbModule() {
+  if (!process.env.DATABASE_URL) return null;
+  if (_db !== undefined) return _db;
+  try {
+    _db = await import("@/lib/db");
+  } catch {
+    _db = null;
+  }
+  return _db;
+}
+
 const LOG_DIR = join(process.cwd(), ".mediation-logs");
 
 function ensureLogDir(): void {
@@ -23,7 +39,8 @@ export type MediationEventType =
   | "VERDICT_REGISTERED"
   | "CASE_CLOSED"
   | "CIRCUIT_BREAKER_TRIGGERED"
-  | "STATE_TRANSITION";
+  | "STATE_TRANSITION"
+  | "WEIGHT_ADJUSTMENT";
 
 export interface MediationEvent {
   seq: number;
@@ -67,11 +84,25 @@ export class MediationEventLog {
       prevHash,
     };
     const event: MediationEvent = { ...partial, hash: computeHash(partial) };
-    writeFileSync(
-      logPath(caseId),
-      JSON.stringify([...existing, event], null, 2),
-      "utf-8"
-    );
+
+    // Always write to file (sync, reliable)
+    ensureLogDir();
+    writeFileSync(logPath(caseId), JSON.stringify([...existing, event], null, 2), "utf-8");
+
+    // Dual-write to Postgres fire-and-forget
+    getDbModule().then((mod) => {
+      if (!mod) return;
+      mod.db.insert(mod.mediationEvents).values({
+        seq: event.seq,
+        caseId: event.caseId,
+        eventType: event.eventType,
+        timestamp: event.timestamp,
+        payload: event.payload,
+        prevHash: event.prevHash,
+        hash: event.hash,
+      }).catch(() => { /* DB unavailable — file already written */ });
+    });
+
     return event;
   }
 
@@ -87,7 +118,7 @@ export class MediationEventLog {
 
   verifyChain(
     caseId: string
-  ): { valid: boolean; invalidAt?: number; reason?: string } {
+  ): { valid: boolean; brokenAt?: number; details?: string } {
     const events = this.getAll(caseId);
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
@@ -96,16 +127,16 @@ export class MediationEventLog {
       if (event.prevHash !== expectedPrev) {
         return {
           valid: false,
-          invalidAt: i,
-          reason: `prevHash mismatch at seq ${i}`,
+          brokenAt: i,
+          details: `prevHash mismatch at seq ${i}`,
         };
       }
       const { hash, ...partial } = event;
       if (hash !== computeHash(partial)) {
         return {
           valid: false,
-          invalidAt: i,
-          reason: `hash mismatch at seq ${i}`,
+          brokenAt: i,
+          details: `hash mismatch at seq ${i}`,
         };
       }
     }

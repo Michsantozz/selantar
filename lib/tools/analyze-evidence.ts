@@ -1,11 +1,33 @@
-import { tool } from "ai";
+import { tool, generateText, Output } from "ai";
 import { z } from "zod";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { mediationLog } from "@/lib/mediation-log";
 import { getCase, CaseState } from "@/lib/case-lifecycle";
 
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+});
+
+export interface AnalysisResult {
+  relevance: number;
+  credibility: number;
+  probativeWeight: number;
+  redFlags: string[];
+  compositeScore: number;
+  reasoning: string;
+}
+
+const analysisSchema = z.object({
+  relevance: z.number().min(0).max(100).describe("How relevant is this evidence to the contract dispute (0-100)"),
+  credibility: z.number().min(0).max(100).describe("Document type, consistency, and verifiability score (0-100)"),
+  probativeWeight: z.number().min(0).max(100).describe("How much this evidence alone supports the claim (0-100)"),
+  redFlags: z.array(z.string()).describe("List of contradictions, impossible dates, suspicious formatting, or anomalies"),
+  reasoning: z.string().describe("Concise LLM reasoning for the scores"),
+});
+
 export const analyzeEvidence = tool({
   description:
-    "Analyze contract evidence from a party in the dispute. Reviews documents, communications, deliverables, and payment records to build an objective assessment.",
+    "Analyze contract evidence semantically via LLM. Evaluates relevance, credibility, probative weight, and red flags. Returns scored AnalysisResult compatible with ERC-8004 reputation.",
   inputSchema: z.object({
     evidence: z.string().describe("The evidence text or description to analyze"),
     perspective: z
@@ -15,89 +37,86 @@ export const analyzeEvidence = tool({
       .enum(["contract", "communication", "deliverable", "payment", "other"])
       .describe("Type of evidence being analyzed"),
     caseId: z.string().describe("Case reference ID for event logging"),
+    contractContext: z.string().optional().describe("Contract text or summary for relevance comparison"),
   }),
-  execute: async ({ evidence, perspective, evidenceType, caseId }) => {
+  execute: async ({ evidence, perspective, evidenceType, caseId, contractContext }) => {
     // State machine guard — allow only EVIDENCE_COLLECTION or ANALYSIS
     const mediationCase = getCase(caseId);
     if (mediationCase) {
       const allowed = [CaseState.EVIDENCE_COLLECTION, CaseState.ANALYSIS];
       if (!allowed.includes(mediationCase.getState())) {
         return {
-          status:       "blocked",
-          reason:       `analyzeEvidence requires state EVIDENCE_COLLECTION or ANALYSIS, current: ${mediationCase.getState()}`,
+          status: "blocked",
+          reason: `analyzeEvidence requires state EVIDENCE_COLLECTION or ANALYSIS, current: ${mediationCase.getState()}`,
           currentState: mediationCase.getState(),
           caseId,
-          timestamp:    new Date().toISOString(),
+          timestamp: new Date().toISOString(),
         };
       }
     }
 
-    // Score based on evidence quality — not random
-    let score = 50;
+    let analysisResult: AnalysisResult;
 
-    // Length indicates thoroughness
-    const wordCount = evidence.split(/\s+/).length;
-    if (wordCount > 200) score += 15;
-    else if (wordCount > 100) score += 10;
-    else if (wordCount > 50) score += 5;
+    try {
+      const result = await generateText({
+        model: google("gemini-2.0-flash"),
+        output: Output.object({ schema: analysisSchema }),
+        prompt: `You are a legal evidence analyst for B2B contract dispute mediation.
 
-    // Specificity indicators
-    const specificityKeywords = [
-      "email", "slack", "message", "invoice", "receipt",
-      "contract", "clause", "deadline", "delivered", "approved",
-      "signed", "timestamp", "screenshot", "log", "commit",
-      "payment", "transfer", "date", "day ", "week",
-    ];
-    const matchCount = specificityKeywords.filter((kw) =>
-      evidence.toLowerCase().includes(kw)
-    ).length;
-    score += Math.min(matchCount * 3, 20);
+Analyze the following ${evidenceType} evidence from the ${perspective}'s perspective.
+${contractContext ? `\nCONTRACT CONTEXT:\n${contractContext}\n` : ""}
+EVIDENCE TO ANALYZE:
+${evidence}
 
-    // Evidence type weight
-    const typeWeights: Record<string, number> = {
-      contract: 10,
-      payment: 8,
-      communication: 6,
-      deliverable: 7,
-      other: 3,
-    };
-    score += typeWeights[evidenceType] ?? 3;
+Score each dimension 0-100:
+- relevance: How relevant is this evidence to the contract dispute?
+- credibility: Document type quality, internal consistency, and verifiability
+- probativeWeight: How much does this evidence alone sustain the claim?
+- redFlags: List any contradictions, impossible dates, suspicious patterns, or anomalies (empty array if none)
+- reasoning: Brief explanation of your assessment
 
-    // Clamp 0-100
-    score = Math.max(0, Math.min(100, score));
+Be objective. Do not favor either party.`,
+      });
 
-    // Extract key findings from the evidence
-    const findings: string[] = [];
-    if (evidence.toLowerCase().includes("deadline"))
-      findings.push("Timeline and deadline references identified");
-    if (evidence.toLowerCase().includes("deliver"))
-      findings.push("Deliverable status documented");
-    if (evidence.toLowerCase().includes("payment") || evidence.toLowerCase().includes("escrow"))
-      findings.push("Financial terms and payment records referenced");
-    if (evidence.toLowerCase().includes("email") || evidence.toLowerCase().includes("slack") || evidence.toLowerCase().includes("message"))
-      findings.push("Communication trail available for verification");
-    if (evidence.toLowerCase().includes("approved") || evidence.toLowerCase().includes("signed"))
-      findings.push("Formal approvals or signatures documented");
-    if (findings.length === 0)
-      findings.push("Evidence reviewed — limited specificity detected");
+      const { relevance, credibility, probativeWeight, redFlags, reasoning } = result.output;
+      const compositeScore = Math.round(
+        relevance * 0.35 + credibility * 0.35 + probativeWeight * 0.30
+      );
 
-    const result = {
-      analysis: `Analyzed ${evidenceType} evidence from ${perspective} perspective`,
-      evidenceType,
-      perspective,
-      keyFindings: findings,
-      credibilityScore: score,
-      wordCount,
-      timestamp: new Date().toISOString(),
-    };
+      analysisResult = { relevance, credibility, probativeWeight, redFlags, compositeScore, reasoning };
+    } catch {
+      // Fallback to keyword-based scoring if LLM unavailable
+      const wordCount = evidence.split(/\s+/).length;
+      const keywords = ["email","invoice","contract","deadline","delivered","payment","signed","timestamp","screenshot","commit"];
+      const matchCount = keywords.filter((kw) => evidence.toLowerCase().includes(kw)).length;
+      const base = 50 + Math.min(wordCount > 100 ? 15 : wordCount > 50 ? 8 : 0, 15) + Math.min(matchCount * 3, 20);
+      const clamped = Math.max(0, Math.min(100, base));
+
+      analysisResult = {
+        relevance: clamped,
+        credibility: clamped,
+        probativeWeight: clamped,
+        redFlags: [],
+        compositeScore: clamped,
+        reasoning: "LLM unavailable — fallback keyword scoring applied.",
+      };
+    }
 
     mediationLog.append(caseId, "ANALYSIS_COMPLETE", {
       evidenceType,
       perspective,
-      credibilityScore: score,
-      keyFindingsCount: findings.length,
+      credibilityScore: analysisResult.compositeScore,
+      relevance: analysisResult.relevance,
+      probativeWeight: analysisResult.probativeWeight,
+      redFlagsCount: analysisResult.redFlags.length,
     });
 
-    return result;
+    return {
+      ...analysisResult,
+      evidenceType,
+      perspective,
+      caseId,
+      timestamp: new Date().toISOString(),
+    };
   },
 });

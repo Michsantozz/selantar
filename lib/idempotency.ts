@@ -1,4 +1,14 @@
 import { createHash } from "crypto";
+import { eq } from "drizzle-orm";
+
+// ---- DB persistence (F18) ----
+let _db: typeof import("@/lib/db") | null | undefined = undefined;
+async function getDbModule() {
+  if (!process.env.DATABASE_URL) return null;
+  if (_db !== undefined) return _db;
+  try { _db = await import("@/lib/db"); } catch { _db = null; }
+  return _db;
+}
 
 const TTL_MS = 24 * 60 * 60 * 1000; // 24h em ms
 
@@ -25,6 +35,14 @@ export class IdempotencyStore {
     // Expirou? Remover e tratar como novo
     if (Date.now() - record.createdAt > TTL_MS) {
       this.store.delete(key);
+      // Soft-delete in DB (F18)
+      getDbModule().then((mod) => {
+        if (!mod) return;
+        mod.db.update(mod.idempotencyKeys)
+          .set({ deletedAt: new Date() })
+          .where(eq(mod.idempotencyKeys.key, key))
+          .catch(() => {});
+      });
       return { cached: false };
     }
 
@@ -35,10 +53,15 @@ export class IdempotencyStore {
     // Purge expired antes de salvar — garante limpeza frequente sem scheduler
     this.purgeExpired();
 
-    this.store.set(key, {
-      key,
-      result,
-      createdAt: Date.now(),
+    this.store.set(key, { key, result, createdAt: Date.now() });
+
+    // Dual-write to Postgres fire-and-forget (F18)
+    getDbModule().then((mod) => {
+      if (!mod) return;
+      mod.db.insert(mod.idempotencyKeys)
+        .values({ key, result })
+        .onConflictDoNothing()
+        .catch(() => {});
     });
   }
 
@@ -48,6 +71,14 @@ export class IdempotencyStore {
     for (const [key, record] of this.store) {
       if (now - record.createdAt > TTL_MS) {
         this.store.delete(key);
+        // Soft-delete in DB (F18)
+        getDbModule().then((mod) => {
+          if (!mod) return;
+          mod.db.update(mod.idempotencyKeys)
+            .set({ deletedAt: new Date() })
+            .where(eq(mod.idempotencyKeys.key, key))
+            .catch(() => {});
+        });
       }
     }
   }

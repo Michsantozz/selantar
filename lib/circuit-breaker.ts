@@ -1,5 +1,14 @@
 import { mediationLog } from "@/lib/mediation-log";
 
+// ---- DB persistence (F18) ----
+let _db: typeof import("@/lib/db") | null | undefined = undefined;
+async function getDbModule() {
+  if (!process.env.DATABASE_URL) return null;
+  if (_db !== undefined) return _db;
+  try { _db = await import("@/lib/db"); } catch { _db = null; }
+  return _db;
+}
+
 export type BreakerLevel = "NORMAL" | "CAUTION" | "LOCKDOWN" | "EMERGENCY";
 
 export interface BreakerStatus {
@@ -47,6 +56,8 @@ export class CircuitBreaker {
     if (this.level === "CAUTION") {
       console.warn(`[CircuitBreaker] CAUTION: ${this.reason}`);
     }
+
+    this.persistState();
   }
 
   // Chamado quando falha on-chain é detectada
@@ -60,6 +71,8 @@ export class CircuitBreaker {
       reason: this.reason,
       triggeredAt: this.lastTriggeredAt,
     });
+
+    this.persistState();
   }
 
   // Reset MANUAL — nunca automático
@@ -68,6 +81,27 @@ export class CircuitBreaker {
     this.reason = "";
     this.settlementTimestamps = [];
     this.lastTriggeredAt = undefined;
+    this.persistState();
+  }
+
+  // Dual-write state to Postgres fire-and-forget (F18)
+  private persistState(): void {
+    const snapshot = {
+      level: this.level,
+      settlementCount1h: this.countInWindow(Date.now(), 60 * 60 * 1000),
+      lastTriggeredAt: this.lastTriggeredAt,
+    };
+    getDbModule().then((mod) => {
+      if (!mod) return;
+      mod.db.insert(mod.circuitBreakerState).values({
+        level: snapshot.level,
+        locked: snapshot.level === "LOCKDOWN" || snapshot.level === "EMERGENCY",
+        settlementsLog: this.settlementTimestamps.map((ts) => ({
+          timestamp: new Date(ts).toISOString(),
+          amount: "0",
+        })),
+      }).catch(() => { /* DB unavailable — in-memory state preserved */ });
+    });
   }
 
   getStatus(): BreakerStatus {

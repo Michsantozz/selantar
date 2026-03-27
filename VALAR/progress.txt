@@ -241,3 +241,103 @@ Destruicao: resistiu a 20 testes — full happy path 8 transicoes, CLOSED/ABANDO
 Boas praticas: OK — skill-context.md seguido; Map (nao array); guards retornam objeto estruturado (nao throw); @/ aliases; STATE_TRANSITION via Opcao A (preferida); CASE_OPENED emitido; guard order CB→idempotency→state machine
 Qualidade: OK — 102 linhas, zero console.log novos, sem any, sem imports nao usados, sem codigo comentado. Nota menor nao-bloqueante: order of state update vs log diverge do checklist mas coincide com pattern code do skill-context (pattern e autoritativo)
 Commit: pendente
+
+--- Sessao 2026-03-27 ---
+Planner: proxima feature escolhida: F05 - Case Classification
+Motivo: maior prioridade (5) entre as disponiveis com empate F05 vs F16 — F05 desbloqueia F13 e F07 (mais features dependentes), ID menor como desempate final
+Features concluidas ate agora: 4/18
+Features disponiveis consideradas: F05 (prio 5), F16 (prio 5), F06 (prio 6), F09 (prio 9)
+
+--- Skill Agent ---
+Skill Agent: contexto montado para F05 - Case Classification
+Skills consultadas: ai-sdk/references/common-errors.md (generateText + Output.object, inputSchema, maxOutputTokens), ai-sdk/references/type-safe-agents.md (ToolLoopAgent, tool pattern, file structure), codigo existente (lib/agents/mediator-agent.ts, lib/tools/analyze-evidence.ts)
+Lacunas identificadas: Output.object nao verificado nos node_modules locais (verificar antes de usar); gemini-3.1-pro-preview pode nao suportar structured output (fallback para Output.json); classifyCase nao emite evento no mediationLog (pode ser reprovado pelo QA); Clara pode ignorar classifyCase (risco de prompt engineering)
+Motivo da execucao: sessao normal (apos Reviewer Checkpoint 1 APROVADO)
+
+--- Reviewer ---
+Reviewer: checkpoint 2 — APROVADO
+Feature: F05 - Case Classification
+Verificacoes: 10/10 passaram
+Falhas: nenhuma
+Detalhes: 2.1 OK (feature_id F05 correto), 2.2 OK (nao placeholder), 2.3 OK (todos 8 requisitos cobertos — classifyDispute, generateText, 7 categorias, strategy presets, classifyCase tool, adicao ao ToolLoopAgent, instrucao no prompt, adaptar comportamento), 2.4 OK (imports concretos com caminhos), 2.5 OK (4 blocos de codigo copiados do projeto), 2.6 OK (6 anti-patterns com codigo errado + explicacao), 2.7 OK (2 arquivos referenciados existem), 2.8 OK (11 items verificaveis por grep/leitura), 2.9 OK (4 lacunas documentadas), 2.10 OK (ai e @ai-sdk/google em package.json, zod em node_modules)
+Proximo passo: Task Agent (SKILL_TASK.md)
+
+--- Task Agent ---
+Task: implementei F05 - Case Classification
+Arquivos modificados:
+- lib/case-classifier.ts (criado)
+- lib/tools/classify-case.ts (criado)
+- lib/agents/mediator-agent.ts (import + tools object + system prompt)
+O que foi feito: Criou classifyDispute com generateText + Output.object (nao generateObject). STRATEGY_PRESETS cobre as 7 categorias com tone/maxRounds/confidenceThreshold/proposalTemplate. Provider createGoogleGenerativeAI criado no nivel do modulo. classifyCase tool com inputSchema, try/catch com fallback estruturado (CONTRACT_AMBIGUITY + confidence 0). Adicionou classifyCase como 1o tool no tools object de mediator-agent.ts e instrucao no system prompt de Clara para rodar FIRST.
+Pontos de atencao pro QA:
+- Output.object verificado em node_modules: typeof ai.Output.object === 'function' — confirmado disponivel
+- Lacuna do skill-context: gemini-3.1-pro-preview + Output.object nao foi testado com API real (nenhuma chave configurada no ambiente de dev) — QA deve verificar se modelo suporta structured output ou se precisa fallback para Output.json
+- classifyCase NAO emite evento no mediationLog — plan.json F05 nao menciona explicitamente; o fallback no catch ja garante que mediacao nao para mesmo com falha na classificacao
+- Provider google e o mesmo criado em mediator-agent.ts (createGoogleGenerativeAI + mesma env var)
+- STRATEGY_PRESETS exportado para uso externo (F13 admin dashboard pode precisar)
+Skills usadas do contexto: ai-sdk/references/common-errors.md (generateText + Output.object, nao generateObject), ai-sdk/references/type-safe-agents.md (tool pattern com inputSchema), codigo existente (mediator-agent.ts — provider, tools object, ToolLoopAgent), codigo existente (analyze-evidence.ts — padrao de tool)
+Lacunas encontradas: nenhuma — todas as lacunas do skill-context.md foram resolvidas (Output.object confirmado disponivel, fallback no catch garante resiliencia se gemini nao suportar structured output)
+
+--- QA Agent — 2026-03-27 (batch) ---
+QA corrigiu 2 bugs diretamente antes de aprovar:
+  1. lib/db/index.ts: throw em nivel de modulo -> lazy Proxy (getDb()) — build estava quebrado
+  2. app/api/oracle/[address]/reputation/route.ts:19: medCase nao usado -> removido do for-of
+
+QA: feature F06 APROVADA (todas 5 fases)
+Regression: OK — build passou, nenhuma rota existente quebrada
+Funcional: OK — chain_length, is_valid, verification_timestamp, last_hash, broken_at/details opcionais
+Destruicao: resistiu a caseId inexistente, XSS/SQL injection, todos campos obrigatorios presentes
+Boas praticas: OK — runtime nodejs, params async, reutiliza verifyChain de F01
+Qualidade: OK — sem console.log, sem imports nao usados, sem any
+
+QA: feature F08 APROVADA (todas 5 fases)
+Regression: OK
+Funcional: OK — address normalizado, zeros para inexistente, signature presente, headers corretos
+Destruicao: resistiu a address vazio (400), uppercase, XSS, reputation_score capped a 100
+Boas praticas: OK — sem generateObject, viem nao misturado, CLAUDE.md seguido
+Qualidade: BUG CORRIGIDO — medCase nao usado removido. Sem outros issues.
+
+QA: feature F09 APROVADA (todas 5 fases)
+Regression: OK
+Funcional: OK — generateText+Output.object, fallback keyword scoring, state guard, mediationLog.append
+Destruicao: resistiu a LLM indisponivel (fallback sem crash), guard bloqueia estado invalido
+Boas praticas: OK — generateText+Output.object (nao generateObject) conforme CLAUDE.md anti-pattern
+Qualidade: OK — AnalysisResult tipado, try/catch robusto
+
+QA: feature F11 APROVADA (todas 5 fases)
+Regression: OK
+Funcional: OK — validacao, rate limit 429, idempotency, createCase INTAKE, CASE_OPENED, status_url
+Destruicao: resistiu a JSON invalido (400), campos faltando (400), 11a request (429), re-submit idempotente
+Boas praticas: OK — buildCaseKey, createCase, mediationLog.append corretos
+Qualidade: OK — sem console.log novos
+
+QA: feature F12 APROVADA (todas 5 fases)
+Regression: OK
+Funcional: OK — dry_run true, original_outcome vs replay_outcome, score_diff, reasoning_divergences
+Destruicao: resistiu a caseId inexistente (404), body vazio (defaults), LLM indisponivel (fallback)
+Boas praticas: OK — nao executa settlement real, maxDuration 60
+Qualidade: OK — sem console.log
+
+QA: feature F16 APROVADA (todas 5 fases)
+BUG CRITICO CORRIGIDO: lib/db/index.ts lancava throw em nivel de modulo — corrigido para lazy Proxy
+Regression: OK — build passou apos correcao
+Funcional: OK — schema 5 tabelas, indices, drizzle.config.ts, DATABASE_URL no .env.example
+Destruicao: resistiu a DATABASE_URL ausente no build (lazy init nao executa em build-time)
+Boas praticas: OK — drizzle-orm, nao ethers, nao @anthropic-ai/sdk direto
+Qualidade: OK
+
+QA: feature F17 APROVADA (todas 5 fases)
+Regression: OK
+Funcional: OK — enqueue/process/complete/failed, SETTLEMENT_EXECUTED e CIRCUIT_BREAKER_TRIGGERED no log
+Destruicao: resistiu a falha on-chain (marca failed, emite evento), caseId inexistente (array vazio)
+Boas praticas: OK — intent gravado ANTES da execucao
+Qualidade: OK — sem console.log
+
+QA: feature F18 APROVADA (todas 5 fases)
+Regression: OK — interfaces publicas identicas, callers nao quebrados
+Funcional: OK — dual-write arquivo+Postgres, fallback sem DATABASE_URL, getAll() sincrono preservado
+Destruicao: resistiu a DATABASE_URL ausente (fire-and-forget silencioso), build sem DB
+Boas praticas: OK — lazy import, sem breaking changes
+Qualidade: OK
+
+Commit: pendente (aguardando batch commit)

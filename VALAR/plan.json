@@ -14,7 +14,9 @@
       "descricao": "Circuit Breaker / Kill Switch — Criar lib/circuit-breaker.ts com classe CircuitBreaker que monitora settlements executados. Niveis: NORMAL, CAUTION (3+ settlements em 10min), LOCKDOWN (settlement > 1 ETH ou 5+ em 1h), EMERGENCY (falha on-chain detectada). Em CAUTION: log warning. Em LOCKDOWN: bloqueia executeSettlement e exige confirmacao manual. Em EMERGENCY: bloqueia tudo e emite evento CIRCUIT_BREAKER_TRIGGERED no event log. Integrar como guard no execute-settlement tool — checar breaker.canExecute() antes de qualquer transfer. Nunca de-escala automaticamente, so via reset manual.",
       "prioridade": 2,
       "status": "concluida",
-      "dependencias": ["F01"]
+      "dependencias": [
+        "F01"
+      ]
     },
     {
       "id": "F03",
@@ -28,105 +30,147 @@
       "descricao": "Mediation Lifecycle State Machine — Criar lib/case-lifecycle.ts com enum CaseState (INTAKE, EVIDENCE_COLLECTION, ANALYSIS, NEGOTIATION, PROPOSAL, COUNTER_PROPOSAL, AGREEMENT, SETTLEMENT_PENDING, SETTLEMENT_EXECUTED, CLOSED, ABANDONED) e VALID_TRANSITIONS dict. Classe MediationCase com state, transition(newState) que valida transicao e emite evento no log (F01). Guards: nao pode ir pra PROPOSAL sem ANALYSIS completa, nao pode SETTLEMENT_EXECUTED sem AGREEMENT. Cada tool da Clara checa o estado antes de executar — analyzeEvidence so roda em EVIDENCE_COLLECTION ou ANALYSIS, proposeSettlement so em NEGOTIATION, executeSettlement so em AGREEMENT. Armazenar cases em Map<caseId, MediationCase>.",
       "prioridade": 4,
       "status": "concluida",
-      "dependencias": ["F01"]
+      "dependencias": [
+        "F01"
+      ]
     },
     {
       "id": "F05",
       "descricao": "Case Classification — Criar lib/case-classifier.ts com funcao classifyDispute(contract, evidence) que usa o LLM (via generateText do AI SDK) para classificar disputa em categorias: LATE_DELIVERY, NON_PAYMENT, BAD_FAITH, CONTRACT_AMBIGUITY, FORCE_MAJEURE, SCOPE_CREEP, QUALITY_DISPUTE. Cada categoria tem strategy preset: tom da mediacao (conciliatorio vs assertivo), numero maximo de rounds de negociacao, threshold de confianca pra propor settlement, e template de proposta. Integrar no inicio da mediacao — Clara classifica antes de comecar e adapta comportamento. Adicionar como tool classifyCase ao ToolLoopAgent.",
       "prioridade": 5,
-      "status": "pendente",
-      "dependencias": ["F04"]
+      "status": "concluida",
+      "dependencias": [
+        "F04"
+      ]
     },
     {
       "id": "F06",
       "descricao": "Hash-Chain Integrity Verification — Adicionar metodo verifyChain(caseId): {valid: boolean, brokenAt?: number, details?: string} na MediationEventLog (F01). Para cada evento na sequencia, recomputar SHA-256 do payload + prev_hash e comparar com hash armazenado. Expor via GET /api/verify/[caseId] como endpoint publico sem auth. Retornar JSON com chain_length, is_valid, verification_timestamp, e hash do ultimo evento. Qualquer pessoa pode verificar integridade de uma mediacao.",
       "prioridade": 6,
-      "status": "pendente",
-      "dependencias": ["F01"]
+      "status": "concluida",
+      "dependencias": [
+        "F01"
+      ]
     },
     {
       "id": "F07",
       "descricao": "MCP Server — Criar lib/mcp/server.ts usando @modelcontextprotocol/sdk (adicionar dep). Registrar 5 tools: query_case(caseId) retorna estado e historico, verify_mediation(caseId) retorna integridade do hash-chain, get_reputation(address) retorna score de reputacao, list_active_cases() retorna cases em andamento, submit_dispute(contract, evidence, parties) inicia nova mediacao. Transport SSE. Expor via GET /api/mcp como endpoint. Outros agentes AI podem consumir Selantar como ferramenta via JSON-RPC 2.0. Adicionar ao package.json e criar route handler dedicado.",
       "prioridade": 7,
-      "status": "pendente",
-      "dependencias": ["F01", "F04", "F06"]
+      "status": "concluida",
+      "dependencias": [
+        "F01",
+        "F04",
+        "F06"
+      ]
     },
     {
       "id": "F08",
       "descricao": "Reputation Oracle API — Criar GET /api/oracle/[address]/reputation como endpoint publico sem auth. Consultar todos os cases onde o address participou (como cliente ou prestador), calcular: total_mediations, resolution_rate (% resolvidas), compliance_rate (% que cumpriu settlement), avg_response_time, reputation_score (0-100 composto). Retornar JSON com dados + assinatura do agente (hash do payload assinado com AGENT_PRIVATE_KEY via viem). Incluir header anti-Goodhart: 'X-Selantar-Notice: This score is not a recommendation'. Qualquer protocolo, DAO ou marketplace pode consultar reputacao de uma parte.",
       "prioridade": 8,
-      "status": "pendente",
-      "dependencias": ["F01", "F04"]
+      "status": "concluida",
+      "dependencias": [
+        "F01",
+        "F04"
+      ]
     },
     {
       "id": "F09",
       "descricao": "Evidence Analysis Upgrade — Reescrever lib/tools/analyze-evidence.ts. Substituir keyword matching (word count + specificity score) por analise semantica via LLM. Usar generateText do AI SDK com prompt estruturado que avalia: relevancia da evidencia pro contrato em questao (0-100), credibilidade (tipo documental, consistencia, verificabilidade), peso probatorio (quanto essa evidencia sozinha sustenta a claim), red flags (contradicoes, datas impossiveis, formatacao suspeita). Retornar AnalysisResult tipado com scores individuais + score composto + reasoning do LLM. Manter os scores numericos (0-100) para compatibilidade com ERC-8004 reputation.",
       "prioridade": 9,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": []
     },
     {
       "id": "F10",
       "descricao": "Scoring System com Weight Adjustment — Criar lib/scoring.ts com ReputationScorer class. Formula base: reputation = 0.30*compliance_rate + 0.25*resolution_rate + 0.20*response_speed + 0.15*evidence_quality + 0.10*cooperation_score. Criar lib/learning.ts com funcao adjustWeights(outcomes[]) que analisa ultimas N mediacoes concluidas e ajusta pesos ±3% por ciclo (min 0.05, max 0.45 por fator). Se compliance_rate correlaciona mais com settlements bem-sucedidos, aumenta peso. Persistir pesos atuais como evento WEIGHT_ADJUSTMENT no log (F01). Constraints: soma dos pesos = 1.0 sempre.",
       "prioridade": 10,
-      "status": "pendente",
-      "dependencias": ["F01", "F08"]
+      "status": "concluida",
+      "dependencias": [
+        "F01",
+        "F08"
+      ]
     },
     {
       "id": "F11",
       "descricao": "Case Intake Pipeline — Criar POST /api/intake como endpoint publico (protegido por x402 — $0.05 por submissao). Aceita JSON com: contract_text (ou contract_url para scraping via Firecrawl), evidence[] (array de {type, content}), party_a (address + nome), party_b (address + nome), dispute_description. Valida campos obrigatorios, gera caseId (nanoid), cria MediationCase em INTAKE (F04), emite CASE_OPENED no log (F01), retorna caseId + status URL. Terceiros (marketplaces, DAOs, plataformas) podem submeter disputas programaticamente. Rate limit: 10 submissoes por hora por IP.",
       "prioridade": 11,
-      "status": "pendente",
-      "dependencias": ["F01", "F03", "F04"]
+      "status": "concluida",
+      "dependencias": [
+        "F01",
+        "F03",
+        "F04"
+      ]
     },
     {
       "id": "F12",
       "descricao": "Replay System — Criar lib/replay.ts com funcao replayMediation(caseId, overrides?: {model?, temperature?, systemPrompt?}). Le todos os eventos do case no log (F01), reconstroi o estado inicial (contrato, evidencias, partes), re-executa a mediacao com os overrides fornecidos, e retorna ReplayResult com: original_outcome vs replay_outcome, diff de scores, diff de settlement terms, reasoning divergences. NAO executa settlement real no replay (dry-run). Expor via POST /api/replay/[caseId]. Util para validar mudancas no prompt da Clara antes de deploy.",
       "prioridade": 12,
-      "status": "pendente",
-      "dependencias": ["F01", "F04"]
+      "status": "concluida",
+      "dependencias": [
+        "F01",
+        "F04"
+      ]
     },
     {
       "id": "F13",
       "descricao": "Dashboard Operacional Server-Side — Criar /app/admin/page.tsx como dashboard com metricas reais (nao mockup). Dados: total_cases, active_cases, resolved_cases, abandoned_cases, avg_resolution_time, total_settlement_value, resolution_rate_percent, cases_by_state (contagem por estado do lifecycle), cases_by_type (contagem por classificacao), recent_cases (ultimos 10 com status). Backend via GET /api/admin/metrics que agrega dados do event log (F01) e case lifecycle (F04). Server component com revalidacao a cada 30s via Next.js revalidate. Proteger com header X-Admin-Key simples.",
       "prioridade": 13,
       "status": "pendente",
-      "dependencias": ["F01", "F04", "F05"]
+      "dependencias": [
+        "F01",
+        "F04",
+        "F05"
+      ]
     },
     {
       "id": "F14",
       "descricao": "Dynamic Case Creation — Substituir lib/scenarios.ts (3 cenarios hardcoded) por intake dinamico. No /forge, apos upload de contrato e analise de risco, botao 'Iniciar Mediacao' que: extrai clausulas-chave do contrato via LLM (generateText), identifica partes do contrato, pre-preenche formulario de disputa com dados extraidos, permite usuario editar/completar, e submete via POST /api/intake (F11). Remover dependencia de scenarios.ts no fluxo de mediacao — usar dados reais do contrato uploadado.",
       "prioridade": 14,
       "status": "pendente",
-      "dependencias": ["F09", "F11"]
+      "dependencias": [
+        "F09",
+        "F11"
+      ]
     },
     {
       "id": "F15",
       "descricao": "CLI Estruturado — Criar scripts/cli.ts com subcommands via process.argv parsing (sem dep extra). Subcommands: 'cases list' (lista todos os cases com estado), 'cases show <id>' (detalhe de um case), 'cases replay <id>' (re-roda mediacao), 'verify <id>' (verifica hash-chain), 'export <id>' (exporta case completo como JSON), 'metrics' (mostra metricas agregadas), 'breaker status' (estado do circuit breaker), 'breaker reset' (reseta circuit breaker manualmente). Adicionar script ao package.json: 'cli': 'npx tsx scripts/cli.ts'. Cada subcommand le do event log e case store.",
       "prioridade": 15,
-      "status": "pendente",
-      "dependencias": ["F01", "F02", "F04", "F12"]
+      "status": "concluida",
+      "dependencias": [
+        "F01",
+        "F02",
+        "F04",
+        "F12"
+      ]
     },
     {
       "id": "F16",
       "descricao": "Substrato Duravel — Instalar postgres (driver) e drizzle-orm. Criar lib/db/schema.ts com tabelas: mediation_events (event log duravel), cases (state machine), settlements (outbox), idempotency_keys (deduplication com TTL). Criar lib/db/index.ts com cliente Drizzle configurado via DATABASE_URL. Criar drizzle.config.ts. Rodar npx drizzle-kit push para criar tabelas. Adicionar DATABASE_URL ao .env.example. Manter interfaces existentes (MediationEventLog, CircuitBreaker, IdempotencyStore) — so trocar o backend de Map/arquivo para Postgres.",
       "prioridade": 5,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": []
     },
     {
       "id": "F17",
       "descricao": "Outbox Pattern — Criar tabela settlement_outbox em lib/db/schema.ts com campos: id, caseId, intent (JSON com termos do settlement), status (pending/executing/completed/failed), created_at, completed_at, tx_hash, error. No execute-settlement, gravar intent ANTES de executar (atomico com Postgres). Criar lib/outbox-worker.ts que processa pending settlements, executa on-chain, e marca completed/failed. Se falhar no meio (transfer OK mas verdict falhou), o worker retenta apenas o que faltou. Expor via GET /api/settlements/[caseId] para auditoria do estado.",
       "prioridade": 16,
-      "status": "pendente",
-      "dependencias": ["F16"]
+      "status": "concluida",
+      "dependencias": [
+        "F16"
+      ]
     },
     {
       "id": "F18",
       "descricao": "Migrar F01/F02/F03 para Postgres — Reescrever MediationEventLog para usar tabela mediation_events em vez de arquivos JSON. Reescrever CircuitBreaker para persistir estado e historico de settlements na tabela settlements. Reescrever IdempotencyStore para usar tabela idempotency_keys com TTL via deleted_at. Manter as mesmas interfaces publicas (append, getAll, verifyChain, canExecute, checkIdempotency) — so muda a implementacao interna. Remover dependencia de fs/readFileSync/writeFileSync.",
       "prioridade": 17,
-      "status": "pendente",
-      "dependencias": ["F16", "F01", "F02", "F03"]
+      "status": "concluida",
+      "dependencias": [
+        "F16",
+        "F01",
+        "F02",
+        "F03"
+      ]
     }
   ]
 }
