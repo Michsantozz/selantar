@@ -24,5 +24,12 @@
     "resultado": "aprovado",
     "testes_destruicao": "20 testes: transicoes NORMAL→CAUTION→LOCKDOWN corretas; LOCKDOWN persiste apos timestamps expirarem (1h+); EMERGENCY nao de-escala com novos settlements; EMERGENCY so sai via reset(); LOCKDOWN persiste sem reset; NaN/undefined/empty/negative amountUsd nao crasham; exactly $3000 → LOCKDOWN, $2999.99 → NORMAL; 100 settlements em 2ms sem degradacao; LOCKDOWN+EMERGENCY: EMERGENCY prevalece; getStatus() contagens corretas",
     "observacoes": "Implementacao solida e fiel ao skill-context.md. Risco residual teorico: evaluate() pode de-escalar LOCKDOWN→CAUTION se recordSettlement for chamado sem passar por canExecute() — inalcancavel no fluxo normal pois canExecute bloqueia novos settlements em LOCKDOWN. console.warn em CAUTION e intencional (plan.json exige log warning). Estado em memoria perdido em restart — aceitavel para demo."
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F03",
+    "resultado": "aprovado",
+    "testes_destruicao": "14 testes: TTL 24h expira e deleta do Map; purgeExpired mantem frescos e remove stale; hash SHA-256 determinístico (64 chars); keys diferentes para params diferentes; 1000 entries + purge performatico; XSS e empty strings nao crasham; cache hit retorna exatamente o mesmo objeto salvo; buildDelegationKey funcional; size() preciso apos saves",
+    "observacoes": "Implementacao fiel ao skill-context.md. Integrado nos 3 pontos (mediation-chat, execute-settlement 4 paths, delegation/grant). Ordem de guards correta (circuit breaker → idempotency → logica). buildDelegationKey adicionado alem do skill-context (necessario para delegation/grant). Risco residual: colisao de pipe separator se campos contiverem '|' (inalcancavel com dados reais). Estado em memoria perdido em restart."
   }
 ]

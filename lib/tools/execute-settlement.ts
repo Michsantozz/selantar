@@ -4,6 +4,7 @@ import { parseEther } from "viem";
 import { getWalletClient, getPublicClient } from "@/lib/wallet";
 import { mediationLog } from "@/lib/mediation-log";
 import { circuitBreaker } from "@/lib/circuit-breaker";
+import { idempotencyStore, buildSettlementKey } from "@/lib/idempotency";
 
 export const executeSettlement = tool({
   description:
@@ -25,6 +26,17 @@ export const executeSettlement = tool({
         contractRef,
         timestamp: new Date().toISOString(),
       };
+    }
+
+    // Idempotency check — second guard, after circuit breaker
+    const settlementKey = buildSettlementKey({
+      caseId: contractRef,
+      settlementTerms: reasoning,
+      amount: clientAmount,
+    });
+    const idempCheck = idempotencyStore.checkIdempotency(settlementKey);
+    if (idempCheck.cached) {
+      return idempCheck.result as Record<string, unknown>;
     }
 
     console.log(">>> executeSettlement called! USE_LOCUS=" + process.env.USE_LOCUS + " USE_ERC7715=" + process.env.USE_ERC7715 + " USE_DELEGATION=" + process.env.USE_DELEGATION);
@@ -108,7 +120,7 @@ export const executeSettlement = tool({
         const totalUsd = (parseFloat(clientAmount) + parseFloat(developerAmount)).toString();
         circuitBreaker.recordSettlement(contractRef, totalUsd);
 
-        return {
+        const locusResult = {
           status: "executed",
           method: "locus",
           clientTransactionId: clientData.data?.transaction_id,
@@ -124,6 +136,8 @@ export const executeSettlement = tool({
           auditTrail: `${locusBase}/pay/transactions`,
           timestamp: new Date().toISOString(),
         };
+        idempotencyStore.saveResult(settlementKey, locusResult);
+        return locusResult;
       } catch (locusError) {
         console.warn("Locus path failed, falling back to ERC-7715/delegation:", locusError);
         // Fall through to ERC-7715
@@ -166,7 +180,7 @@ export const executeSettlement = tool({
 
         circuitBreaker.recordSettlement(contractRef, (parseFloat(clientAmount) + parseFloat(developerAmount)).toString());
 
-        return {
+        const erc7715Result = {
           status: "executed",
           method: "erc7715",
           userOpHash,
@@ -179,6 +193,8 @@ export const executeSettlement = tool({
           explorer: `https://sepolia.basescan.org/tx/${userOpHash}`,
           timestamp: new Date().toISOString(),
         };
+        idempotencyStore.saveResult(settlementKey, erc7715Result);
+        return erc7715Result;
       } catch (erc7715Error) {
         console.warn("ERC-7715 path failed, falling back to delegation SDK:", erc7715Error);
       }
@@ -221,7 +237,7 @@ export const executeSettlement = tool({
 
         circuitBreaker.recordSettlement(contractRef, (parseFloat(clientAmount) + parseFloat(developerAmount)).toString());
 
-        return {
+        const delegationResult = {
           status: "executed",
           method: "delegation",
           userOpHash,
@@ -236,6 +252,8 @@ export const executeSettlement = tool({
           explorer: `https://sepolia.basescan.org/tx/${userOpHash}`,
           timestamp: new Date().toISOString(),
         };
+        idempotencyStore.saveResult(settlementKey, delegationResult);
+        return delegationResult;
       } catch (delegationError) {
         console.warn("Delegation path failed, falling back to direct tx:", delegationError);
       }
@@ -266,7 +284,7 @@ export const executeSettlement = tool({
 
       circuitBreaker.recordSettlement(contractRef, (parseFloat(clientAmount) + parseFloat(developerAmount)).toString());
 
-      return {
+      const directResult = {
         status: "executed",
         method: "direct",
         txHash: hash,
@@ -279,6 +297,8 @@ export const executeSettlement = tool({
         explorer: `https://sepolia.basescan.org/tx/${hash}`,
         timestamp: new Date().toISOString(),
       };
+      idempotencyStore.saveResult(settlementKey, directResult);
+      return directResult;
     } catch (directError) {
       circuitBreaker.recordOnChainFailure(contractRef, String(directError));
 

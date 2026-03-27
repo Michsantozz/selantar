@@ -7,6 +7,7 @@ import {
   getEnvironment,
   createAndSignDelegation,
 } from "@/lib/delegation";
+import { idempotencyStore, buildDelegationKey } from "@/lib/idempotency";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,15 @@ export const delegationStore = new Map<
 export async function POST(req: Request) {
   try {
     const { contractRef, maxAmountEth = "0.001" } = await req.json();
+
+    // Idempotency check — prevent double-delegation
+    const delegationKey = buildDelegationKey({ contractRef, maxAmountEth });
+    const idempCheck = idempotencyStore.checkIdempotency(delegationKey);
+    if (idempCheck.cached) {
+      return new Response(JSON.stringify(idempCheck.result), {
+        headers: { "Content-Type": "application/json", "X-Idempotent-Replay": "true" },
+      });
+    }
 
     const publicClient = getPublicClient();
     const environment = getEnvironment();
@@ -74,7 +84,7 @@ export async function POST(req: Request) {
       developerAddress: developerSmartAccount.address,
     });
 
-    return NextResponse.json({
+    const grantResult = {
       status: "delegations_created",
       clientDelegation: {
         delegator: clientSmartAccount.address,
@@ -90,7 +100,9 @@ export async function POST(req: Request) {
       },
       agentAddress: agentSmartAccount.address,
       timestamp: new Date().toISOString(),
-    });
+    };
+    idempotencyStore.saveResult(delegationKey, grantResult);
+    return NextResponse.json(grantResult);
   } catch (error: unknown) {
     console.warn("Delegation grant failed:", error);
     return NextResponse.json(

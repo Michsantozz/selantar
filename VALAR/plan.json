@@ -20,7 +20,7 @@
       "id": "F03",
       "descricao": "Idempotent Submissions — Criar lib/idempotency.ts com IdempotencyStore (Map<string, {result, timestamp}>). Gerar dedupe_key como hash de (contractRef + partyA + partyB + disputeType) para cases, e hash de (caseId + settlementTerms + amount) para settlements. Middleware checkIdempotency(key) retorna resultado cached se ja processado, ou null se novo. Integrar em POST /api/mediation-chat (impede re-mediacao do mesmo caso), POST /api/execute-settlement (impede double-settlement), e POST /api/delegation/grant (impede double-delegation). TTL de 24h para limpeza automatica.",
       "prioridade": 3,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": []
     },
     {
@@ -106,6 +106,27 @@
       "prioridade": 15,
       "status": "pendente",
       "dependencias": ["F01", "F02", "F04", "F12"]
+    },
+    {
+      "id": "F16",
+      "descricao": "Substrato Duravel — Instalar postgres (driver) e drizzle-orm. Criar lib/db/schema.ts com tabelas: mediation_events (event log duravel), cases (state machine), settlements (outbox), idempotency_keys (deduplication com TTL). Criar lib/db/index.ts com cliente Drizzle configurado via DATABASE_URL. Criar drizzle.config.ts. Rodar npx drizzle-kit push para criar tabelas. Adicionar DATABASE_URL ao .env.example. Manter interfaces existentes (MediationEventLog, CircuitBreaker, IdempotencyStore) — so trocar o backend de Map/arquivo para Postgres.",
+      "prioridade": 5,
+      "status": "pendente",
+      "dependencias": []
+    },
+    {
+      "id": "F17",
+      "descricao": "Outbox Pattern — Criar tabela settlement_outbox em lib/db/schema.ts com campos: id, caseId, intent (JSON com termos do settlement), status (pending/executing/completed/failed), created_at, completed_at, tx_hash, error. No execute-settlement, gravar intent ANTES de executar (atomico com Postgres). Criar lib/outbox-worker.ts que processa pending settlements, executa on-chain, e marca completed/failed. Se falhar no meio (transfer OK mas verdict falhou), o worker retenta apenas o que faltou. Expor via GET /api/settlements/[caseId] para auditoria do estado.",
+      "prioridade": 16,
+      "status": "pendente",
+      "dependencias": ["F16"]
+    },
+    {
+      "id": "F18",
+      "descricao": "Migrar F01/F02/F03 para Postgres — Reescrever MediationEventLog para usar tabela mediation_events em vez de arquivos JSON. Reescrever CircuitBreaker para persistir estado e historico de settlements na tabela settlements. Reescrever IdempotencyStore para usar tabela idempotency_keys com TTL via deleted_at. Manter as mesmas interfaces publicas (append, getAll, verifyChain, canExecute, checkIdempotency) — so muda a implementacao interna. Remover dependencia de fs/readFileSync/writeFileSync.",
+      "prioridade": 17,
+      "status": "pendente",
+      "dependencias": ["F16", "F01", "F02", "F03"]
     }
   ]
 }
