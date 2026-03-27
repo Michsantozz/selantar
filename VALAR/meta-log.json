@@ -1,0 +1,21 @@
+[
+  {
+    "sessao": "2026-03-27",
+    "feature": "F01",
+    "resultado": "reprovado",
+    "fase_falhou": "2",
+    "criterios_falhados": [
+      "register-verdict.ts — path catch (linhas 56-68) retorna sem emitir mediationLog.append; VERDICT_REGISTERED nunca e registrado quando ERC-8004 falha",
+      "post-feedback.ts — path catch (linhas 56-69) retorna sem emitir mediationLog.append; CASE_CLOSED nunca e registrado quando ERC-8004 falha"
+    ],
+    "detalhes": "O plan.json exige que 'cada tool call deve emitir evento no log antes e depois da execucao'. O Task Agent so adicionou mediationLog.append nos paths de sucesso de register-verdict e post-feedback. Quando o ERC-8004 falha (o que ocorre na demo sem wallet funded — o catch retorna 'verdict_queued' e 'feedback_queued'), nenhum evento e emitido no log. Isso quebra o event sourcing para os casos mais comuns em demo/teste. O evento deveria ser emitido independentemente de sucesso ou falha on-chain — o log registra que a tool foi chamada, nao que a TX on-chain confirmou. Correto seria: mover o mediationLog.append para antes do try/catch ou duplicar para o path catch com os dados disponiveis.",
+    "severidade": "alto"
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F01",
+    "resultado": "aprovado",
+    "testes_destruicao": "50 appends sequenciais com verifyChain valida; adulteracao de payload detectada (hash mismatch); JSON invalido em arquivo retorna [] sem crash; path traversal via caseId '../../../etc/passwd' resulta em ENOENT sem escapar do LOG_DIR; caseId com '/' causa ENOENT sem criar subdiretorios; payload de 10.000 chars com chain valida; caseId XSS e SQL injection sem execucao (apenas nome de arquivo); verifyChain em caseId inexistente retorna valid:true sem erro",
+    "observacoes": "Feature solida. Riscos residuais nao bloqueantes: (1) caseId com apenas whitespace passa no check !caseId da route — risco baixo pois gera nome de arquivo invalido que resulta em ENOENT silencioso; (2) sem file lock para multi-worker Next.js — risco baixo para volume de demo. execute-settlement fallback path 'settlement_recorded' sem append e aceitavel (sem execucao real). console.log em execute-settlement sao pre-existentes, nao introduzidos pelo Task Agent."
+  }
+]

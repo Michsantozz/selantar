@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { mediationLog } from "@/lib/mediation-log";
 
 export const analyzeEvidence = tool({
   description:
@@ -12,8 +13,9 @@ export const analyzeEvidence = tool({
     evidenceType: z
       .enum(["contract", "communication", "deliverable", "payment", "other"])
       .describe("Type of evidence being analyzed"),
+    caseId: z.string().describe("Case reference ID for event logging"),
   }),
-  execute: async ({ evidence, perspective, evidenceType }) => {
+  execute: async ({ evidence, perspective, evidenceType, caseId }) => {
     // Score based on evidence quality — not random
     let score = 50;
 
@@ -63,7 +65,7 @@ export const analyzeEvidence = tool({
     if (findings.length === 0)
       findings.push("Evidence reviewed — limited specificity detected");
 
-    return {
+    const result = {
       analysis: `Analyzed ${evidenceType} evidence from ${perspective} perspective`,
       evidenceType,
       perspective,
@@ -72,5 +74,14 @@ export const analyzeEvidence = tool({
       wordCount,
       timestamp: new Date().toISOString(),
     };
+
+    mediationLog.append(caseId, "ANALYSIS_COMPLETE", {
+      evidenceType,
+      perspective,
+      credibilityScore: score,
+      keyFindingsCount: findings.length,
+    });
+
+    return result;
   },
 });

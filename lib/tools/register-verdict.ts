@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { getWalletClient } from "@/lib/wallet";
 import { registerVerdictAsValidation } from "@/lib/erc8004/validation";
+import { mediationLog } from "@/lib/mediation-log";
 
 export const registerVerdict = tool({
   description:
@@ -34,6 +35,13 @@ export const registerVerdict = tool({
         }
       );
 
+      mediationLog.append(contractRef, "VERDICT_REGISTERED", {
+        validationTxHash,
+        evidenceCount: evidence.length,
+        linkedSettlement: settlementTxHash,
+        chain: "Base Sepolia",
+      });
+
       return {
         status: "registered",
         validationTxHash,
@@ -46,6 +54,14 @@ export const registerVerdict = tool({
         timestamp: new Date().toISOString(),
       };
     } catch {
+      mediationLog.append(contractRef, "VERDICT_REGISTERED", {
+        status: "queued",
+        evidenceCount: evidence.length,
+        linkedSettlement: settlementTxHash,
+        chain: "Base Sepolia",
+        note: "on-chain registration pending wallet funding",
+      });
+
       return {
         status: "verdict_queued",
         note: "Verdict evidence recorded. On-chain registration will complete when the agent wallet is funded.",

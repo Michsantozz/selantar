@@ -2,6 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { parseEther } from "viem";
 import { getWalletClient, getPublicClient } from "@/lib/wallet";
+import { mediationLog } from "@/lib/mediation-log";
 
 export const executeSettlement = tool({
   description:
@@ -81,6 +82,16 @@ export const executeSettlement = tool({
           data?: { transaction_id?: string; status?: string; tx_hash?: string };
         };
 
+        mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
+          method: "locus",
+          clientTransactionId: clientData.data?.transaction_id,
+          developerTransactionId: devData.data?.transaction_id,
+          clientAmount,
+          developerAmount,
+          chain: "Base",
+          currency: "USDC",
+        });
+
         return {
           status: "executed",
           method: "locus",
@@ -129,6 +140,14 @@ export const executeSettlement = tool({
           amount: settlementAmount,
         });
 
+        mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
+          method: "erc7715",
+          userOpHash,
+          clientAmount,
+          developerAmount,
+          chain: "Base Sepolia",
+        });
+
         return {
           status: "executed",
           method: "erc7715",
@@ -174,6 +193,14 @@ export const executeSettlement = tool({
           amount: delegationAmount,
         });
 
+        mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
+          method: "delegation",
+          userOpHash,
+          clientAmount,
+          developerAmount,
+          chain: "Base Sepolia",
+        });
+
         return {
           status: "executed",
           method: "delegation",
@@ -207,6 +234,15 @@ export const executeSettlement = tool({
       });
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
+
+      mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
+        method: "direct",
+        txHash: hash,
+        blockNumber: receipt.blockNumber.toString(),
+        clientAmount,
+        developerAmount,
+        chain: "Base Sepolia",
+      });
 
       return {
         status: "executed",

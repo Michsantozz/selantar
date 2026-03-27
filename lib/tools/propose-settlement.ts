@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { mediationLog } from "@/lib/mediation-log";
 
 export const proposeSettlement = tool({
   description:
@@ -15,13 +16,14 @@ export const proposeSettlement = tool({
     conditions: z
       .array(z.string())
       .describe("Conditions that must be met for settlement"),
+    caseId: z.string().describe("Case reference ID for event logging"),
   }),
-  execute: async ({ totalAmount, clientPercentage, reasoning, conditions }) => {
+  execute: async ({ totalAmount, clientPercentage, reasoning, conditions, caseId }) => {
     const total = parseFloat(totalAmount);
     const clientAmount = (total * clientPercentage) / 100;
     const developerAmount = total - clientAmount;
 
-    return {
+    const result = {
       proposal: {
         totalAmount: totalAmount,
         clientAmount: clientAmount.toFixed(2),
@@ -34,5 +36,15 @@ export const proposeSettlement = tool({
       status: "proposed",
       timestamp: new Date().toISOString(),
     };
+
+    mediationLog.append(caseId, "SETTLEMENT_PROPOSED", {
+      totalAmount,
+      clientPercentage,
+      clientAmount: clientAmount.toFixed(2),
+      developerAmount: developerAmount.toFixed(2),
+      conditionsCount: conditions.length,
+    });
+
+    return result;
   },
 });
