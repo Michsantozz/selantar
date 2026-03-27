@@ -44,7 +44,7 @@ export async function classifyDispute(
   evidence: string
 ): Promise<ClassificationResult> {
   const result = await generateText({
-    model: google("gemini-3.1-pro-preview"),
+    model: google("gemini-2.0-flash"),
     output: Output.object({
       schema: z.object({
         category: z.enum([

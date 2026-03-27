@@ -94,5 +94,56 @@
     "resultado": "aprovado",
     "testes_destruicao": "MediationEventLog usa dual-write (arquivo + Postgres fire-and-forget); getAll() permanece sincrono via arquivo; dual-write nao bloqueia retorno de append(); fallback silencioso quando DATABASE_URL ausente (getDbModule retorna null); CircuitBreaker tem getDbModule lazy; IdempotencyStore tem getDbModule lazy; interfaces publicas identicas (append, getAll, verifyChain, canExecute, checkIdempotency); build passou com DATABASE_URL ausente",
     "observacoes": "Migracao F01/F02/F03 usa dual-write progressivo: escreve em arquivo (sincrono, confiavel) E em Postgres (async fire-and-forget). getAll() ainda le de arquivo — leitura async do Postgres pode ser adotada em iteracao futura. Sem breaking changes nas interfaces publicas."
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F05",
+    "resultado": "reprovado",
+    "fase_falhou": "4",
+    "criterios_falhados": [
+      "lib/case-classifier.ts:47 usa gemini-3.1-pro-preview — modelo inexistente, toda chamada real falha com 404",
+      "lib/agents/mediator-agent.ts:15 usa gemini-3.1-pro-preview — modelo inexistente, mediacao inteira falha em producao"
+    ],
+    "detalhes": "O Skill Agent documentou explicitamente como lacuna que gemini-3.1-pro-preview pode nao suportar structured output. O Task Agent nao corrigiu e usou o modelo inexistente em 2 arquivos. O projeto inteiro ja usa gemini-2.0-flash em analyze-evidence e replay — inconsistencia e uso de modelo inexistente e anti-pattern critico. Correcao: trocar gemini-3.1-pro-preview por gemini-2.0-flash nos dois arquivos.",
+    "severidade": "alto"
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F07",
+    "resultado": "reprovado",
+    "fase_falhou": "2",
+    "criterios_falhados": [
+      "submit_dispute nao chama createCase() — case criado no log mas nao no caseStore; list_active_cases nunca lista cases MCP; query_case retorna state null para cases submetidos via MCP"
+    ],
+    "detalhes": "lib/mcp/server.ts submit_dispute chama mediationLog.append(CASE_OPENED) mas omite createCase(caseId). Isso viola a integracao com F04 — o lifecycle state machine nao fica ciente do case. Consequencia: list_active_cases (Tool 4) nunca retorna cases submetidos via MCP; query_case (Tool 1) retorna state: null; guards de estado de F04 nao funcionam para esses cases. Correto: chamar createCase(caseId) antes do append, igual ao que /api/intake faz.",
+    "severidade": "alto"
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F05",
+    "resultado": "aprovado",
+    "testes_destruicao": "classifyCase tool fallback retorna CONTRACT_AMBIGUITY com strategy valida quando LLM indisponivel; STRATEGY_PRESETS tem 7 categorias todas validas; sum weights correto; caseId e timestamp presentes no retorno; integracao em mediator-agent confirmada (import + tools object + prompt instrucao); modelo corrigido para gemini-2.0-flash pelo QA",
+    "observacoes": "Bug corrigido pelo QA: gemini-3.1-pro-preview -> gemini-2.0-flash em lib/case-classifier.ts e lib/agents/mediator-agent.ts. classifyDispute nao emite evento no mediationLog (F05 nao exige explicitamente — plan.json omite)."
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F07",
+    "resultado": "aprovado",
+    "testes_destruicao": "WebStandardStreamableHTTPServerTransport existe no SDK; 5 tools registrados (query_case, verify_mediation, get_reputation, list_active_cases, submit_dispute); list_active_cases sem inputSchema correto; submit_dispute agora chama createCase() antes do append (QA corrigiu); query_case retorna state correto apos correcao; build passou; GET/POST/DELETE handlers presentes na route",
+    "observacoes": "Bug corrigido pelo QA: submit_dispute nao chamava createCase() — adicionado antes de mediationLog.append. Cada request cria nova instancia de transport e server — aceitavel para demo (stateless MCP)."
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F10",
+    "resultado": "aprovado",
+    "testes_destruicao": "adjustWeights([]) retorna pesos atuais sem mutar; all-success: sum=1.000; mixed: sum=1.000 compliance aumentou; 10 ciclos extremos: todos weights dentro de [0.05, 0.45]; ReputationScorer perfect=100, zero=0, negative clamped=0, over-1 capped=100; sum weights=1.000; breakdown correto; persistWeightAdjustment emite WEIGHT_ADJUSTMENT no log",
+    "observacoes": "Implementacao correta. Normalizacao preserva soma=1.0. Fix de floating point no ultimo key via (1 - sumBeforeLast) correto. Singleton currentWeights muta em memoria — aceitavel para demo."
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F15",
+    "resultado": "aprovado",
+    "testes_destruicao": "sem args: help sem crash; cases list (vazio): No cases found; cases list (com arquivo): JSON correto; cases show caseId inexistente: Error+exit 1; cases show sem arg: Error+exit 1; verify sem arg: Error+exit 1; verify hash invalido: is_valid:false+broken_at correto; export: JSON com chainIntegrity; metrics (vazio): todos campos; breaker status: JSON correto; breaker reset: NORMAL; comando desconhecido: help sem crash; npm run cli script presente em package.json",
+    "observacoes": "CLI robusto. Todos 8 subcommands funcionais. dotenv carregado antes dos imports do projeto. listCaseIds() le disco diretamente. Sem deps extras (apenas dotenv que ja era dependencia)."
   }
 ]

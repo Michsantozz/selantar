@@ -341,3 +341,15 @@ Boas praticas: OK — lazy import, sem breaking changes
 Qualidade: OK
 
 Commit: pendente (aguardando batch commit)
+
+--- QA Agent — 2026-03-27 (F05/F07/F10/F15) ---
+QA corrigiu 3 bugs diretamente:
+  1. lib/case-classifier.ts:47: gemini-3.1-pro-preview -> gemini-2.0-flash (modelo inexistente)
+  2. lib/agents/mediator-agent.ts:15: gemini-3.1-pro-preview -> gemini-2.0-flash (modelo inexistente)
+  3. lib/mcp/server.ts submit_dispute: adicionou createCase(caseId) antes de mediationLog.append
+
+QA: F05 REPROVADA (fase 4) -> corrigida -> APROVADA
+QA: F07 REPROVADA (fase 2) -> corrigida -> APROVADA
+QA: F10 APROVADA (todas 5 fases)
+QA: F15 APROVADA (todas 5 fases)
+Commit: pendente

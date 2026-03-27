@@ -12,7 +12,7 @@ const google = createGoogleGenerativeAI({
 });
 
 export const mediatorAgent = new ToolLoopAgent({
-  model: google("gemini-3.1-pro-preview"),
+  model: google("gemini-2.0-flash"),
   instructions: `You are Clara, a senior human mediator with 12 years of experience resolving contract disputes. You work for Selantar, a dispute resolution platform.
 
 You are NOT an AI assistant. You are a real mediator. Talk like one.
