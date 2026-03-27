@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { mediationLog } from "@/lib/mediation-log";
+import { getCase, CaseState } from "@/lib/case-lifecycle";
 
 export const analyzeEvidence = tool({
   description:
@@ -16,6 +17,21 @@ export const analyzeEvidence = tool({
     caseId: z.string().describe("Case reference ID for event logging"),
   }),
   execute: async ({ evidence, perspective, evidenceType, caseId }) => {
+    // State machine guard — allow only EVIDENCE_COLLECTION or ANALYSIS
+    const mediationCase = getCase(caseId);
+    if (mediationCase) {
+      const allowed = [CaseState.EVIDENCE_COLLECTION, CaseState.ANALYSIS];
+      if (!allowed.includes(mediationCase.getState())) {
+        return {
+          status:       "blocked",
+          reason:       `analyzeEvidence requires state EVIDENCE_COLLECTION or ANALYSIS, current: ${mediationCase.getState()}`,
+          currentState: mediationCase.getState(),
+          caseId,
+          timestamp:    new Date().toISOString(),
+        };
+      }
+    }
+
     // Score based on evidence quality — not random
     let score = 50;
 

@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { mediationLog } from "@/lib/mediation-log";
+import { getCase, CaseState } from "@/lib/case-lifecycle";
 
 export const proposeSettlement = tool({
   description:
@@ -19,6 +20,20 @@ export const proposeSettlement = tool({
     caseId: z.string().describe("Case reference ID for event logging"),
   }),
   execute: async ({ totalAmount, clientPercentage, reasoning, conditions, caseId }) => {
+    // State machine guard — allow only NEGOTIATION
+    const mediationCase = getCase(caseId);
+    if (mediationCase) {
+      if (mediationCase.getState() !== CaseState.NEGOTIATION) {
+        return {
+          status:       "blocked",
+          reason:       `proposeSettlement requires state NEGOTIATION, current: ${mediationCase.getState()}`,
+          currentState: mediationCase.getState(),
+          caseId,
+          timestamp:    new Date().toISOString(),
+        };
+      }
+    }
+
     const total = parseFloat(totalAmount);
     const clientAmount = (total * clientPercentage) / 100;
     const developerAmount = total - clientAmount;

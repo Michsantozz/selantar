@@ -1,0 +1,243 @@
+=== Projeto: jus-teste ===
+Inicializado em: 2026-03-26
+
+--- Sessao 2026-03-26 ---
+Sistema de agentes inicializado.
+Aguardando primeira execucao do Planner.
+
+--- Sessao 2026-03-27 ---
+Planner: planejamento estrategico para hackathon Synthesis
+Contexto: auditoria tecnica comparou Selantar (6 primitivos) com b1e55ed (19 primitivos)
+Objetivo: fechar gap tecnico mantendo vantagens de UX/design do Selantar
+Diagnostico: Selantar tem ERC-8004, MetaMask Delegations, x402, dual-agent, multi-path settlement
+Gaps criticos identificados: sem event sourcing, sem circuit breaker, sem idempotency, sem state machine, sem MCP
+Features mapeadas: 15 features no plan.json (F01-F15)
+Dependencia raiz: F01 (Event Sourcing) — 8 features dependem dele
+Features independentes: F03 (Idempotency), F09 (Evidence Upgrade) — podem comecar em paralelo
+Impacto hackathon: F01+F02+F03 protegem contra falhas reais, F07 (MCP) transforma em infra, F08 (Oracle) composabilidade
+Prioridade mais alta: F01 - Event Sourcing com hash-chain
+Features concluidas ate agora: 0/15
+
+--- Sessao 2026-03-27 ---
+Planner: proxima feature escolhida: F01 - Event Sourcing com hash-chain
+Motivo: maior prioridade (1) entre as disponiveis, raiz de 8 features dependentes (F02, F04, F06, F07, F08, F10, F11, F12)
+Features concluidas ate agora: 0/15
+Features disponiveis consideradas: F01, F03, F09
+
+--- Skill Agent ---
+Skill Agent: contexto montado para F01 - Event Sourcing com hash-chain
+Skills consultadas: vercel-react-best-practices/server-hoist-static-io, vercel-react-best-practices/async-api-routes, codigo existente (lib/tools/*.ts, app/api/mediation-chat/route.ts)
+Lacunas identificadas: Node.js crypto/fs nao cobertos por skills instaladas; caseId ausente no inputSchema de 3 tools (analyze-evidence, propose-settlement, post-feedback)
+Motivo da execucao: sessao normal (apos Planner)
+
+--- Task Agent ---
+Task: implementei F01 - Event Sourcing com hash-chain
+Arquivos modificados:
+- lib/mediation-log.ts (criado)
+- lib/tools/analyze-evidence.ts
+- lib/tools/propose-settlement.ts
+- lib/tools/execute-settlement.ts
+- lib/tools/register-verdict.ts
+- lib/tools/post-feedback.ts
+- app/api/mediation-log/[caseId]/route.ts (criado)
+O que foi feito: Criou MediationEventLog com SHA-256 encadeado (prevHash), persistencia em .mediation-logs/<caseId>.json, metodos append/getAll/verifyChain/exportJSON, singleton mediationLog. Adicionou caseId ao inputSchema de analyze-evidence, propose-settlement e post-feedback. Integrou mediationLog.append nos 5 tools (ANALYSIS_COMPLETE, SETTLEMENT_PROPOSED, SETTLEMENT_EXECUTED x3 paths, VERDICT_REGISTERED, CASE_CLOSED). Criou GET /api/mediation-log/[caseId] com runtime nodejs e params async.
+Pontos de atencao pro QA:
+- execute-settlement tem 4 paths de retorno (locus, erc7715, delegation, direct) — append foi adicionado antes de cada return de sucesso; o path de fallback final (settlement_recorded, sem tx) NAO tem append pois nao ha execucao real
+- O LSP do IDE reportou erros 2307 (cannot find module 'ai'/'zod') e 7031 (implicit any) em register-verdict.ts e post-feedback.ts — sao erros PRE-EXISTENTES, presentes antes de qualquer mudanca minha; nao introduzi novos erros nesses arquivos
+- Build pre-existente falha com "Next.js inferred your workspace root" — erro de turbopack workspace, nao relacionado a esta feature
+- verifyChain recomputa hash E verifica encadeamento de prevHash conforme checklist
+- LOG_DIR usa join(process.cwd(), ".mediation-logs") conforme skill-context.md
+- mkdirSync com recursive:true chamado via ensureLogDir() antes de writeFileSync
+Skills usadas do contexto: vercel-react-best-practices/server-hoist-static-io (process.cwd, fs imports), vercel-react-best-practices/async-api-routes (params Promise, await params), padrao do projeto (inputSchema, tool de "ai", export named)
+Lacunas encontradas: nenhuma — lacunas do skill-context.md sobre Node.js crypto/fs foram cobertas pelos built-ins Node.js conforme autorizado pelo proprio skill-context.md
+
+QA: feature F01 REPROVADA
+Fase: 2
+Criterios falhados:
+  - register-verdict.ts (catch path, linhas 56-68): nao emite mediationLog.append quando ERC-8004 falha — VERDICT_REGISTERED nunca registrado no path de erro
+  - post-feedback.ts (catch path, linhas 56-69): nao emite mediationLog.append quando ERC-8004 falha — CASE_CLOSED nunca registrado no path de erro
+Motivo: paths de erro de register-verdict e post-feedback retornam sem emitir evento no log; o plan.json exige que cada tool call emita evento independentemente de sucesso ou falha on-chain
+Severidade: alto
+Proximo passo: Rode SKILL_TASK.md (ou PROMPT_TASK.md) para corrigir
+
+Task: correcao F01 - paths de erro sem mediationLog.append
+Arquivos modificados:
+- lib/tools/register-verdict.ts
+- lib/tools/post-feedback.ts
+O que foi feito: Adicionou mediationLog.append no bloco catch de register-verdict.ts (VERDICT_REGISTERED com status "queued") e no bloco catch de post-feedback.ts (CASE_CLOSED com status "queued"). Agora ambos os tools emitem evento no log independentemente de sucesso ou falha on-chain.
+Pontos de atencao pro QA:
+- Eventos no catch incluem status: "queued" e note no payload para distinguir de execucao real
+- Nenhuma outra mudanca foi feita alem dos dois blocos catch
+Lacunas encontradas: nenhuma
+
+QA: feature F01 APROVADA (todas 5 fases)
+Regression: OK — build Next.js passou; erros TS pre-existentes confirmados via git stash; nenhuma regressao introduzida
+Funcional: OK — 5 tools emitem eventos; paths de catch corrigidos em register-verdict e post-feedback; verifyChain + encadeamento prevHash corretos; route GET /api/mediation-log/[caseId] funcionando
+Destruicao: resistiu a 50 appends sequenciais (chain valida), adulteracao detectada (hash mismatch), JSON invalido retorna [] sem crash, path traversal via caseId ENOENT sem escapar LOG_DIR, payload 10k chars, caseId XSS/SQL injection sem execucao
+Boas praticas: OK — todos os 11 itens do checklist skill-context.md verificados
+Qualidade: OK — console.log pre-existentes, sem imports nao usados, sem any novo, arquivos dentro do limite
+Riscos residuais: caseId whitespace-only nao retorna 400 (baixo); sem file lock multi-worker (baixo para demo)
+
+--- Sessao 2026-03-27 ---
+Planner: proxima feature escolhida: F02 - Circuit Breaker / Kill Switch
+Motivo: maior prioridade (2) entre as disponiveis, desbloqueia F15 (CLI)
+Features concluidas ate agora: 1/15
+Features disponiveis consideradas: F02, F03, F04, F06, F09
+
+--- Skill Agent ---
+Skill Agent: contexto montado para F02 - Circuit Breaker / Kill Switch
+Skills consultadas: circuit-breaker-pattern/typescript-circuit-breaker (instalada via npx skills), circuit-breaker-pattern/circuit-breaker-with-monitoring, vercel-react-best-practices/js-early-exit, vercel-react-best-practices/js-set-map-lookups, codigo existente (lib/mediation-log.ts, lib/tools/execute-settlement.ts)
+Lacunas identificadas: CIRCUIT_BREAKER_TRIGGERED ausente no MediationEventType (deve ser adicionado); threshold 1 ETH em USD e aproximacao; estado em memoria perdido em restart (aceitavel para demo); EMERGENCY nao cobre registerVerdict/postFeedback nesta feature
+Motivo da execucao: sessao normal (apos Reviewer Checkpoint 1 APROVADO)
+
+--- Reviewer ---
+Reviewer: checkpoint 1 — APROVADO
+Feature: F02 - Circuit Breaker / Kill Switch
+Verificacoes: 5/5 passaram
+Falhas: nenhuma
+Detalhes: 1.1 OK (1 em_andamento), 1.2 OK (F01 concluida), 1.3 OK (prio 2, menor disponivel), 1.4 OK (nunca concluida), 1.5 OK (motivo + lista presentes)
+Proximo passo: Skill Agent (SKILL_SKILL_AGENT.md)
+
+--- Reviewer ---
+Reviewer: checkpoint 2 — APROVADO
+Feature: F02 - Circuit Breaker / Kill Switch
+Verificacoes: 10/10 passaram
+Falhas: nenhuma
+Detalhes: 2.1 OK (feature_id F02), 2.2 OK (nao placeholder), 2.3 OK (todos requisitos cobertos), 2.4 OK (imports concretos), 2.5 OK (codigo copiado), 2.6 OK (5 anti-patterns), 2.7 OK (arquivos existem), 2.8 OK (12 items verificaveis), 2.9 OK (4 lacunas documentadas), 2.10 OK (APIs verificadas)
+Proximo passo: Task Agent (SKILL_TASK.md)
+
+--- Task Agent ---
+Task: implementei F02 - Circuit Breaker / Kill Switch
+Arquivos modificados:
+- lib/mediation-log.ts (adicionou CIRCUIT_BREAKER_TRIGGERED ao MediationEventType)
+- lib/circuit-breaker.ts (criado)
+- lib/tools/execute-settlement.ts
+O que foi feito: Criou CircuitBreaker com 4 niveis (NORMAL, CAUTION, LOCKDOWN, EMERGENCY). canExecute() como guard no inicio do execute de execute-settlement.ts (antes de qualquer branch). recordSettlement() chamado apos cada path de sucesso (locus, erc7715, delegation, direct) com totalUsd para threshold $3000 (~1 ETH). recordOnChainFailure() no catch final do fallback direct — emite CIRCUIT_BREAKER_TRIGGERED no event log via mediationLog.append. reset() como unico caminho de de-escalacao (manual). getStatus() retorna contagens de 10min e 1h. Singleton circuitBreaker exportado.
+Pontos de atencao pro QA:
+- CIRCUIT_BREAKER_TRIGGERED adicionado ao union type MediationEventType em mediation-log.ts — necessario para TypeScript aceitar o append
+- Threshold de valor: $3000 USD (~1 ETH) conforme skill-context.md, nao conversao real ETH/USD
+- recordSettlement recebe totalUsd = clientAmount + developerAmount (parseFloat de ambos)
+- LOCKDOWN nunca de-escala automaticamente — evaluate() mantem LOCKDOWN se ja estiver nesse nivel
+- EMERGENCY so sai via reset() — evaluate() retorna imediatamente se EMERGENCY
+- Erros TS 2345 nas linhas 125, 176, 180 de execute-settlement.ts sao PRE-EXISTENTES (incompatibilidade de tipos viem getBlock) — nao introduzidos por esta feature
+- Estado em memoria perdido em restart — aceitavel para demo conforme lacuna documentada
+Skills usadas do contexto: circuit-breaker-pattern/typescript-circuit-breaker (estrutura de classe), circuit-breaker-pattern/circuit-breaker-with-monitoring (metricas), vercel-react-best-practices/js-early-exit (canExecute retorno rapido), padrao do projeto (singleton, mediationLog.append)
+Lacunas encontradas: nenhuma
+
+QA: feature F02 APROVADA (todas 5 fases)
+Regression: OK — build Next.js passou; nenhuma rota existente quebrada
+Funcional: OK — 4 niveis corretos; CAUTION permite + loga warning; LOCKDOWN/EMERGENCY bloqueiam; threshold $3000 funciona; reset() unico caminho de de-escalacao; guard como primeiro bloco no execute; recordSettlement em 4 paths de sucesso; recordOnChainFailure no catch final
+Destruicao: resistiu a 20 testes — transicoes de estado, LOCKDOWN persiste apos timestamps expirarem, EMERGENCY nao de-escala, NaN/undefined/empty/negative amounts nao crasham, $3000 exato → LOCKDOWN, $2999.99 → NORMAL, 100 settlements em 2ms
+Boas praticas: OK — todos 12 itens do checklist skill-context.md verificados
+Qualidade: OK — console.warn intencional (CAUTION), sem imports nao usados, sem any, 120 linhas
+Riscos residuais: evaluate() teoricamente de-escala LOCKDOWN→CAUTION via recordSettlement direto (inalcancavel no fluxo normal); estado em memoria perdido em restart
+
+--- Sessao 2026-03-27 ---
+Planner: proxima feature escolhida: F03 - Idempotent Submissions
+Motivo: maior prioridade (3) entre as disponiveis, desbloqueia F11 (Case Intake Pipeline)
+Features concluidas ate agora: 2/15
+Features disponiveis consideradas: F03, F04, F06, F09
+
+--- Reviewer ---
+Reviewer: checkpoint 1 — APROVADO
+Feature: F03 - Idempotent Submissions
+Verificacoes: 5/5 passaram
+Falhas: nenhuma
+Detalhes: 1.1 OK (1 em_andamento), 1.2 OK (sem dependencias), 1.3 OK (prio 3, menor disponivel), 1.4 OK (nunca concluida), 1.5 OK (motivo + lista presentes)
+Proximo passo: Skill Agent (SKILL_SKILL_AGENT.md)
+
+--- Skill Agent ---
+Skill Agent: contexto montado para F03 - Idempotent Submissions
+Skills consultadas: idempotency-handling/express-idempotency-middleware (instalada via npx skills aj-geddes), idempotency-handling/SKILL.md, vercel-react-best-practices/js-cache-function-results, vercel-react-best-practices/js-early-exit, codigo existente (lib/mediation-log.ts, lib/circuit-breaker.ts, app/api/mediation-chat/route.ts)
+Lacunas identificadas: /api/delegation/grant pode nao existir (verificar antes de integrar); streaming nao pode ser cacheado como stream (salvar metadados/resultado final); purgeExpired nao tem scheduler (chamar dentro de saveResult); estado em memoria perdido em restart (aceitavel para demo)
+Motivo da execucao: sessao normal (apos Reviewer Checkpoint 1 APROVADO)
+
+--- Reviewer ---
+Reviewer: checkpoint 2 — APROVADO
+Feature: F03 - Idempotent Submissions
+Verificacoes: 10/10 passaram
+Falhas: nenhuma
+Detalhes: 2.1 OK (feature_id F03), 2.2 OK (nao placeholder), 2.3 OK (todos requisitos cobertos), 2.4 OK (imports concretos), 2.5 OK (codigo copiado), 2.6 OK (6 anti-patterns), 2.7 OK (todos arquivos existem incl. delegation/grant), 2.8 OK (11 items verificaveis), 2.9 OK (4 lacunas documentadas), 2.10 OK (APIs verificadas)
+Proximo passo: Task Agent (SKILL_TASK.md)
+
+--- Task Agent ---
+Task: implementei F03 - Idempotent Submissions
+Arquivos modificados:
+- lib/idempotency.ts (criado)
+- app/api/mediation-chat/route.ts
+- lib/tools/execute-settlement.ts
+- app/api/delegation/grant/route.ts
+O que foi feito: Criou IdempotencyStore com Map em memoria, TTL 24h, checkIdempotency (Map.get, O(1)), saveResult (com purgeExpired automatico), purgeExpired, size. Tres funcoes de chave: buildCaseKey (SHA-256 de contractRef|partyA|partyB|disputeType), buildSettlementKey (SHA-256 de caseId|settlementTerms|amount), buildDelegationKey (SHA-256 de contractRef|maxAmountEth). Integrou em mediation-chat/route.ts (check ANTES de createAgentUIStreamResponse, salva metadados pois stream nao pode ser cacheado), execute-settlement.ts (check DEPOIS do circuit breaker, saveResult antes de cada return de sucesso nos 4 paths), delegation/grant/route.ts (check no inicio, saveResult antes do return de sucesso).
+Pontos de atencao pro QA:
+- mediation-chat: streaming nao pode ser replicado, entao o saveResult guarda metadados {cached:true, contractRef, ...} e o cache hit retorna JSON simples com X-Idempotent-Replay header
+- execute-settlement: idempotency check vem DEPOIS do circuit breaker (ordem: 1. circuitBreaker.canExecute, 2. idempotencyStore.checkIdempotency, 3. logica)
+- execute-settlement: saveResult chamado nos 4 paths de sucesso (locus, erc7715, delegation, direct) — o path de fallback (settlement_recorded) NAO salva pois nao e execucao real
+- delegation/grant: buildDelegationKey usa contractRef + maxAmountEth (campos disponiveis no body)
+- purgeExpired chamado dentro de saveResult conforme lacuna do skill-context.md
+- buildDelegationKey nao esta no skill-context.md original mas segue o mesmo pattern (SHA-256 de campos separados por |) — necessario para integrar no delegation/grant
+Skills usadas do contexto: idempotency-handling/express-idempotency-middleware (estrutura IdempotentRequest), vercel-react-best-practices/js-cache-function-results (Map module-level), vercel-react-best-practices/js-early-exit (retorno rapido), padrao do projeto (singleton)
+Lacunas encontradas: buildDelegationKey nao coberto pelo skill-context.md — implementei seguindo mesmo pattern das outras funcoes de chave
+
+QA: feature F03 APROVADA (todas 5 fases)
+Regression: OK — build Next.js passou; nenhuma funcionalidade existente quebrada
+Funcional: OK — checkIdempotency retorna cached:false/true corretamente; TTL 24h funciona; saveResult nos 3 pontos de integracao (mediation-chat, execute-settlement 4 paths, delegation/grant); ordem de guards correta (circuit breaker → idempotency → logica)
+Destruicao: resistiu a 14 testes — TTL expira e deleta, purgeExpired mantém frescos, hash determinístico, keys diferentes para params diferentes, 1000 entries + purge performático, XSS/empty strings sem crash
+Boas praticas: OK — todos 11 itens do checklist skill-context.md verificados
+Qualidade: OK — 91 linhas, sem console.log, sem any, sem imports nao usados
+Riscos residuais: colisao de pipe separator se campos contiverem '|' (inalcancavel com dados reais); estado em memoria perdido em restart
+
+--- Sessao 2026-03-27 ---
+Planner: proxima feature escolhida: F04 - Mediation Lifecycle State Machine
+Motivo: maior prioridade (4) entre as disponiveis, desbloqueia 7 features (F05, F07, F08, F11, F12, F13, F15)
+Features concluidas ate agora: 3/18
+Features disponiveis consideradas: F04, F16, F06, F09
+
+--- Reviewer ---
+Reviewer: checkpoint 1 — APROVADO
+Feature: F04 - Mediation Lifecycle State Machine
+Verificacoes: 5/5 passaram
+Falhas: nenhuma
+Detalhes: 1.1 OK (1 em_andamento), 1.2 OK (F01 concluida), 1.3 OK (prio 4, menor disponivel — F16 tem prio 5, F06 prio 6, F09 prio 9), 1.4 OK (nunca concluida — git grep vazio), 1.5 OK (motivo + lista presentes)
+Proximo passo: Skill Agent (SKILL_SKILL_AGENT.md)
+
+--- Skill Agent ---
+Skill Agent: contexto montado para F04 - Mediation Lifecycle State Machine
+Skills consultadas: codigo existente (lib/mediation-log.ts, lib/circuit-breaker.ts, lib/idempotency.ts, lib/tools/analyze-evidence.ts, lib/tools/propose-settlement.ts, lib/tools/execute-settlement.ts, lib/agents/mediator-agent.ts), vercel-react-best-practices/js-early-exit, vercel-react-best-practices/js-set-map-lookups
+Lacunas identificadas: skills de indice nao instaladas (contexto derivado do codigo existente); mapeamento STATE_TRANSITION para MediationEventType nao coberto por skill externa (solucao: adicionar ao union type, precedente de F02); guards para post-feedback e register-verdict nao especificados em F04 (Task Agent deve perguntar se precisar); persistencia em memoria perdida em restart (aceitavel para demo)
+Motivo da execucao: sessao normal (apos Reviewer Checkpoint 1 APROVADO)
+
+--- Reviewer ---
+Reviewer: checkpoint 2 — APROVADO
+Feature: F04 - Mediation Lifecycle State Machine
+Verificacoes: 10/10 passaram
+Falhas: nenhuma
+Detalhes: 2.1 OK (feature_id F04 correto), 2.2 OK (nao placeholder), 2.3 OK (todos 9 requisitos cobertos — enum 11 estados, VALID_TRANSITIONS, MediationCase, transition, 3 guards), 2.4 OK (imports concretos com caminhos @/), 2.5 OK (6 blocos de codigo copiados do projeto), 2.6 OK (6 anti-patterns com codigo errado + explicacao), 2.7 OK (6 arquivos referenciados existem), 2.8 OK (18 items verificaveis por grep/leitura), 2.9 OK (5 lacunas documentadas), 2.10 OK (ai e viem em package.json, zod em node_modules como transitiva do ai v6)
+Proximo passo: Task Agent (SKILL_TASK.md)
+
+--- Task Agent ---
+Task: implementei F04 - Mediation Lifecycle State Machine
+Arquivos modificados:
+- lib/mediation-log.ts (adicionou STATE_TRANSITION ao MediationEventType)
+- lib/case-lifecycle.ts (criado)
+- lib/tools/analyze-evidence.ts (import + guard de estado)
+- lib/tools/propose-settlement.ts (import + guard de estado)
+- lib/tools/execute-settlement.ts (import + guard de estado)
+O que foi feito: Adicionou STATE_TRANSITION ao union MediationEventType. Criou CaseState enum (11 estados), VALID_TRANSITIONS (Record<CaseState, CaseState[]>), MediationCase com transition/canTransitionTo/getState/getHistory, caseStore (Map singleton), createCase (idempotente, emite CASE_OPENED), getCase. Guards nos 3 tools: analyze-evidence (EVIDENCE_COLLECTION|ANALYSIS), propose-settlement (NEGOTIATION), execute-settlement (AGREEMENT, 3o guard apos circuitBreaker e idempotency). Todos os guards retornam {status:"blocked", reason, currentState, ...} sem lancar excecao. Guards so atuam se case existir no caseStore — compatibilidade retroativa.
+Pontos de atencao pro QA:
+- VALID_TRANSITIONS: AGREEMENT → SETTLEMENT_PENDING (nao diretamente para SETTLEMENT_EXECUTED — constraint do plan.json)
+- transition() lanca Error para transicoes invalidas (correto — e chamado por codigo do projeto, nao diretamente por tool.execute)
+- Guards usam if(mediationCase) — se case nao existe, tool executa normalmente (retrocompativel)
+- execute-settlement: guard e o 3o (1.circuitBreaker, 2.idempotency, 3.stateMachine)
+- Erros TS 2345 nas linhas ~155/210/214 de execute-settlement.ts sao PRE-EXISTENTES (viem getBlock type mismatch) — confirmado em F02/F03
+- caseStore exportado para uso futuro em F13 (admin metrics)
+Skills usadas do contexto: codigo existente (mediation-log, circuit-breaker, idempotency — padrao singleton/Map), codigo existente (execute-settlement — padrao guard retorno rapido), vercel-react-best-practices/js-early-exit, vercel-react-best-practices/js-set-map-lookups
+Lacunas encontradas: nenhuma
+
+--- QA Agent — F04 ---
+QA: feature F04 APROVADA (todas 5 fases)
+Regression: OK — build clean, lint 147 errors sao pre-existentes (nenhum novo em arquivos F04)
+Funcional: OK — 17 checklist items verificados: 11 CaseStates, VALID_TRANSITIONS correto, transition() throws, STATE_TRANSITION no union, CASE_OPENED em createCase, idempotencia, Map-based store, guards corretos nas 3 tools (posicao, estados permitidos, retorno estruturado), canTransitionTo, getHistory() copia
+Destruicao: resistiu a 20 testes — full happy path 8 transicoes, CLOSED/ABANDONED terminais, skip de estados invalidos, ciclo PROPOSAL↔COUNTER_PROPOSAL, imutabilidade getHistory, idempotencia createCase, guard bypass/block, XSS/SQL injection/unicode/10000chars em caseId, AGREEMENT nao pula SETTLEMENT_EXECUTED, error messages descritivas
+Boas praticas: OK — skill-context.md seguido; Map (nao array); guards retornam objeto estruturado (nao throw); @/ aliases; STATE_TRANSITION via Opcao A (preferida); CASE_OPENED emitido; guard order CB→idempotency→state machine
+Qualidade: OK — 102 linhas, zero console.log novos, sem any, sem imports nao usados, sem codigo comentado. Nota menor nao-bloqueante: order of state update vs log diverge do checklist mas coincide com pattern code do skill-context (pattern e autoritativo)
+Commit: pendente

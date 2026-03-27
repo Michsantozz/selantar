@@ -22,7 +22,8 @@ export type MediationEventType =
   | "SETTLEMENT_EXECUTED"
   | "VERDICT_REGISTERED"
   | "CASE_CLOSED"
-  | "CIRCUIT_BREAKER_TRIGGERED";
+  | "CIRCUIT_BREAKER_TRIGGERED"
+  | "STATE_TRANSITION";
 
 export interface MediationEvent {
   seq: number;

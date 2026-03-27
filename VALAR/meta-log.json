@@ -31,5 +31,12 @@
     "resultado": "aprovado",
     "testes_destruicao": "14 testes: TTL 24h expira e deleta do Map; purgeExpired mantem frescos e remove stale; hash SHA-256 determinístico (64 chars); keys diferentes para params diferentes; 1000 entries + purge performatico; XSS e empty strings nao crasham; cache hit retorna exatamente o mesmo objeto salvo; buildDelegationKey funcional; size() preciso apos saves",
     "observacoes": "Implementacao fiel ao skill-context.md. Integrado nos 3 pontos (mediation-chat, execute-settlement 4 paths, delegation/grant). Ordem de guards correta (circuit breaker → idempotency → logica). buildDelegationKey adicionado alem do skill-context (necessario para delegation/grant). Risco residual: colisao de pipe separator se campos contiverem '|' (inalcancavel com dados reais). Estado em memoria perdido em restart."
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F04",
+    "resultado": "aprovado",
+    "testes_destruicao": "20 testes: full happy path INTAKE→CLOSED (8 transicoes, history length correto); CLOSED terminal (throws 'Allowed: none'); ABANDONED terminal; skip INTAKE→AGREEMENT throws; skip ANALYSIS→SETTLEMENT_EXECUTED throws; PROPOSAL↔COUNTER_PROPOSAL cycle (8 transicoes, termina em AGREEMENT); getHistory() retorna copia imutavel (mutacao externa nao afeta estado); createCase idempotente (mesma instancia retornada, estado preservado); getCase undefined para caseId inexistente; guard bypassed quando case nao esta em store; guard bloqueia quando state INTAKE mas NEGOTIATION exigido (currentState correto no retorno); canTransitionTo nao muta estado; XSS em caseId nao crasha; caseId de 10000 chars nao crasha; Unicode/emoji em caseId funciona; AGREEMENT nao pula para SETTLEMENT_EXECUTED; empty string caseId aceito; guard analyze-evidence permite ANALYSIS; guard execute-settlement bloqueia SETTLEMENT_PENDING; error message inclui estado atual e permitidos",
+    "observacoes": "Implementacao fiel ao skill-context.md. Todos 17 itens do checklist verificados. VALID_TRANSITIONS identico ao pattern obrigatorio. Opcao A usada (STATE_TRANSITION adicionado ao union type — mais correto que resolver por mapping). Unica nota menor nao-bloqueante: transition() atualiza this.state antes de mediationLog.append() — diverge do checklist mas coincide com o pattern code do skill-context (os dois sao inconsistentes entre si, o pattern code e o autoritativo). Estado em memoria — aceitavel para demo (F16/F18 cobrirao persistencia)."
   }
 ]

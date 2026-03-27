@@ -27,7 +27,7 @@
       "id": "F04",
       "descricao": "Mediation Lifecycle State Machine — Criar lib/case-lifecycle.ts com enum CaseState (INTAKE, EVIDENCE_COLLECTION, ANALYSIS, NEGOTIATION, PROPOSAL, COUNTER_PROPOSAL, AGREEMENT, SETTLEMENT_PENDING, SETTLEMENT_EXECUTED, CLOSED, ABANDONED) e VALID_TRANSITIONS dict. Classe MediationCase com state, transition(newState) que valida transicao e emite evento no log (F01). Guards: nao pode ir pra PROPOSAL sem ANALYSIS completa, nao pode SETTLEMENT_EXECUTED sem AGREEMENT. Cada tool da Clara checa o estado antes de executar — analyzeEvidence so roda em EVIDENCE_COLLECTION ou ANALYSIS, proposeSettlement so em NEGOTIATION, executeSettlement so em AGREEMENT. Armazenar cases em Map<caseId, MediationCase>.",
       "prioridade": 4,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F01"]
     },
     {

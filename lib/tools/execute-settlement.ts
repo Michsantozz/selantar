@@ -5,6 +5,7 @@ import { getWalletClient, getPublicClient } from "@/lib/wallet";
 import { mediationLog } from "@/lib/mediation-log";
 import { circuitBreaker } from "@/lib/circuit-breaker";
 import { idempotencyStore, buildSettlementKey } from "@/lib/idempotency";
+import { getCase, CaseState } from "@/lib/case-lifecycle";
 
 export const executeSettlement = tool({
   description:
@@ -37,6 +38,20 @@ export const executeSettlement = tool({
     const idempCheck = idempotencyStore.checkIdempotency(settlementKey);
     if (idempCheck.cached) {
       return idempCheck.result as Record<string, unknown>;
+    }
+
+    // State machine guard — third guard, allow only AGREEMENT
+    const mediationCase = getCase(contractRef);
+    if (mediationCase) {
+      if (mediationCase.getState() !== CaseState.AGREEMENT) {
+        return {
+          status:       "blocked",
+          reason:       `executeSettlement requires state AGREEMENT, current: ${mediationCase.getState()}`,
+          currentState: mediationCase.getState(),
+          contractRef,
+          timestamp:    new Date().toISOString(),
+        };
+      }
     }
 
     console.log(">>> executeSettlement called! USE_LOCUS=" + process.env.USE_LOCUS + " USE_ERC7715=" + process.env.USE_ERC7715 + " USE_DELEGATION=" + process.env.USE_DELEGATION);
