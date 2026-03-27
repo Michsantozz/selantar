@@ -3,6 +3,7 @@ import { z } from "zod";
 import { parseEther } from "viem";
 import { getWalletClient, getPublicClient } from "@/lib/wallet";
 import { mediationLog } from "@/lib/mediation-log";
+import { circuitBreaker } from "@/lib/circuit-breaker";
 
 export const executeSettlement = tool({
   description:
@@ -14,6 +15,18 @@ export const executeSettlement = tool({
     reasoning: z.string().describe("Final mediator reasoning for the verdict"),
   }),
   execute: async ({ clientAmount, developerAmount, contractRef, reasoning }) => {
+    // Circuit breaker guard — FIRST check before any transfer
+    const check = circuitBreaker.canExecute();
+    if (!check.allowed) {
+      return {
+        status: "blocked",
+        level: check.level,
+        reason: check.reason,
+        contractRef,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
     console.log(">>> executeSettlement called! USE_LOCUS=" + process.env.USE_LOCUS + " USE_ERC7715=" + process.env.USE_ERC7715 + " USE_DELEGATION=" + process.env.USE_DELEGATION);
 
     // --- 1. LOCUS PATH (first): Execute USDC settlement via Locus wallet ---
@@ -92,6 +105,9 @@ export const executeSettlement = tool({
           currency: "USDC",
         });
 
+        const totalUsd = (parseFloat(clientAmount) + parseFloat(developerAmount)).toString();
+        circuitBreaker.recordSettlement(contractRef, totalUsd);
+
         return {
           status: "executed",
           method: "locus",
@@ -148,6 +164,8 @@ export const executeSettlement = tool({
           chain: "Base Sepolia",
         });
 
+        circuitBreaker.recordSettlement(contractRef, (parseFloat(clientAmount) + parseFloat(developerAmount)).toString());
+
         return {
           status: "executed",
           method: "erc7715",
@@ -201,6 +219,8 @@ export const executeSettlement = tool({
           chain: "Base Sepolia",
         });
 
+        circuitBreaker.recordSettlement(contractRef, (parseFloat(clientAmount) + parseFloat(developerAmount)).toString());
+
         return {
           status: "executed",
           method: "delegation",
@@ -244,6 +264,8 @@ export const executeSettlement = tool({
         chain: "Base Sepolia",
       });
 
+      circuitBreaker.recordSettlement(contractRef, (parseFloat(clientAmount) + parseFloat(developerAmount)).toString());
+
       return {
         status: "executed",
         method: "direct",
@@ -257,7 +279,9 @@ export const executeSettlement = tool({
         explorer: `https://sepolia.basescan.org/tx/${hash}`,
         timestamp: new Date().toISOString(),
       };
-    } catch {
+    } catch (directError) {
+      circuitBreaker.recordOnChainFailure(contractRef, String(directError));
+
       return {
         status: "settlement_recorded",
         note: "Settlement terms recorded. On-chain execution will be finalized when the escrow contract is funded.",

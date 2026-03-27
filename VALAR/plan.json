@@ -13,7 +13,7 @@
       "id": "F02",
       "descricao": "Circuit Breaker / Kill Switch — Criar lib/circuit-breaker.ts com classe CircuitBreaker que monitora settlements executados. Niveis: NORMAL, CAUTION (3+ settlements em 10min), LOCKDOWN (settlement > 1 ETH ou 5+ em 1h), EMERGENCY (falha on-chain detectada). Em CAUTION: log warning. Em LOCKDOWN: bloqueia executeSettlement e exige confirmacao manual. Em EMERGENCY: bloqueia tudo e emite evento CIRCUIT_BREAKER_TRIGGERED no event log. Integrar como guard no execute-settlement tool — checar breaker.canExecute() antes de qualquer transfer. Nunca de-escala automaticamente, so via reset manual.",
       "prioridade": 2,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F01"]
     },
     {

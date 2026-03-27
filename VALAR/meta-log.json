@@ -17,5 +17,12 @@
     "resultado": "aprovado",
     "testes_destruicao": "50 appends sequenciais com verifyChain valida; adulteracao de payload detectada (hash mismatch); JSON invalido em arquivo retorna [] sem crash; path traversal via caseId '../../../etc/passwd' resulta em ENOENT sem escapar do LOG_DIR; caseId com '/' causa ENOENT sem criar subdiretorios; payload de 10.000 chars com chain valida; caseId XSS e SQL injection sem execucao (apenas nome de arquivo); verifyChain em caseId inexistente retorna valid:true sem erro",
     "observacoes": "Feature solida. Riscos residuais nao bloqueantes: (1) caseId com apenas whitespace passa no check !caseId da route — risco baixo pois gera nome de arquivo invalido que resulta em ENOENT silencioso; (2) sem file lock para multi-worker Next.js — risco baixo para volume de demo. execute-settlement fallback path 'settlement_recorded' sem append e aceitavel (sem execucao real). console.log em execute-settlement sao pre-existentes, nao introduzidos pelo Task Agent."
+  },
+  {
+    "sessao": "2026-03-27",
+    "feature": "F02",
+    "resultado": "aprovado",
+    "testes_destruicao": "20 testes: transicoes NORMAL→CAUTION→LOCKDOWN corretas; LOCKDOWN persiste apos timestamps expirarem (1h+); EMERGENCY nao de-escala com novos settlements; EMERGENCY so sai via reset(); LOCKDOWN persiste sem reset; NaN/undefined/empty/negative amountUsd nao crasham; exactly $3000 → LOCKDOWN, $2999.99 → NORMAL; 100 settlements em 2ms sem degradacao; LOCKDOWN+EMERGENCY: EMERGENCY prevalece; getStatus() contagens corretas",
+    "observacoes": "Implementacao solida e fiel ao skill-context.md. Risco residual teorico: evaluate() pode de-escalar LOCKDOWN→CAUTION se recordSettlement for chamado sem passar por canExecute() — inalcancavel no fluxo normal pois canExecute bloqueia novos settlements em LOCKDOWN. console.warn em CAUTION e intencional (plan.json exige log warning). Estado em memoria perdido em restart — aceitavel para demo."
   }
 ]
