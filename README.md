@@ -1,26 +1,58 @@
 # Selantar
 
-### Contracts break. We fix the people.
+### Contracts deserve care, not just code.
 
-Businesses lose **11% of revenue** to contract friction. Billions evaporating because a piece of paper can't adapt to reality. Web3 was supposed to fix this — instead, smart contracts gave us rigid, cold numbers for emotional creatures.
+Every year, $1 trillion evaporates in B2B disputes. Not because contracts are bad — because no one watches them after they're signed. The contract goes into a folder and dies. Until the day it explodes.
 
-You can't solve a human problem with a binary calculator. You need a system that gives **real attention**. Something that listens, understands your *why* before it judges. Sometimes you don't need a judge — you need someone who cares.
+Web3 gave us smart contracts. Rigid, cold, binary. If condition = true → execute. No context. No empathy. No one asking *why* the milestone is late.
 
-**Selantar is the world's first autonomous dispute mediator.** It reads sealed contracts, analyzes verifiable evidence, conducts live mediation with both parties, proposes a fair settlement, and registers the verdict on-chain via ERC-8004 — without human intervention. Every resolved case leaves an immutable receipt. The agent's reputation rises or falls with every case.
+**Selantar is the world's first Care Protocol.** An AI that lives inside your contract from day one — monitoring deliveries, detecting friction before it becomes conflict, communicating between parties when something goes wrong. And if a dispute erupts anyway, Clara already has all the evidence, mediates in 24 hours, executes settlement on-chain, and registers the verdict forever via ERC-8004.
 
-We believe attention is the new gold for the next decade.
+Prevention over resolution. Care before code.
 
-Built for [The Synthesis](https://synthesis.md) · Tracks: **Agents With Receipts — ERC-8004** · **Best Use of Delegations** · **Agent Services on Base** · **Let the Agent Cook**
+---
+
+## The Difference
+
+Every protocol that exists today reacts *after* something breaks.
+
+```
+Chainlink Automation:  if (deadline missed) → trigger()
+Kleros:                if (dispute filed) → summon jurors
+Smart contract:        if (condition) → execute or freeze
+
+Selantar:              "João hasn't committed in 5 days.
+                        But he just posted on Slack that his daughter is sick.
+                        Let me tell the client and propose a 2-day extension."
+```
+
+This is not automation. This is care.
 
 ---
 
 ## See It In Action
 
+### Scenario 1 — Care Protocol prevents the dispute
+
+Day 5. The dev hasn't committed anything. A smart contract would do nothing. Kleros would wait for someone to file a dispute.
+
+**Clara does something different:**
+
+She checks GitHub (0 commits), scans the Slack logs ("daughter has fever, in hospital"), and sends a WhatsApp message to the client at 9:03am:
+
+> *"Dr. Suasuna, João had a family emergency. I'm proposing a 48-hour extension on Milestone 2. The escrow stays locked, nothing changes financially. Want me to update the contract?"*
+
+Dr. Suasuna replies: *"Of course. Tell him to get better."*
+
+**Dispute that never existed. Relationship that got stronger.**
+
+---
+
+### Scenario 2 — When care fails, Clara resolves
+
 Dr. Suasuna is furious. He paid R$30,000 for a clinic system that still can't book patients. He wants a full refund. The developer is blocked — the clinic's own secretary ignored 5 access requests over 3 weeks.
 
-An old-world mediator would take weeks and charge thousands. A smart contract would just freeze the funds forever. Neither cares about context.
-
-**Clara** — Selantar's AI mediator — does something different:
+Clara does something no mediator, no smart contract, and no chatbot does:
 
 1. She reads the sealed contract, escrow state, and all evidence — silently, before saying a word
 2. She audits the communication trail — 5 unanswered emails, Slack messages flagging the blocker on day 43
@@ -52,11 +84,13 @@ Each scenario has real evidence, real parties with distinct personalities, and a
 
 | The Old World | Selantar |
 |--------------|----------|
+| Contract signed → forgotten | AI monitors from day one |
+| Problem detected on day 20 | Clara detects friction on day 3 |
 | Weeks of emails, lawyers, threats | 24-hour autonomous resolution |
 | $5,000+ in legal fees | $0.10 per mediation via x402 |
 | No proof of what was decided | Immutable on-chain verdict via ERC-8004 |
 | Mediator has no skin in the game | Agent's reputation score rises or falls with every case |
-| One-size-fits-all judgment | Context-aware — reads CRM logs, messages, delivery history |
+| One-size-fits-all judgment | Context-aware — reads CRM logs, messages, GitHub, delivery history |
 | Relationships destroyed | Egos protected, relationships preserved |
 
 ---
@@ -81,9 +115,9 @@ This isn't decorative blockchain integration. Every mediation writes real transa
 
 ## Mediation-as-a-Service (x402)
 
-Selantar is the first **discoverable, pay-per-use dispute resolution service** for the agent economy.
+Selantar is the first **discoverable, pay-per-use Care Protocol** for the agent economy.
 
-Any agent on the internet can discover, pay, and use Selantar's mediation — no API key, no account, no subscription. Just USDC in the HTTP header.
+Any agent on the internet can discover, pay, and use Selantar — no API key, no account, no subscription. Just USDC in the HTTP header.
 
 ```
 GET  /api/mediate   →  Free service discovery (schema, price, ERC-8004 registries)
@@ -111,7 +145,7 @@ When agents start making deals on behalf of humans, they'll need a neutral resol
 
 ## MetaMask Delegations — Intent-Based Settlement
 
-Settlements don't come from the mediator's wallet anymore. With MetaMask Delegations (ERC-7710), the **dispute parties themselves** grant scoped permission to the agent. Clara can only move funds that the parties explicitly authorized, up to a ceiling they set.
+Settlements don't come from the mediator's wallet anymore. With MetaMask Delegations (ERC-7710 + ERC-7715), the **dispute parties themselves** grant scoped permission to the agent. Clara can only move funds that the parties explicitly authorized, up to a ceiling they set.
 
 This is intent-based delegation: the parties delegate the *intent* "resolve my dispute and distribute the funds according to the agreement" — and the agent executes with verifiable, limited authority.
 
@@ -122,7 +156,10 @@ This is intent-based delegation: the parties delegate the *intent* "resolve my d
 3. The agent sends a **UserOperation via Pimlico bundler** (ERC-4337) — the smart account is `msg.sender`, not the EOA
 4. The **DelegationManager** verifies the signature, checks the `NativeTokenTransferAmountEnforcer` caveat, and executes the transfer
 5. ETH moves from the client's smart account to the agent's smart account — verified on-chain
-6. If delegation fails for any reason, the existing direct settlement path executes as fallback
+6. If delegation fails for any reason, the system cascades through 4 fallback paths automatically
+
+**Settlement execution paths (in order):**
+`Locus Intent` → `ERC-7715 Permission` → `ERC-7710 Delegation` → `Direct Transfer` → `Fallback`
 
 **Verified delegation redemption (live on-chain):**
 
@@ -135,15 +172,6 @@ This is intent-based delegation: the parties delegate the *intent* "resolve my d
 
 Every TX is real. Click any link and verify.
 
-**Smart Account addresses:**
-
-| Account | Address |
-|---------|---------|
-| Agent Smart Account (delegate) | `0xe765f43E8B7065729E54E563D4215727154decC9` |
-| Client Smart Account (delegator) | `0x4ae5e741931D4E882B9c695ae4522a522390eD3B` |
-
-**Why this is dream-tier for the bounty:**
-
 | Without Delegations | With Delegations |
 |---------------------|-----------------|
 | Agent moves its own funds as "proof" | Agent moves the party's funds with permission |
@@ -152,46 +180,82 @@ Every TX is real. Click any link and verify.
 | Settlement is symbolic | Settlement is real fund movement — balances change |
 | No verifiable authority chain | Delegation → Bundler → DelegationManager → TX |
 
-**Technical stack:**
-
-| Component | Tech |
-|-----------|------|
-| Smart Accounts | `@metamask/smart-accounts-kit` v0.3.0 — Hybrid implementation |
-| Bundler | Pimlico (ERC-4337) — sponsors gas via paymaster |
-| Delegation scope | `nativeTokenTransferAmount` — enforced on-chain |
-| Signing | EIP-712 typed data via smart account |
-| Network | Base Sepolia (chainId: 84532) |
-| Standard | ERC-7710 (MetaMask Delegation Framework) |
-
-**Implementation files:**
-
-| File | Purpose |
-|------|---------|
-| `lib/delegation/smart-accounts.ts` | MetaMask Hybrid smart account factory |
-| `lib/delegation/create-delegation.ts` | Scoped delegation creation + EIP-712 signing (unique salt per call) |
-| `lib/delegation/redeem.ts` | ABI encoding + Pimlico bundler UserOperation submission |
-| `app/api/delegation/grant/route.ts` | API endpoint — both parties grant delegation |
-| `lib/tools/execute-settlement.ts` | Delegation path (bundler) + direct fallback |
-
-Full implementation report with all 8 problems encountered and solutions: [`DELEGATION-IMPLEMENTATION.md`](DELEGATION-IMPLEMENTATION.md)
-
 ---
 
-## The Pipeline
+## The Care Protocol Pipeline
 
 ```
-PDF contract drops
-  → AI audits it — hunts loopholes, flags vague terms, eliminates ambiguity
-    → Transforms into a living contract with milestones, rules, and on-chain escrow
-      → Contract hash registered on ERC-8004 Validation Registry — immutable proof of integrity
-        → As milestones are approved, cash releases instantly
-          → If a dispute hits, Sentinel already has the proof
-            → Clara mediates live — protects egos, proposes concrete numbers
-              → Both sides sign → Settlement executes on-chain
-                → ERC-8004 receipt registered forever
+Contract uploaded (PDF/text)
+  → AI audits risk — loopholes, vague terms, missing clauses
+    → Transforms into living contract: milestones, rules, escrow
+      → Contract hash registered on ERC-8004 Validation Registry
+        → Sentinel goes live: monitors GitHub, WhatsApp, CRM, email
+
+          CARE LOOP (continuous):
+          → Milestone approaching? Clara checks delivery signals
+          → Signal anomaly? Clara contacts parties proactively
+          → Problem explained? Clara proposes adjustment, updates contract
+          → No response in 48h? Escalates to formal dispute
+
+        → If dispute: Clara mediates live with full context already loaded
+          → analyzeEvidence → proposeSettlement → executeSettlement
+            → postFeedback (ERC-8004 Reputation)
+              → registerVerdict (ERC-8004 Validation)
+                → Receipt permanent. Relationship intact.
 ```
 
 Every step autonomous. Every action verifiable. Every receipt on-chain.
+
+---
+
+## Agent Tools — Six, All Real, All On-Chain
+
+| Tool | What It Does | Output |
+|------|-------------|--------|
+| `classifyCase` | Classifies dispute type across 7 categories + sets strategy | Classification + strategy preset |
+| `analyzeEvidence` | Scores credibility, relevance, and probative weight (0–100) | Score + key findings |
+| `proposeSettlement` | Calculates fair split with percentages, amounts, and conditions | Dollar amounts + reasoning + conditions |
+| `executeSettlement` | Multi-path on-chain execution (Locus → ERC-7715 → Delegation → Direct → Fallback) | TX hash on BaseScan |
+| `postFeedback` | Posts reputation score to ERC-8004 Reputation Registry | Feedback TX hash |
+| `registerVerdict` | Registers verdict as cryptographic evidence on ERC-8004 Validation Registry | Validation TX hash |
+
+Clara calls these silently during mediation. The parties never see the machinery — they just see a mediator who somehow already knows everything.
+
+**Live omnichannel monitoring (Sentinel):**
+
+| Channel | What Clara Sees |
+|---------|----------------|
+| GitHub API | Commits, PRs, activity timeline — displayed live in contract flow |
+| WhatsApp (Evolution API) | Real messages sent to parties on contract activation, with typing presence |
+| CRM / Slack | Communication logs, access request trails, response times |
+
+---
+
+## Platform at a Glance
+
+Built in 7 days. Production-grade from day one.
+
+| Layer | Scale |
+|-------|-------|
+| API Routes | 16 endpoints — intake, mediation, settlement, delegation, oracle, MCP, x402 |
+| Agent Tools | 6 tools (ToolLoopAgent) — all execute real on-chain actions |
+| Lib Modules | 34 files — state machine, event sourcing, circuit breaker, outbox pattern, scoring, replay |
+| Frontend Routes | 37 pages — landing, mediation, forge, contract lifecycle, admin, pitch, docs |
+| Components | 170+ — mediation chat, settlement modal, ReactFlow, shadcn/ui, Web3, Magic UI |
+| Database | PostgreSQL + Drizzle ORM — 5 tables with event sourcing + hash-chain integrity |
+| Scripts | 12 — CLI, ERC-8004 registration, QA, screenshots, integration tests |
+
+**Infrastructure highlights:**
+
+- **State machine** — 11 states (INTAKE → CLOSED/ABANDONED) with guards and transitions
+- **Event sourcing** — SHA-256 hash-chain for every mediation event + dual-write to PostgreSQL
+- **Circuit breaker** — 4 levels (NORMAL → CAUTION → LOCKDOWN → EMERGENCY)
+- **Outbox pattern** — guaranteed settlement delivery with retry logic
+- **Idempotency** — SHA-256 deduplication keys with 24h TTL, safe retries
+- **Replay engine** — dry-run any mediation with overrides, compare results
+- **Reputation oracle** — `/api/oracle/[address]/reputation` with HMAC signature, anti-Goodhart header
+- **Scoring system** — `ReputationScorer` with 5 weighted factors + `adjustWeights` (±3% per outcome, sum=1.0 guaranteed)
+- **MCP server** — 5 tools for agent-to-agent integration (query, verify, reputation, list, submit)
 
 ---
 
@@ -199,37 +263,48 @@ Every step autonomous. Every action verifiable. Every receipt on-chain.
 
 ```
 Contract Creation:
-  Upload contract → POST /api/analyze-contract (AI audit, streaming)
-    → POST /api/create-escrow → keccak256(contract) registered on ERC-8004 Validation Registry
-    → ContractID (CSX-YYYY-XXXXXXXX) + TX hash returned → contract goes live on-chain
+  Upload contract → POST /api/analyze-contract (streaming AI audit)
+    → POST /api/create-escrow → keccak256(contract) registered on ERC-8004
+    → ContractID (CSX-YYYY-XXXXXXXX) + TX hash → contract goes live
 
-Interactive (UI):
-  Pick a case → Clara mediates live via ToolLoopAgent
-    → analyzeEvidence → proposeSettlement → executeSettlement
-    → postFeedback (ERC-8004 Reputation) → registerVerdict (ERC-8004 Validation)
+Interactive Mediation (UI):
+  Pick a case → Clara mediates live via ToolLoopAgent (Gemini 2.0 Flash)
+    → classifyCase → analyzeEvidence → proposeSettlement
+    → executeSettlement (4 paths + fallback)
+    → postFeedback → registerVerdict
+    → Dual-agent: client AI + Clara in the same chat, human can intervene
 
-API (x402):
+Case Intake:
+  POST /api/intake — rate limited (10/h per IP), idempotency check, SHA-256 dedupe
+    → createCase → CASE_OPENED event written to hash-chain log
+
+API Mediation (x402):
   Any agent → POST /api/mediate + X-PAYMENT header ($0.10 USDC)
-    → x402 payment validation → same 5-tool pipeline → JSON response with receipts
+    → payment validated → same 6-tool pipeline → JSON with receipts
+
+Sentinel (Care Loop):
+  Active contracts → GitHub polling + WhatsApp monitoring
+    → anomaly detected → proactive outreach → adjustment or escalation
 ```
-
-**Dual-agent mediation (UI):** Clara responds to the client automatically — the developer (you) can intervene at any point. Two independent AI agents conversing in the same chat, with a human able to jump in anytime.
-
-**Single-shot mediation (API):** External agents send contract + dispute + evidence via x402 and receive a complete verdict with on-chain receipts in one call.
 
 ---
 
-## Five Tools — All Real, All On-Chain
+## On-Chain Receipts
 
-| Tool | What It Does | Output |
-|------|-------------|--------|
-| `analyzeEvidence` | Scores evidence credibility (0-100) based on specificity, completeness, and type | Credibility score + key findings |
-| `proposeSettlement` | Calculates fair distribution based on evidence analysis | Dollar amounts + reasoning + conditions |
-| `executeSettlement` | Redeems MetaMask Delegation to move USDC on behalf of parties (falls back to direct ETH transfer) | TX hash on BaseScan |
-| `postFeedback` | Posts reputation score to ERC-8004 Reputation Registry | Feedback TX hash |
-| `registerVerdict` | Registers verdict as cryptographic evidence on ERC-8004 Validation Registry | Validation TX hash |
+All transactions are live on Base Sepolia:
 
-Clara calls these silently during mediation. The parties never see the machinery — they just see a mediator who somehow already knows everything.
+**Contract creation (forge):**
+- **Contract registered** (integrity hash on escrow creation): [0xcac8dd72...](https://sepolia.basescan.org/tx/0xcac8dd72bc85ab242e09920f0a72fff8fe81e2f2e9abf1b22e17f6ec49e246ea)
+
+**Mediation (dispute resolution):**
+- **Settlement TX** (Clínica Suasuna case): [0xb5d338a5...](https://sepolia.basescan.org/tx/0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86)
+- **Reputation feedback** (score: 90/100): [0x91efdaca...](https://sepolia.basescan.org/tx/0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044)
+- **Verdict validation**: [0xabff70e4...](https://sepolia.basescan.org/tx/0xabff70e40d61bd4f5322343f37d9a5dde7a4bfa254a7d1b752e62cc1544115f3)
+
+**Infrastructure:**
+- **Validation Registry deployed**: [0xd770f4ab...](https://sepolia.basescan.org/tx/0xd770f4ab10efb44f90d1517d525cae3ddabf772b6246db977b148de3282313cd)
+
+Full agent decision log: [`/agent_log.json`](https://selantar.vercel.app/agent_log.json)
 
 ---
 
@@ -238,17 +313,24 @@ Clara calls these silently during mediation. The parties never see the machinery
 ```json
 {
   "humanInterventionRequired": false,
-  "decisionSteps": 5,
+  "careLoopActive": true,
+  "proactiveOutreachEnabled": true,
+  "decisionSteps": 6,
+  "settlementPaths": 5,
   "settlementProposedByAgent": true,
   "settlementExecutedOnChain": true,
   "reputationPostedOnChain": true,
   "verdictRegisteredOnChain": true,
   "x402PaymentEnabled": true,
   "delegatedSettlement": true,
-  "delegationFramework": "MetaMask ERC-7710",
+  "delegationFramework": "MetaMask ERC-7710 + ERC-7715",
   "discoverableViaGET": true,
   "payPerUse": "$0.10 USDC",
-  "erc8004RegistriesUsed": 3
+  "erc8004RegistriesUsed": 3,
+  "mcpServerEnabled": true,
+  "eventSourcingEnabled": true,
+  "circuitBreakerEnabled": true,
+  "statesMachineStates": 11
 }
 ```
 
@@ -256,41 +338,25 @@ Clara calls these silently during mediation. The parties never see the machinery
 
 ## Stack
 
-| Layer | Tech |
-|-------|------|
-| Framework | Next.js 16, App Router |
-| AI | AI SDK v6 — `ToolLoopAgent`, `generateText`, `useChat`, `DefaultChatTransport` |
-| Model | `gemini-3.1-pro-preview` via Google AI (`@ai-sdk/google`) |
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) + React 19 |
+| AI | Vercel AI SDK v6 — `ToolLoopAgent`, `generateText`, `useChat`, `DefaultChatTransport` |
+| Models | Gemini 2.0 Flash (mediation) · Gemini 3.1 Pro (client agent) · GPT-5.4-mini via OpenRouter (contract analysis) |
 | Payments | x402 protocol — `x402-next`, `@coinbase/x402` (USDC on Base Sepolia) |
-| On-chain | viem, Base Sepolia (chainId: 84532) |
-| Delegations | MetaMask Smart Accounts Kit — ERC-7710 scoped delegations |
-| ERC-8004 | Identity + Reputation + Validation registries (all 3) |
-| UI | Tailwind CSS v4, shadcn/ui (New York), Framer Motion |
+| On-chain | viem + Base Sepolia (chainId: 84532) |
+| Smart Accounts | MetaMask Smart Accounts Kit v0.3.0 — ERC-7710 + ERC-7715 scoped delegations |
+| Bundler | Pimlico (ERC-4337) — sponsors gas via paymaster |
+| ERC-8004 | Identity + Reputation + Validation registries (all 3, deployed) |
+| Auth | Privy (email + wallet + Google) |
+| Database | PostgreSQL + Drizzle ORM — event sourcing + hash-chain integrity |
+| Integration | MCP server (5 tools, A2A) · Evolution API (WhatsApp) · GitHub API |
+| UI | Tailwind CSS v4 · shadcn/ui (New York) · Framer Motion · ReactFlow · Magic UI |
+| QA | VALAR framework — 18/18 features approved |
 | Harness | Claude Code |
 
 ---
 
-## On-Chain Receipts
-
-All ERC-8004 transactions are live on Base Sepolia:
-
-**Contract creation (forge):**
-
-- **Contract registered** (hash of integrity, on escrow creation): [0xcac8dd72...](https://sepolia.basescan.org/tx/0xcac8dd72bc85ab242e09920f0a72fff8fe81e2f2e9abf1b22e17f6ec49e246ea)
-
-**Mediation (dispute resolution):**
-
-- **Settlement TX** (Clínica Suasuna case): [0xb5d338a5...](https://sepolia.basescan.org/tx/0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86)
-- **Reputation feedback** (score: 90/100): [0x91efdaca...](https://sepolia.basescan.org/tx/0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044)
-- **Verdict validation**: [0xabff70e4...](https://sepolia.basescan.org/tx/0xabff70e40d61bd4f5322343f37d9a5dde7a4bfa254a7d1b752e62cc1544115f3)
-
-**Infrastructure:**
-
-- **Validation Registry deployed**: [0xd770f4ab...](https://sepolia.basescan.org/tx/0xd770f4ab10efb44f90d1517d525cae3ddabf772b6246db977b148de3282313cd)
-
-Full agent decision log: [`/agent_log.json`](https://selantar.vercel.app/agent_log.json)
-
----
 ## Test It In 30 Seconds
 
 No setup required. Just copy, paste, and verify.
@@ -309,7 +375,7 @@ Returns Agent #2122's ERC-8004 manifest — identity, operator wallet, supported
 
 **3. Watch Clara mediate live**
 
-Open [selantar.vercel.app/mediation](https://selantar.vercel.app/mediation), pick any case, and watch. Clara analyzes evidence, takes sides, proposes numbers, and executes settlement on-chain — all without human intervention.
+Open [selantar.vercel.app/mediation](https://selantar.vercel.app/mediation), pick any case, and watch. Clara classifies the dispute, analyzes evidence, cools the room down, proposes numbers, and executes settlement on-chain — all without human intervention.
 
 **4. Verify every on-chain receipt**
 
@@ -324,15 +390,62 @@ Every TX is real. Every receipt is permanent. Click any link and verify.
 
 ---
 
-## The Vision — Where Trust Becomes Capital
+## The Vision — Where Care Becomes Capital
 
-**Phase 1 (NOW — Live):** Autonomous mediation protocol. AI that listens to both sides, protects egos, and settles disputes on-chain. The first protocol where machines care about context, not just code.
+**Phase 1 (NOW — Live):** The Care Protocol. An AI that lives inside contracts — monitors, communicates, prevents. When prevention fails, mediates in 24h with full context. Every action on-chain. Every receipt permanent.
 
-**Phase 2 (NEXT):** Omnichannel Sentinel. Evidence collected from every channel where business actually happens — WhatsApp, GitHub, CRM, email. Mediation meets you where the context lives.
+**Phase 2 (LIVE):** Omnichannel Sentinel. Evidence collected from every channel where business actually happens — WhatsApp, GitHub, CRM, email. When a contract goes live, Sentinel fires a real WhatsApp message to the parties. GitHub commits display live in the monitoring flow. Care that meets you where context lives.
 
-**Phase 3 (HORIZON):** Trust Economy. On-chain reputation unlocks liquidity, insurance, and credit lines. Your professional truth — not just your payment history — becomes capital. Honesty becomes the most valuable asset in the agent economy.
+**Phase 3 (HORIZON):** Trust Economy. On-chain reputation from real contract behavior unlocks liquidity, insurance, and credit lines. Your professional truth — not just your payment history — becomes capital. The more you honor your word, the more the system trusts you. Honesty becomes the most valuable asset in the agent economy.
 
 > Credit is never a cold number. We look past statistics to see the human behind the deal.
+
+---
+
+## Developer Tools
+
+### CLI
+
+Full operational control from the terminal:
+
+```bash
+npx tsx scripts/cli.ts cases list              # list all cases
+npx tsx scripts/cli.ts cases show <caseId>     # full case detail
+npx tsx scripts/cli.ts cases replay <caseId>   # dry-run replay with overrides
+npx tsx scripts/cli.ts verify <caseId>         # verify SHA-256 hash-chain integrity
+npx tsx scripts/cli.ts export <caseId>         # export case as JSON
+npx tsx scripts/cli.ts metrics                 # system metrics (cases, settlements, scores)
+npx tsx scripts/cli.ts breaker status          # circuit breaker current level + stats
+npx tsx scripts/cli.ts breaker reset           # manually reset circuit breaker to NORMAL
+```
+
+### API Docs
+
+Full interactive documentation: [selantar.vercel.app/docs](https://selantar.vercel.app/docs)
+
+All 16 endpoints documented with schemas, examples, and authentication details.
+
+### MCP Server — Agent-to-Agent Integration
+
+Selantar exposes a standard MCP server at `/api/mcp` for direct integration with any MCP-compatible agent.
+
+```
+GET    /api/mcp   →  List available tools
+POST   /api/mcp   →  Execute a tool
+DELETE /api/mcp   →  End session
+```
+
+**5 available tools:**
+
+| Tool | What It Does |
+|------|-------------|
+| `query` | Query case history and mediation events |
+| `verify` | Verify hash-chain integrity of a case |
+| `reputation` | Get reputation score for any wallet address |
+| `list` | List active cases with status and metadata |
+| `submit` | Submit a new dispute programmatically |
+
+Any agent that speaks MCP can discover Selantar, submit disputes, and receive ERC-8004 receipts — without HTTP or x402 overhead.
 
 ---
 
@@ -347,10 +460,12 @@ npm run dev
 **Required env vars:**
 
 ```bash
-GOOGLE_GENERATIVE_AI_API_KEY=  # Google AI API key (for gemini-3.1-pro-preview)
-AGENT_PRIVATE_KEY=             # wallet that holds Agent NFT #2122
-CLIENT_PRIVATE_KEY=            # second wallet for ERC-8004 feedback
-SELANTAR_AGENT_ID=2122         # ERC-8004 agent ID
+GOOGLE_GENERATIVE_AI_API_KEY=   # Gemini (mediation + client agent)
+OPENROUTER_API_KEY=             # GPT-5.4-mini via OpenRouter (contract analysis)
+AGENT_PRIVATE_KEY=              # wallet that holds Agent NFT #2122
+CLIENT_PRIVATE_KEY=             # second wallet for ERC-8004 feedback
+SELANTAR_AGENT_ID=2122          # ERC-8004 agent ID
+DATABASE_URL=                   # PostgreSQL connection string
 ```
 
 ---
@@ -361,7 +476,8 @@ SELANTAR_AGENT_ID=2122         # ERC-8004 agent ID
 - **API discovery:** [selantar.vercel.app/api/mediate](https://selantar.vercel.app/api/mediate)
 - **Agent #2122:** [Base Sepolia Explorer](https://sepolia.basescan.org/tx/0xf6a996e3d77f0f6211d8636679b57b9ff4bd161b5cd412a0612ca4a6612ff32f)
 - **Agent manifest:** [selantar.vercel.app/agent.json](https://selantar.vercel.app/agent.json)
+- **Agent decision log:** [selantar.vercel.app/agent_log.json](https://selantar.vercel.app/agent_log.json)
 
 ---
 
-*The Web3 economy finally has a brain, it has hands, and it actually cares. Welcome to Selantar.*
+*The Web3 economy finally has a protocol that cares. Not just about the money — about the people behind the deal. Welcome to Selantar.*
