@@ -17,5 +17,12 @@
     "resultado": "aprovado",
     "testes_destruicao": "BigInt serialization: copies[].providerId/dataSetId/pieceId convertidos via String() — JSON.stringify seguro. Promise handling: filecoinPromise criada com .catch(() => null) em fire-and-forget — rejection handled. Input malformado: pinEvidence(null, '') produz canonicalJSON(null)='null' — valido. pinEvidence(undefined, '') — canonicalJSON throws, propaga corretamente. Circular reference: JSON.stringify throws — propaga via throw. PinResult serialization: callers destructuram { cid } (string) — PinResult nunca serializado diretamente. Private key: env-only, server-side, nao logada.",
     "observacoes": "Correcao rapida e cirurgica apos reprovacao: callers adaptados com destructuring, console.log removido. Risco residual aceitavel: walletClient: any nos callers e pre-existente (nao F01). filecoinPromise ignorada nos callers — F03 vai consumi-la."
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F02",
+    "resultado": "aprovado",
+    "testes_destruicao": "buildDualURI: testei ('', undefined) -> 'ipfs://', inputs XSS -> URI string sem render HTML. parseDualURI: testei ('') -> {}, ('garbage') -> {}, ('ipfs://') -> {ipfsCid:''}, string bomb 100k chars -> {}. verifyFilecoinStorage: testei ('') -> not_found, Synapse indisponivel -> error. BigInt: ds.providerId via String(). Singleton rejection: _synapsePromise rejected -> catch -> error status. Concurrency: getSynapse sincrono, JS single-threaded, write-once. Inner dataset catch: skipado sem crash.",
+    "observacoes": "Codigo limpo e defensivo: 0 console.log/warn, 0 any, dois niveis de try/catch, lazy singleton. Risco residual: singleton rejected fica cacheada (aceitavel para demo). Async iterator sem timeout explicito (coberto por maxDuration da route). parseDualURI nao valida formato de CID — responsabilidade do caller."
   }
 ]

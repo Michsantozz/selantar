@@ -16,7 +16,7 @@
       "id": "F02",
       "descricao": "Fase 1b — Criar lib/filecoin.ts (NOVO). 3 funcoes: (1) buildDualURI(ipfsCid, filecoinPieceCid?) retorna 'ipfs://QmX' ou 'ipfs://QmX|filecoin://bafk...', (2) parseDualURI(uri) retorna {ipfsCid?, filecoinPieceCid?}, (3) verifyFilecoinStorage(pieceCid) retorna {status: 'live'|'pending'|'not_found'|'error', providers: [{providerId, isLive}]}. Usa Synapse.create() → synapse.storage.findDataSets(). Lazy singleton do Synapse client. Leitura obrigatoria: docs/synapse-sdk/ (getting-started, storage-operations, synapse-core, pdp-overview).",
       "prioridade": 2,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F01"]
     },
     {
