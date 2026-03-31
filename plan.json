@@ -30,7 +30,7 @@
       "id": "F04",
       "descricao": "Fase 3 — Hash-chain evento FILECOIN_STORED. (A) lib/mediation-log.ts: adicionar 'FILECOIN_STORED' ao union type MediationEventType (linha 44). (B) lib/tools/post-feedback.ts: destructure retorno de postMediationFeedback() em {txHash, ipfsCid, filecoinPromise}. Apos return do tool, filecoinPromise.then emite mediationLog.append(caseId, 'FILECOIN_STORED', {context:'feedback', ipfsCid, pieceCid, copies, complete, linkedTxHash}). Adicionar ipfsCid ao return do tool. (C) lib/tools/register-verdict.ts: mesma mudanca com context:'verdict'.",
       "prioridade": 4,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F03"]
     },
     {

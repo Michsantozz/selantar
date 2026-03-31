@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
+import { canonicalJSON } from "@/lib/canonical-json";
 
 // ---- DB dual-write (F18) ----
 // Writes to Postgres when DATABASE_URL is set, falls back to files.
@@ -40,7 +41,8 @@ export type MediationEventType =
   | "CASE_CLOSED"
   | "CIRCUIT_BREAKER_TRIGGERED"
   | "STATE_TRANSITION"
-  | "WEIGHT_ADJUSTMENT";
+  | "WEIGHT_ADJUSTMENT"
+  | "FILECOIN_STORED";
 
 export interface MediationEvent {
   seq: number;
@@ -53,7 +55,7 @@ export interface MediationEvent {
 }
 
 function computeHash(event: Omit<MediationEvent, "hash">): string {
-  const data = JSON.stringify({
+  const data = canonicalJSON({
     seq: event.seq,
     caseId: event.caseId,
     eventType: event.eventType,

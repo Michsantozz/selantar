@@ -42,5 +42,12 @@
     "resultado": "aprovado",
     "testes_destruicao": "IPFS pin failure: catch block seta ipfsCid='', filecoinPromise=Promise.resolve(null), feedbackURI='' — return funciona com defaults. filecoinPromise serialization: callers destructuram { txHash } — Promise nunca atinge JSON.stringify. buildDualURI com cid vazio: 'ipfs://' — nao crasha. BigInt: agentId.toString() e BigInt(clientSatisfaction) seguros. Concurrency: state independente por chamada, sem mutacao global.",
     "observacoes": "Correcao cirurgica: callers adaptados com destructuring { txHash: feedbackTxHash/validationTxHash }. 3 console.log pre-existentes removidos (1 reputation, 2 validation). Risco residual: walletClient: any pre-existente. filecoinPromise disponivel para F04 consumir."
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F04",
+    "resultado": "aprovado",
+    "testes_destruicao": "Promise handling: filecoinPromise.then().catch(() => {}) em ambos tools — fire-and-forget seguro, rejection nao crasha. Null result: if(result) guard skipa silenciosamente. FilecoinResult serialization: payload contem apenas strings e boolean (pieceCid, copies[]{string,string,string}, complete, linkedTxHash, ipfsCid, context) — zero BigInt, zero Promise, JSON-safe. mediationLog.append em .then(): sincrono, executa apos tool return.",
+    "observacoes": "Feature backend limpa: FILECOIN_STORED adicionado ao union type, filecoinPromise consumida corretamente nos 2 tools, ipfsCid exposto no tool return. Zero console.log, zero any, zero imports mortos."
   }
 ]

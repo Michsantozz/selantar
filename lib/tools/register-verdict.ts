@@ -20,7 +20,7 @@ export const registerVerdict = tool({
       const walletClient = getWalletClient();
       const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
 
-      const { txHash: validationTxHash } = await registerVerdictAsValidation(
+      const { txHash: validationTxHash, ipfsCid, filecoinPromise } = await registerVerdictAsValidation(
         walletClient,
         agentId,
         {
@@ -42,9 +42,21 @@ export const registerVerdict = tool({
         chain: "Base Sepolia",
       });
 
+      filecoinPromise.then((result) => {
+        if (result) mediationLog.append(contractRef, "FILECOIN_STORED", {
+          context: "verdict",
+          ipfsCid,
+          pieceCid: result.pieceCid,
+          copies: result.copies,
+          complete: result.complete,
+          linkedTxHash: validationTxHash,
+        });
+      }).catch(() => {});
+
       return {
         status: "registered",
         validationTxHash,
+        ipfsCid,
         contractRef,
         evidenceCount: evidence.length,
         linkedSettlement: settlementTxHash,
