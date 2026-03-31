@@ -13,6 +13,9 @@ import {
   Lock,
   Gavel,
   Circle,
+  Database,
+  Info,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { requestExecutionPermissions } from "@/lib/delegation/erc7715";
@@ -32,6 +35,8 @@ function extractToolOutputs(messages: UIMessage[]) {
   let isSettling = false;
   let isPostingFeedback = false;
   let isRegisteringVerdict = false;
+  let ipfsCid: string | null = null;
+  let filecoinPieceCid: string | null = null;
 
   for (const msg of messages) {
     if (msg.role !== "assistant") continue;
@@ -80,6 +85,8 @@ function extractToolOutputs(messages: UIMessage[]) {
             txHash: (output.txHash ?? output.feedbackTxHash) as string | undefined,
             explorer: output.explorer as string | undefined,
           };
+          if (output.ipfsCid) ipfsCid = output.ipfsCid as string;
+          if (output.pieceCid) filecoinPieceCid = output.pieceCid as string;
         }
       }
 
@@ -94,12 +101,14 @@ function extractToolOutputs(messages: UIMessage[]) {
             txHash: (output.txHash ?? output.validationTxHash) as string | undefined,
             explorer: output.explorer as string | undefined,
           };
+          if (output.ipfsCid && !ipfsCid) ipfsCid = output.ipfsCid as string;
+          if (output.pieceCid && !filecoinPieceCid) filecoinPieceCid = output.pieceCid as string;
         }
       }
     }
   }
 
-  return { settlement, execution, feedback, verdict, isSettling, isPostingFeedback, isRegisteringVerdict };
+  return { settlement, execution, feedback, verdict, isSettling, isPostingFeedback, isRegisteringVerdict, ipfsCid, filecoinPieceCid };
 }
 
 const AGENT_ADDRESS = "0xe765f43E8B7065729E54E563D4215727154decC9" as const;
@@ -110,7 +119,7 @@ export function IntelligencePanel({ scenario, messages = [] }: IntelligencePanel
   const [erc7715Approved, setErc7715Approved] = useState(false);
   const erc7715TriggeredRef = useRef(false);
 
-  const { settlement, execution, feedback, verdict, isSettling, isPostingFeedback, isRegisteringVerdict } = useMemo(
+  const { settlement, execution, feedback, verdict, isSettling, isPostingFeedback, isRegisteringVerdict, ipfsCid, filecoinPieceCid } = useMemo(
     () => extractToolOutputs(messages),
     [messages]
   );
@@ -298,7 +307,7 @@ export function IntelligencePanel({ scenario, messages = [] }: IntelligencePanel
       </div>
 
       {/* Evidence — colored items */}
-      <div className="rounded-xl border border-border bg-card p-5 flex-1">
+      <div id="med-evidence" className="rounded-xl border border-border bg-card p-5 flex-1">
         <div className="flex items-center gap-2 mb-4">
           <span className="size-2 rounded-full bg-accent" />
           <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -323,7 +332,7 @@ export function IntelligencePanel({ scenario, messages = [] }: IntelligencePanel
       </div>
 
       {/* Settlement Status — dynamic from tool outputs */}
-      <div className="rounded-xl border border-primary/20 bg-card p-5">
+      <div id="med-settlement-status" className="rounded-xl border border-primary/20 bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
           <span className="size-2 rounded-full bg-primary" />
           <span className="text-xs font-medium uppercase tracking-wider text-primary/70">
@@ -420,6 +429,141 @@ export function IntelligencePanel({ scenario, messages = [] }: IntelligencePanel
           </div>
         )}
       </div>
+
+      {/* Filecoin Storage Card */}
+      <FilecoinStorageCard ipfsCid={ipfsCid} pieceCid={filecoinPieceCid} isUploading={isPostingFeedback || isRegisteringVerdict} />
+    </div>
+  );
+}
+
+interface VerifyResponse {
+  pieceCid: string;
+  status: "live" | "pending" | "not_found" | "error";
+  providers: Array<{ providerId: string; isLive: boolean }>;
+  pdpExplorerUrl: string;
+  verifiedAt: string;
+}
+
+function FilecoinStorageCard({
+  ipfsCid,
+  pieceCid,
+  isUploading,
+}: {
+  ipfsCid: string | null;
+  pieceCid: string | null;
+  isUploading: boolean;
+}) {
+  const [verify, setVerify] = useState<VerifyResponse | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!pieceCid) return;
+
+    let cancelled = false;
+
+    async function poll() {
+      try {
+        const res = await fetch(`/api/verify-evidence?pieceCid=${encodeURIComponent(pieceCid!)}`);
+        if (!res.ok || cancelled) return;
+        const data: VerifyResponse = await res.json();
+        if (!cancelled) setVerify(data);
+      } catch {
+        // Silently skip — will retry next interval
+      }
+    }
+
+    poll();
+    const id = setInterval(poll, 30_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [pieceCid]);
+
+  // Nothing to show yet
+  if (!ipfsCid && !pieceCid && !isUploading) return null;
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  // Determine state
+  const isVerified = verify?.status === "live";
+  const isStored = !!pieceCid && !isVerified;
+  const isUnavailable = !!ipfsCid && !pieceCid && !isUploading;
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <Database className="size-3.5 text-muted-foreground" />
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Filecoin Storage
+        </span>
+      </div>
+
+      {isUploading && !pieceCid && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="size-3 animate-spin text-primary/60" />
+          <span>Storing on Filecoin...</span>
+        </div>
+      )}
+
+      {isStored && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-foreground">
+            <CheckCircle className="size-3 text-primary" />
+            <span className="font-mono truncate max-w-[140px]">{pieceCid}</span>
+            <button
+              onClick={() => handleCopy(pieceCid!)}
+              className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Copy className="size-3" />
+            </button>
+            {copied && <span className="text-[9px] text-primary">Copied</span>}
+          </div>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+            <Loader2 className="size-2.5 animate-spin" />
+            <span>Verifying PDP proofs...</span>
+          </div>
+        </div>
+      )}
+
+      {isVerified && verify && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-foreground">
+            <ShieldCheck className="size-3 text-primary" />
+            <span>PDP proofs active</span>
+            <span className="text-[10px] text-muted-foreground/60">
+              ({verify.providers.length} provider{verify.providers.length !== 1 ? "s" : ""})
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="font-mono truncate max-w-[140px] text-muted-foreground">{pieceCid}</span>
+            <button
+              onClick={() => handleCopy(pieceCid!)}
+              className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Copy className="size-3" />
+            </button>
+            {copied && <span className="text-[9px] text-primary">Copied</span>}
+          </div>
+          <a
+            href={verify.pdpExplorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+          >
+            PDP Explorer
+            <ExternalLink className="size-2.5" />
+          </a>
+        </div>
+      )}
+
+      {isUnavailable && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
+          <Info className="size-3" />
+          <span>IPFS only — Filecoin storage unavailable</span>
+        </div>
+      )}
     </div>
   );
 }

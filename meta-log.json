@@ -1,78 +1,13 @@
 [
-  {
-    "sessao": "2026-03-31",
-    "feature": "F01",
-    "resultado": "reprovado",
-    "fase_falhou": "1",
-    "criterios_falhados": ["Regression: callers recebem PinResult em vez de string", "console.log em lib/ipfs.ts:189"],
-    "detalhes": "Ver historico completo no progress.txt",
-    "severidade": "critico"
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F01",
-    "resultado": "aprovado",
-    "testes_destruicao": "BigInt, promise, input malformado, circular ref, private key",
-    "observacoes": "Correcao apos reprovacao: destructuring + console.log removido"
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F02",
-    "resultado": "aprovado",
-    "testes_destruicao": "buildDualURI, parseDualURI, verifyFilecoinStorage, BigInt, singleton rejection, concurrency",
-    "observacoes": "Codigo limpo. Singleton rejection cacheada aceitavel para demo."
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F03",
-    "resultado": "reprovado",
-    "fase_falhou": "1",
-    "criterios_falhados": ["Regression: callers post-feedback e register-verdict recebem objeto em vez de string"],
-    "detalhes": "Mesmo padrao que F01",
-    "severidade": "critico"
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F03",
-    "resultado": "aprovado",
-    "testes_destruicao": "IPFS pin failure, filecoinPromise serialization, buildDualURI, BigInt, concurrency",
-    "observacoes": "Callers adaptados com destructuring. 3 console.log removidos."
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F04",
-    "resultado": "aprovado",
-    "testes_destruicao": "filecoinPromise.then .catch, null result guard, FilecoinResult serialization, mediationLog.append em .then",
-    "observacoes": "FILECOIN_STORED no union, fire-and-forget seguro, ipfsCid no tool return."
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F05",
-    "resultado": "aprovado",
-    "testes_destruicao": "Zod validation 400, pieceCid undefined em payload -> null filtrado, outer catch -> 500, caseId! justified by Zod refine",
-    "observacoes": "Breaker-protected, 2 modos, Promise.all seguro."
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F06",
-    "resultado": "aprovado",
-    "testes_destruicao": "Config declarativa, nada a destruir. Breakers existentes inalterados.",
-    "observacoes": "failureThreshold:3, windowMs:120k, resetTimeout:90k, callTimeout:120k. Conforme spec."
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F07",
-    "resultado": "reprovado",
-    "fase_falhou": "3",
-    "criterios_falhados": ["Promise sem .catch() em fire-and-forget: navigator.clipboard.writeText(text) em intelligence-panel.tsx:484 retorna Promise<void> sem .catch()"],
-    "detalhes": "navigator.clipboard.writeText(text) e fire-and-forget — se rejeitar (HTTP, permissao negada), unhandled Promise rejection. Correcao: .catch(() => {})",
-    "severidade": "medio"
-  },
-  {
-    "sessao": "2026-03-31",
-    "feature": "F08",
-    "resultado": "aprovado",
-    "testes_destruicao": "Campos existentes preservados, filecoin aditivo, casts de unknown corretos",
-    "observacoes": "Enrichment nao-destrutivo. recordCount + records com context/pieceCid/complete."
-  }
+  {"sessao":"2026-03-31","feature":"F01","resultado":"reprovado","fase_falhou":"1","criterios_falhados":["Regression: callers recebem PinResult em vez de string","console.log em lib/ipfs.ts:189"],"detalhes":"Ver historico completo no progress.txt","severidade":"critico"},
+  {"sessao":"2026-03-31","feature":"F01","resultado":"aprovado","testes_destruicao":"BigInt, promise, input malformado, circular ref, private key","observacoes":"Correcao apos reprovacao: destructuring + console.log removido"},
+  {"sessao":"2026-03-31","feature":"F02","resultado":"aprovado","testes_destruicao":"buildDualURI, parseDualURI, verifyFilecoinStorage, BigInt, singleton rejection, concurrency","observacoes":"Codigo limpo. Singleton rejection cacheada aceitavel para demo."},
+  {"sessao":"2026-03-31","feature":"F03","resultado":"reprovado","fase_falhou":"1","criterios_falhados":["Regression: callers post-feedback e register-verdict recebem objeto em vez de string"],"detalhes":"Mesmo padrao que F01","severidade":"critico"},
+  {"sessao":"2026-03-31","feature":"F03","resultado":"aprovado","testes_destruicao":"IPFS pin failure, filecoinPromise serialization, buildDualURI, BigInt, concurrency","observacoes":"Callers adaptados com destructuring. 3 console.log removidos."},
+  {"sessao":"2026-03-31","feature":"F04","resultado":"aprovado","testes_destruicao":"filecoinPromise.then .catch, null result guard, FilecoinResult serialization, mediationLog.append em .then","observacoes":"FILECOIN_STORED no union, fire-and-forget seguro, ipfsCid no tool return."},
+  {"sessao":"2026-03-31","feature":"F05","resultado":"aprovado","testes_destruicao":"Zod validation 400, pieceCid undefined -> null filtrado, outer catch -> 500","observacoes":"Breaker-protected, 2 modos, Promise.all seguro."},
+  {"sessao":"2026-03-31","feature":"F06","resultado":"aprovado","testes_destruicao":"Config declarativa. Breakers existentes inalterados.","observacoes":"Conforme spec exata."},
+  {"sessao":"2026-03-31","feature":"F07","resultado":"reprovado","fase_falhou":"3","criterios_falhados":["Promise sem .catch() em fire-and-forget: navigator.clipboard.writeText"],"detalhes":"Correcao: .catch(() => {})","severidade":"medio"},
+  {"sessao":"2026-03-31","feature":"F07","resultado":"aprovado","testes_destruicao":"clipboard .catch corrigido, polling cleanup (cancelled+clearInterval), 4 estados visuais verificados, tokens semanticos","observacoes":"Correcao 1 linha. FilecoinStorageCard inline, design conforme spec."},
+  {"sessao":"2026-03-31","feature":"F08","resultado":"aprovado","testes_destruicao":"Campos existentes preservados, filecoin aditivo, casts de unknown corretos","observacoes":"Enrichment nao-destrutivo."}
 ]

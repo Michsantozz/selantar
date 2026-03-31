@@ -51,7 +51,7 @@
       "id": "F07",
       "descricao": "Fase 5 — UI FilecoinStorageCard no intelligence-panel.tsx. Componente inline no app/mediation/_components/intelligence-panel.tsx abaixo do bloco de Settlement Status. Extrai ipfsCid dos tool outputs de postFeedback e registerVerdict. 4 estados visuais: Uploading (spinner + 'Storing on Filecoin...'), Stored (CheckCircle + PieceCID truncado + copy), Verified (ShieldCheck + 'PDP proofs active' + provider count), Unavailable (Info + 'IPFS only'). Polling useEffect + fetch('/api/verify-evidence?pieceCid=...') cada 30s quando pieceCid disponivel. Link externo PDP Explorer. Design: rounded-lg border border-border bg-card p-3, text-xs. Icone: Database ou HardDrive de lucide-react. Tokens semanticos SEMPRE.",
       "prioridade": 7,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F05"]
     },
     {
