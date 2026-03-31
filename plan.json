@@ -37,14 +37,14 @@
       "id": "F05",
       "descricao": "Fase 4a — Criar app/api/verify-evidence/route.ts (NOVO). GET com 2 modos: (1) ?pieceCid=bafk... chama verifyFilecoinStorage() de lib/filecoin.ts, (2) ?caseId=CSX-001 busca eventos FILECOIN_STORED no mediation log e verifica cada um. Response: {pieceCid, status, providers, pdpExplorerUrl:'https://pdp.vxb.ai/calibration', verifiedAt}. Runtime nodejs, maxDuration 120.",
       "prioridade": 5,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F02", "F04"]
     },
     {
       "id": "F06",
       "descricao": "Fase 4b — Adicionar circuit breaker filecoin em lib/breakers.ts. Adicionar ao objeto breakers (apos delegation): filecoin: new ServiceBreaker('filecoin', {failureThreshold:3, windowMs:120_000, resetTimeout:90_000, callTimeout:120_000, onStateChange:logStateChange, shouldTrip:isServiceError}). Proteger verify-evidence route com breaker.",
       "prioridade": 6,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F05"]
     },
     {
@@ -58,7 +58,7 @@
       "id": "F08",
       "descricao": "Fase 6 — Enriquecer app/api/verify/[caseId]/route.ts existente. Apos verificar hash-chain, filtrar eventos FILECOIN_STORED e incluir na response: {filecoin: {recordCount, records: [{context, pieceCid, complete}]}}. Nao quebrar formato existente — apenas adicionar campo filecoin ao JSON de retorno.",
       "prioridade": 8,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F04"]
     }
   ]

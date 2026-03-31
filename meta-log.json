@@ -4,50 +4,75 @@
     "feature": "F01",
     "resultado": "reprovado",
     "fase_falhou": "1",
-    "criterios_falhados": [
-      "Regression: callers reputation.ts:50 e validation.ts:39 recebem PinResult (objeto) em vez de string — template literal produz 'ipfs://[object Object]' em runtime. TypeScript nao detecta. Dados garbage escritos on-chain.",
-      "Fase 5: console.log em lib/ipfs.ts:189 — referencia variaveis criadas pelo F01 (pieceCid, copies.length), portanto atribuivel ao F01"
-    ],
-    "detalhes": "pinEvidence() agora retorna Promise<PinResult> mas callers em reputation.ts:50 e validation.ts:39 ainda fazem 'const cid = await pinEvidence(...)' e usam cid como string via template literal. cid e agora {cid: string, filecoinPromise: Promise<...>}, produzindo 'ipfs://[object Object]' em runtime. Task Engineering afirmou que TypeScript pegaria o erro — INCORRETO, template literals aceitam qualquer tipo. Segundo: console.log na linha 189 de lib/ipfs.ts referencia variaveis novas (pieceCid, copies.length) criadas pelo F01, contradizendo a claim de 'pre-existente'.",
+    "criterios_falhados": ["Regression: callers recebem PinResult em vez de string", "console.log em lib/ipfs.ts:189"],
+    "detalhes": "Ver historico completo no progress.txt",
     "severidade": "critico"
   },
   {
     "sessao": "2026-03-31",
     "feature": "F01",
     "resultado": "aprovado",
-    "testes_destruicao": "BigInt serialization: copies[].providerId/dataSetId/pieceId convertidos via String() — JSON.stringify seguro. Promise handling: filecoinPromise criada com .catch(() => null) em fire-and-forget — rejection handled. Input malformado: pinEvidence(null, '') produz canonicalJSON(null)='null' — valido. pinEvidence(undefined, '') — canonicalJSON throws, propaga corretamente. Circular reference: JSON.stringify throws — propaga via throw. PinResult serialization: callers destructuram { cid } (string) — PinResult nunca serializado diretamente. Private key: env-only, server-side, nao logada.",
-    "observacoes": "Correcao rapida e cirurgica apos reprovacao: callers adaptados com destructuring, console.log removido. Risco residual aceitavel: walletClient: any nos callers e pre-existente (nao F01). filecoinPromise ignorada nos callers — F03 vai consumi-la."
+    "testes_destruicao": "BigInt, promise, input malformado, circular ref, private key",
+    "observacoes": "Correcao apos reprovacao: destructuring + console.log removido"
   },
   {
     "sessao": "2026-03-31",
     "feature": "F02",
     "resultado": "aprovado",
-    "testes_destruicao": "buildDualURI: testei ('', undefined) -> 'ipfs://', inputs XSS -> URI string sem render HTML. parseDualURI: testei ('') -> {}, ('garbage') -> {}, ('ipfs://') -> {ipfsCid:''}, string bomb 100k chars -> {}. verifyFilecoinStorage: testei ('') -> not_found, Synapse indisponivel -> error. BigInt: ds.providerId via String(). Singleton rejection: _synapsePromise rejected -> catch -> error status. Concurrency: getSynapse sincrono, JS single-threaded, write-once. Inner dataset catch: skipado sem crash.",
-    "observacoes": "Codigo limpo e defensivo: 0 console.log/warn, 0 any, dois niveis de try/catch, lazy singleton. Risco residual: singleton rejected fica cacheada (aceitavel para demo). Async iterator sem timeout explicito (coberto por maxDuration da route). parseDualURI nao valida formato de CID — responsabilidade do caller."
+    "testes_destruicao": "buildDualURI, parseDualURI, verifyFilecoinStorage, BigInt, singleton rejection, concurrency",
+    "observacoes": "Codigo limpo. Singleton rejection cacheada aceitavel para demo."
   },
   {
     "sessao": "2026-03-31",
     "feature": "F03",
     "resultado": "reprovado",
     "fase_falhou": "1",
-    "criterios_falhados": [
-      "Regression: callers post-feedback.ts:25 e register-verdict.ts:23 recebem {txHash, ipfsCid, filecoinPromise} em vez de string — template literal na linha 53 de ambos produz URL 'https://sepolia.basescan.org/tx/[object Object]', mediationLog recebe objeto em vez de hash, tool output contem objeto em vez de string"
-    ],
-    "detalhes": "postMediationFeedback() e registerVerdictAsValidation() agora retornam {txHash, ipfsCid, filecoinPromise} mas callers em post-feedback.ts:25 e register-verdict.ts:23 fazem 'const feedbackTxHash = await postMediationFeedback(...)' e 'const validationTxHash = await registerVerdictAsValidation(...)' — usam o retorno como string em template literals (explorer URL), mediationLog.append (dados corrompidos com Promise serializada como {}), e tool return (LLM recebe objeto). Mesmo padrao que causou reprovacao de F01. Correcao: destructuring const { txHash: feedbackTxHash } = await ...",
+    "criterios_falhados": ["Regression: callers post-feedback e register-verdict recebem objeto em vez de string"],
+    "detalhes": "Mesmo padrao que F01",
     "severidade": "critico"
   },
   {
     "sessao": "2026-03-31",
     "feature": "F03",
     "resultado": "aprovado",
-    "testes_destruicao": "IPFS pin failure: catch block seta ipfsCid='', filecoinPromise=Promise.resolve(null), feedbackURI='' — return funciona com defaults. filecoinPromise serialization: callers destructuram { txHash } — Promise nunca atinge JSON.stringify. buildDualURI com cid vazio: 'ipfs://' — nao crasha. BigInt: agentId.toString() e BigInt(clientSatisfaction) seguros. Concurrency: state independente por chamada, sem mutacao global.",
-    "observacoes": "Correcao cirurgica: callers adaptados com destructuring { txHash: feedbackTxHash/validationTxHash }. 3 console.log pre-existentes removidos (1 reputation, 2 validation). Risco residual: walletClient: any pre-existente. filecoinPromise disponivel para F04 consumir."
+    "testes_destruicao": "IPFS pin failure, filecoinPromise serialization, buildDualURI, BigInt, concurrency",
+    "observacoes": "Callers adaptados com destructuring. 3 console.log removidos."
   },
   {
     "sessao": "2026-03-31",
     "feature": "F04",
     "resultado": "aprovado",
-    "testes_destruicao": "Promise handling: filecoinPromise.then().catch(() => {}) em ambos tools — fire-and-forget seguro, rejection nao crasha. Null result: if(result) guard skipa silenciosamente. FilecoinResult serialization: payload contem apenas strings e boolean (pieceCid, copies[]{string,string,string}, complete, linkedTxHash, ipfsCid, context) — zero BigInt, zero Promise, JSON-safe. mediationLog.append em .then(): sincrono, executa apos tool return.",
-    "observacoes": "Feature backend limpa: FILECOIN_STORED adicionado ao union type, filecoinPromise consumida corretamente nos 2 tools, ipfsCid exposto no tool return. Zero console.log, zero any, zero imports mortos."
+    "testes_destruicao": "filecoinPromise.then .catch, null result guard, FilecoinResult serialization, mediationLog.append em .then",
+    "observacoes": "FILECOIN_STORED no union, fire-and-forget seguro, ipfsCid no tool return."
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F05",
+    "resultado": "aprovado",
+    "testes_destruicao": "Zod validation 400, pieceCid undefined em payload -> null filtrado, outer catch -> 500, caseId! justified by Zod refine",
+    "observacoes": "Breaker-protected, 2 modos, Promise.all seguro."
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F06",
+    "resultado": "aprovado",
+    "testes_destruicao": "Config declarativa, nada a destruir. Breakers existentes inalterados.",
+    "observacoes": "failureThreshold:3, windowMs:120k, resetTimeout:90k, callTimeout:120k. Conforme spec."
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F07",
+    "resultado": "reprovado",
+    "fase_falhou": "3",
+    "criterios_falhados": ["Promise sem .catch() em fire-and-forget: navigator.clipboard.writeText(text) em intelligence-panel.tsx:484 retorna Promise<void> sem .catch()"],
+    "detalhes": "navigator.clipboard.writeText(text) e fire-and-forget — se rejeitar (HTTP, permissao negada), unhandled Promise rejection. Correcao: .catch(() => {})",
+    "severidade": "medio"
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F08",
+    "resultado": "aprovado",
+    "testes_destruicao": "Campos existentes preservados, filecoin aditivo, casts de unknown corretos",
+    "observacoes": "Enrichment nao-destrutivo. recordCount + records com context/pieceCid/complete."
   }
 ]

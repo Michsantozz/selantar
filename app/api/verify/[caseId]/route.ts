@@ -14,6 +14,13 @@ export async function GET(
   const verification = mediationLog.verifyChain(caseId);
   const lastHash = events.length > 0 ? events[events.length - 1].hash : null;
 
+  const filecoinEvents = events.filter((e) => e.eventType === "FILECOIN_STORED");
+  const filecoinRecords = filecoinEvents.map((e) => ({
+    context: e.payload.context as string | undefined,
+    pieceCid: e.payload.pieceCid as string | undefined,
+    complete: e.payload.complete as boolean | undefined,
+  }));
+
   return NextResponse.json({
     caseId,
     chain_length: events.length,
@@ -22,5 +29,9 @@ export async function GET(
     last_hash: lastHash,
     ...(verification.brokenAt !== undefined && { broken_at: verification.brokenAt }),
     ...(verification.details && { details: verification.details }),
+    filecoin: {
+      recordCount: filecoinRecords.length,
+      records: filecoinRecords,
+    },
   });
 }
