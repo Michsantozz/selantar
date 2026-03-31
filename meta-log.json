@@ -24,5 +24,23 @@
     "resultado": "aprovado",
     "testes_destruicao": "buildDualURI: testei ('', undefined) -> 'ipfs://', inputs XSS -> URI string sem render HTML. parseDualURI: testei ('') -> {}, ('garbage') -> {}, ('ipfs://') -> {ipfsCid:''}, string bomb 100k chars -> {}. verifyFilecoinStorage: testei ('') -> not_found, Synapse indisponivel -> error. BigInt: ds.providerId via String(). Singleton rejection: _synapsePromise rejected -> catch -> error status. Concurrency: getSynapse sincrono, JS single-threaded, write-once. Inner dataset catch: skipado sem crash.",
     "observacoes": "Codigo limpo e defensivo: 0 console.log/warn, 0 any, dois niveis de try/catch, lazy singleton. Risco residual: singleton rejected fica cacheada (aceitavel para demo). Async iterator sem timeout explicito (coberto por maxDuration da route). parseDualURI nao valida formato de CID — responsabilidade do caller."
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F03",
+    "resultado": "reprovado",
+    "fase_falhou": "1",
+    "criterios_falhados": [
+      "Regression: callers post-feedback.ts:25 e register-verdict.ts:23 recebem {txHash, ipfsCid, filecoinPromise} em vez de string — template literal na linha 53 de ambos produz URL 'https://sepolia.basescan.org/tx/[object Object]', mediationLog recebe objeto em vez de hash, tool output contem objeto em vez de string"
+    ],
+    "detalhes": "postMediationFeedback() e registerVerdictAsValidation() agora retornam {txHash, ipfsCid, filecoinPromise} mas callers em post-feedback.ts:25 e register-verdict.ts:23 fazem 'const feedbackTxHash = await postMediationFeedback(...)' e 'const validationTxHash = await registerVerdictAsValidation(...)' — usam o retorno como string em template literals (explorer URL), mediationLog.append (dados corrompidos com Promise serializada como {}), e tool return (LLM recebe objeto). Mesmo padrao que causou reprovacao de F01. Correcao: destructuring const { txHash: feedbackTxHash } = await ...",
+    "severidade": "critico"
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F03",
+    "resultado": "aprovado",
+    "testes_destruicao": "IPFS pin failure: catch block seta ipfsCid='', filecoinPromise=Promise.resolve(null), feedbackURI='' — return funciona com defaults. filecoinPromise serialization: callers destructuram { txHash } — Promise nunca atinge JSON.stringify. buildDualURI com cid vazio: 'ipfs://' — nao crasha. BigInt: agentId.toString() e BigInt(clientSatisfaction) seguros. Concurrency: state independente por chamada, sem mutacao global.",
+    "observacoes": "Correcao cirurgica: callers adaptados com destructuring { txHash: feedbackTxHash/validationTxHash }. 3 console.log pre-existentes removidos (1 reputation, 2 validation). Risco residual: walletClient: any pre-existente. filecoinPromise disponivel para F04 consumir."
   }
 ]

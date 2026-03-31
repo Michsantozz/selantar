@@ -20,7 +20,7 @@ export const registerVerdict = tool({
       const walletClient = getWalletClient();
       const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
 
-      const validationTxHash = await registerVerdictAsValidation(
+      const { txHash: validationTxHash } = await registerVerdictAsValidation(
         walletClient,
         agentId,
         {

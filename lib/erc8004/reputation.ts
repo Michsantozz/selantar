@@ -3,6 +3,8 @@ import { ERC8004_ADDRESSES } from "./addresses";
 import { simulateAndWrite } from "@/lib/wallet";
 import { canonicalJSON } from "@/lib/canonical-json";
 import { pinEvidence } from "@/lib/ipfs";
+import type { FilecoinResult } from "@/lib/ipfs";
+import { buildDualURI } from "@/lib/filecoin";
 
 const REPUTATION_ABI = parseAbi([
   "function giveFeedback(uint256 agentId, int128 value, uint8 valueDecimals, string tag1, string tag2, string endpoint, string feedbackURI, bytes32 feedbackHash) external",
@@ -24,7 +26,7 @@ export async function postMediationFeedback(
   walletClient: any,
   agentId: bigint,
   result: MediationResult
-): Promise<string> {
+): Promise<{ txHash: string; ipfsCid: string; filecoinPromise: Promise<FilecoinResult | null> }> {
   const feedbackData = {
     agentRegistry: `eip155:84532:${ERC8004_ADDRESSES.baseSepolia.identityRegistry}`,
     agentId: agentId.toString(),
@@ -46,9 +48,13 @@ export async function postMediationFeedback(
 
   // Pin feedback evidence to IPFS — verifiable by anyone with the CID
   let feedbackURI = "";
+  let ipfsCid = "";
+  let filecoinPromise: Promise<FilecoinResult | null> = Promise.resolve(null);
   try {
-    const { cid } = await pinEvidence(feedbackData, `selantar-feedback-${result.contractId}`);
-    feedbackURI = `ipfs://${cid}`;
+    const { cid, filecoinPromise: fp } = await pinEvidence(feedbackData, `selantar-feedback-${result.contractId}`);
+    ipfsCid = cid;
+    filecoinPromise = fp;
+    feedbackURI = buildDualURI(cid);
   } catch (e) {
     console.warn("IPFS pin failed, writing on-chain without URI:", (e as Error).message);
   }
@@ -69,6 +75,5 @@ export async function postMediationFeedback(
     ],
   });
 
-  console.log("Feedback posted on-chain! TX:", hash);
-  return hash;
+  return { txHash: hash, ipfsCid, filecoinPromise };
 }

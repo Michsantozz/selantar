@@ -22,7 +22,7 @@ export const postFeedback = tool({
       const walletClient = getClientWalletClient();
       const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
 
-      const feedbackTxHash = await postMediationFeedback(
+      const { txHash: feedbackTxHash } = await postMediationFeedback(
         walletClient,
         agentId,
         {

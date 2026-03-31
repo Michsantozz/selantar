@@ -23,7 +23,7 @@
       "id": "F03",
       "descricao": "Fase 2 — ERC-8004 return types enriquecidos. (A) lib/erc8004/reputation.ts: postMediationFeedback() retorna Promise<{txHash, ipfsCid, filecoinPromise}> em vez de Promise<string>. Linha 50: destructure pinEvidence(). Linha 51: usar buildDualURI(pinResult.cid). Linha 73: retornar objeto completo. (B) lib/erc8004/validation.ts: registerVerdictAsValidation() mesma mudanca — retorna {txHash, ipfsCid, filecoinPromise}. Linha 39, 40, 61 mesmas alteracoes. Importar buildDualURI de lib/filecoin.ts.",
       "prioridade": 3,
-      "status": "pendente",
+      "status": "concluida",
       "dependencias": ["F02"]
     },
     {
