@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { keccak256, toBytes, parseAbi } from "viem";
-import { getWalletClient } from "@/lib/wallet";
-import { registerVerdictAsValidation } from "@/lib/erc8004/validation";
+import { getWalletClient, simulateAndWrite } from "@/lib/wallet";
+import { canonicalJSON } from "@/lib/canonical-json";
 import { ERC8004_ADDRESSES } from "@/lib/erc8004/addresses";
+import { breakers } from "@/lib/breakers";
+import { BreakerOpenError } from "@/lib/service-breaker";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -54,26 +56,29 @@ export async function POST(req: Request) {
       network: "base-sepolia",
     };
 
-    const payloadJson = JSON.stringify(escrowPayload);
+    const payloadJson = canonicalJSON(escrowPayload);
     const requestHash = keccak256(toBytes(payloadJson));
 
     // 3. Register on ERC-8004 Validation Registry (on-chain)
     let validationTxHash: string;
     try {
-      validationTxHash = await walletClient.writeContract({
-        address: ERC8004_ADDRESSES.baseSepolia.validationRegistry,
-        abi: VALIDATION_ABI,
-        functionName: "validationRequest",
-        args: [
-          walletClient.account.address,
-          agentId,
-          `https://selantar.vercel.app/contracts/${contractRef}`,
-          requestHash,
-        ],
-      });
+      validationTxHash = await breakers.onchain.call(() =>
+        simulateAndWrite(walletClient, {
+          address: ERC8004_ADDRESSES.baseSepolia.validationRegistry,
+          abi: VALIDATION_ABI,
+          functionName: "validationRequest",
+          args: [
+            walletClient.account.address,
+            agentId,
+            `https://selantar.vercel.app/contracts/${contractRef}`,
+            requestHash,
+          ],
+        })
+      );
       console.log("[create-escrow] ERC-8004 validation TX:", validationTxHash);
     } catch (err) {
-      console.warn("[create-escrow] ERC-8004 registration failed (wallet unfunded?):", err);
+      const skipped = err instanceof BreakerOpenError;
+      console.warn(skipped ? "[create-escrow] Onchain breaker OPEN, using fallback hash" : "[create-escrow] ERC-8004 registration failed (wallet unfunded?):", err);
       // Graceful fallback — return simulated hash so demo still works
       validationTxHash = `0x${Buffer.from(requestHash.slice(2), "hex").toString("hex")}`;
     }
@@ -96,7 +101,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[create-escrow] Error:", err);
     return NextResponse.json(
-      { success: false, error: String(err) },
+      { success: false, error: "Failed to create escrow" },
       { status: 500 }
     );
   }

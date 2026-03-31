@@ -1,9 +1,5 @@
 import { ToolLoopAgent, stepCountIs } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
+import { openai } from "@ai-sdk/openai";
 
 /**
  * Creates a client-side agent that roleplays as the client party in a dispute.
@@ -16,7 +12,7 @@ export function createClientAgent(scenarioId: string) {
   }
 
   return new ToolLoopAgent({
-    model: google("gemini-3.1-pro-preview"),
+    model: openai("gpt-5.4-2026-03-05"),
     instructions: persona.systemPrompt,
     tools: {},
     stopWhen: stepCountIs(3),

@@ -1,10 +1,6 @@
 import { mediationLog, MediationEvent } from "@/lib/mediation-log";
 import { generateText } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
+import { openai } from "@ai-sdk/openai";
 
 export interface ReplayOverrides {
   model?: string;
@@ -125,7 +121,7 @@ IMPORTANT: This is a dry-run. Do not execute any transactions.`;
 
   try {
     const result = await generateText({
-      model: google("gemini-2.0-flash"),
+      model: openai("gpt-5.4-2026-03-05"),
       system: systemPrompt,
       prompt,
       temperature: overrides.temperature ?? 0.3,

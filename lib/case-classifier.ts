@@ -1,10 +1,6 @@
 import { generateText, Output } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
 
 export type DisputeCategory =
   | "LATE_DELIVERY"
@@ -44,7 +40,7 @@ export async function classifyDispute(
   evidence: string
 ): Promise<ClassificationResult> {
   const result = await generateText({
-    model: google("gemini-2.0-flash"),
+    model: openai("gpt-5.4-2026-03-05"),
     output: Output.object({
       schema: z.object({
         category: z.enum([

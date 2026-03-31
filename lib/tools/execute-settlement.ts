@@ -6,6 +6,8 @@ import { mediationLog } from "@/lib/mediation-log";
 import { circuitBreaker } from "@/lib/circuit-breaker";
 import { idempotencyStore, buildSettlementKey } from "@/lib/idempotency";
 import { getCase, CaseState } from "@/lib/case-lifecycle";
+import { breakers } from "@/lib/breakers";
+import { BreakerOpenError } from "@/lib/service-breaker";
 
 export const executeSettlement = tool({
   description:
@@ -63,64 +65,65 @@ export const executeSettlement = tool({
         const locusBase = process.env.LOCUS_API_BASE ?? "https://beta-api.paywithlocus.com/api";
 
         // Check balance first
-        const balanceRes = await fetch(`${locusBase}/pay/balance`, {
-          headers: { Authorization: `Bearer ${locusApiKey}` },
+        const { balance, clientData, devData } = await breakers.locus.call(async () => {
+          const balanceRes = await fetch(`${locusBase}/pay/balance`, {
+            headers: { Authorization: `Bearer ${locusApiKey}` },
+          });
+          const balanceData = await balanceRes.json() as { success: boolean; data?: { usdc_balance?: string } };
+          const bal = parseFloat(balanceData.data?.usdc_balance ?? "0");
+          console.log(`Locus wallet balance: $${bal} USDC`);
+
+          if (bal < 0.01) {
+            console.warn("Locus: Insufficient balance ($" + bal + "), falling back to delegation");
+            throw new Error(`Insufficient Locus balance (status: ${balanceRes.status})`);
+          }
+
+          const clientUsdcAmount = 0.01;
+          const devUsdcAmount = 0.01;
+
+          const clientRes = await fetch(`${locusBase}/pay/send`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${locusApiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              to_address: process.env.CLIENT_WALLET_ADDRESS ?? "0x7C41D01c95F55c5590e65c8f91B4F854316d1da4",
+              amount: clientUsdcAmount,
+              memo: `Selantar settlement [${contractRef}] — client portion (${clientAmount}). ${reasoning}`,
+            }),
+          });
+
+          const cData = await clientRes.json() as {
+            success: boolean;
+            data?: { transaction_id?: string; status?: string; tx_hash?: string };
+          };
+
+          if (!cData.success) {
+            console.warn("Locus client payment failed:", cData);
+            throw new Error(`Locus payment failed (status: ${clientRes.status})`);
+          }
+
+          const devRes = await fetch(`${locusBase}/pay/send`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${locusApiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              to_address: process.env.DEVELOPER_WALLET_ADDRESS ?? process.env.AGENT_WALLET_ADDRESS ?? "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4",
+              amount: devUsdcAmount,
+              memo: `Selantar settlement [${contractRef}] — developer portion (${developerAmount}). ${reasoning}`,
+            }),
+          });
+
+          const dData = await devRes.json() as {
+            success: boolean;
+            data?: { transaction_id?: string; status?: string; tx_hash?: string };
+          };
+
+          return { balance: bal, clientData: cData, devData: dData };
         });
-        const balanceData = await balanceRes.json() as { success: boolean; data?: { usdc_balance?: string } };
-        const balance = parseFloat(balanceData.data?.usdc_balance ?? "0");
-        console.log(`Locus wallet balance: $${balance} USDC`);
-
-        if (balance < 0.01) {
-          console.warn("Locus: Insufficient balance ($" + balance + "), falling back to delegation");
-          throw new Error("Insufficient Locus balance");
-        }
-
-        // Parse settlement amounts (use small proof amounts for demo)
-        const clientUsdcAmount = 0.01;
-        const devUsdcAmount = 0.01;
-
-        // Send client portion
-        const clientRes = await fetch(`${locusBase}/pay/send`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${locusApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            to_address: process.env.CLIENT_WALLET_ADDRESS ?? "0x7C41D01c95F55c5590e65c8f91B4F854316d1da4",
-            amount: clientUsdcAmount,
-            memo: `Selantar settlement [${contractRef}] — client portion (${clientAmount}). ${reasoning}`,
-          }),
-        });
-
-        const clientData = await clientRes.json() as {
-          success: boolean;
-          data?: { transaction_id?: string; status?: string; tx_hash?: string };
-        };
-
-        if (!clientData.success) {
-          console.warn("Locus client payment failed:", clientData);
-          throw new Error("Locus payment failed");
-        }
-
-        // Send developer portion
-        const devRes = await fetch(`${locusBase}/pay/send`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${locusApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            to_address: process.env.DEVELOPER_WALLET_ADDRESS ?? process.env.AGENT_WALLET_ADDRESS ?? "0x377711a26B52F4AD8C548AAEF8297E0563b87Db4",
-            amount: devUsdcAmount,
-            memo: `Selantar settlement [${contractRef}] — developer portion (${developerAmount}). ${reasoning}`,
-          }),
-        });
-
-        const devData = await devRes.json() as {
-          success: boolean;
-          data?: { transaction_id?: string; status?: string; tx_hash?: string };
-        };
 
         mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
           method: "locus",
@@ -154,7 +157,8 @@ export const executeSettlement = tool({
         idempotencyStore.saveResult(settlementKey, locusResult);
         return locusResult;
       } catch (locusError) {
-        console.warn("Locus path failed, falling back to ERC-7715/delegation:", locusError);
+        const skipped = locusError instanceof BreakerOpenError;
+        console.warn(skipped ? "Locus breaker OPEN, skipping to fallback" : "Locus path failed, falling back to ERC-7715/delegation:", locusError);
         // Fall through to ERC-7715
       }
     }
@@ -178,12 +182,14 @@ export const executeSettlement = tool({
 
         const delegationManager = process.env.ERC7715_DELEGATION_MANAGER as `0x${string}` | undefined;
 
-        const { userOpHash } = await redeemWithPermissionsContext({
-          permissionsContext,
-          delegationManager: delegationManager ?? "0x0000000000000000000000000000000000000000",
-          recipientAddress: agentSmartAccount.address,
-          amount: settlementAmount,
-        });
+        const { userOpHash } = await breakers.delegation.call(() =>
+          redeemWithPermissionsContext({
+            permissionsContext,
+            delegationManager: delegationManager ?? "0x0000000000000000000000000000000000000000",
+            recipientAddress: agentSmartAccount.address,
+            amount: settlementAmount,
+          })
+        );
 
         mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
           method: "erc7715",
@@ -199,8 +205,8 @@ export const executeSettlement = tool({
           status: "executed",
           method: "erc7715",
           userOpHash,
-          clientAmount,
-          developerAmount,
+          contractAmount: { client: clientAmount, developer: developerAmount },
+          onChainAmount: "0.0001 ETH (testnet symbolic execution)",
           contractRef,
           reasoning,
           chain: "Base Sepolia",
@@ -211,7 +217,8 @@ export const executeSettlement = tool({
         idempotencyStore.saveResult(settlementKey, erc7715Result);
         return erc7715Result;
       } catch (erc7715Error) {
-        console.warn("ERC-7715 path failed, falling back to delegation SDK:", erc7715Error);
+        const skipped = erc7715Error instanceof BreakerOpenError;
+        console.warn(skipped ? "ERC-7715 breaker OPEN, skipping to fallback" : "ERC-7715 path failed, falling back to delegation SDK:", erc7715Error);
       }
     }
 
@@ -236,11 +243,13 @@ export const executeSettlement = tool({
           maxAmount: delegationAmount,
         });
 
-        const { userOpHash } = await redeemSettlementDelegation({
-          signedDelegation,
-          recipientAddress: agentSmartAccount.address,
-          amount: delegationAmount,
-        });
+        const { userOpHash } = await breakers.delegation.call(() =>
+          redeemSettlementDelegation({
+            signedDelegation,
+            recipientAddress: agentSmartAccount.address,
+            amount: delegationAmount,
+          })
+        );
 
         mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
           method: "delegation",
@@ -256,8 +265,8 @@ export const executeSettlement = tool({
           status: "executed",
           method: "delegation",
           userOpHash,
-          clientAmount,
-          developerAmount,
+          contractAmount: { client: clientAmount, developer: developerAmount },
+          onChainAmount: "0.0001 ETH (testnet symbolic execution)",
           contractRef,
           reasoning,
           chain: "Base Sepolia",
@@ -270,30 +279,52 @@ export const executeSettlement = tool({
         idempotencyStore.saveResult(settlementKey, delegationResult);
         return delegationResult;
       } catch (delegationError) {
-        console.warn("Delegation path failed, falling back to direct tx:", delegationError);
+        const skipped = delegationError instanceof BreakerOpenError;
+        console.warn(skipped ? "Delegation breaker OPEN, skipping to fallback" : "Delegation path failed, falling back to direct tx:", delegationError);
       }
     }
 
-    // --- 4. FALLBACK: Direct ETH transfer as proof of settlement ---
+    // --- 4. FALLBACK: Direct ETH transfer to dispute parties ---
     try {
       const walletClient = getWalletClient();
       const publicClient = getPublicClient();
 
-      const settlementAmount = parseEther("0.0001");
+      const clientAddress = (process.env.CLIENT_WALLET_ADDRESS ?? "0x7C41D01c95F55c5590e65c8f91B4F854316d1da4") as `0x${string}`;
+      const developerAddress = (process.env.DEVELOPER_WALLET_ADDRESS ?? "0xe765f43E8B7065729E54E563D4215727154decC9") as `0x${string}`;
 
-      const hash = await walletClient.sendTransaction({
-        to: walletClient.account.address,
-        value: settlementAmount,
-      });
+      // Split settlement proportionally between parties
+      const totalSettlement = parseEther("0.0001");
+      const clientParsed = parseFloat(clientAmount.replace(/[^0-9.]/g, "")) || 0;
+      const developerParsed = parseFloat(developerAmount.replace(/[^0-9.]/g, "")) || 0;
+      const totalParsed = clientParsed + developerParsed || 1;
+      const clientShare = (totalSettlement * BigInt(Math.round((clientParsed / totalParsed) * 100))) / 100n;
+      const developerShare = totalSettlement - clientShare;
 
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const clientTxHash = await breakers.onchain.call(() =>
+        walletClient.sendTransaction({
+          to: clientAddress,
+          value: clientShare,
+        })
+      );
+
+      const devTxHash = await breakers.onchain.call(() =>
+        walletClient.sendTransaction({
+          to: developerAddress,
+          value: developerShare,
+        })
+      );
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: devTxHash });
 
       mediationLog.append(contractRef, "SETTLEMENT_EXECUTED", {
         method: "direct",
-        txHash: hash,
+        clientTxHash,
+        developerTxHash: devTxHash,
         blockNumber: receipt.blockNumber.toString(),
         clientAmount,
         developerAmount,
+        clientAddress,
+        developerAddress,
         chain: "Base Sepolia",
       });
 
@@ -302,14 +333,19 @@ export const executeSettlement = tool({
       const directResult = {
         status: "executed",
         method: "direct",
-        txHash: hash,
+        txHash: devTxHash,
+        clientTxHash,
+        developerTxHash: devTxHash,
         blockNumber: receipt.blockNumber.toString(),
-        clientAmount,
-        developerAmount,
+        contractAmount: { client: clientAmount, developer: developerAmount },
+        onChainAmount: "0.0001 ETH split proportionally (testnet symbolic execution)",
+        clientAddress,
+        developerAddress,
         contractRef,
         reasoning,
         chain: "Base Sepolia",
-        explorer: `https://sepolia.basescan.org/tx/${hash}`,
+        clientExplorer: `https://sepolia.basescan.org/tx/${clientTxHash}`,
+        developerExplorer: `https://sepolia.basescan.org/tx/${devTxHash}`,
         timestamp: new Date().toISOString(),
       };
       idempotencyStore.saveResult(settlementKey, directResult);

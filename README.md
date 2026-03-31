@@ -1,5 +1,7 @@
 # Selantar
 
+[![CI](https://github.com/Michsantozz/selantar/actions/workflows/ci.yml/badge.svg)](https://github.com/Michsantozz/selantar/actions/workflows/ci.yml)
+
 ### Contracts deserve care, not just code.
 
 Every year, $1 trillion evaporates in B2B disputes. Not because contracts are bad — because no one watches them after they're signed. The contract goes into a folder and dies. Until the day it explodes.
@@ -101,15 +103,55 @@ Selantar is registered as **Agent #2122** on the ERC-8004 Identity Registry (Bas
 
 | Registry | What It Proves | TX |
 |----------|---------------|-----|
-| **Identity** | The agent exists as a verifiable economic actor | [0xf6a996e3...](https://sepolia.basescan.org/tx/0xf6a996e3d77f0f6211d8636679b57b9ff4bd161b5cd412a0612ca4a6612ff32f) |
-| **Reputation** | Score 90/100 — the agent earns trust through results | [0x91efdaca...](https://sepolia.basescan.org/tx/0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044) |
-| **Validation** | The verdict is cryptographic evidence — permanent, auditable, impossible to erase | [0xabff70e4...](https://sepolia.basescan.org/tx/0xabff70e40d61bd4f5322343f37d9a5dde7a4bfa254a7d1b752e62cc1544115f3) |
+| **Identity** | The agent exists as a verifiable economic actor | [0xd96cad52...](https://sepolia.basescan.org/tx/0xd96cad52e144d98de68ce97aa8f9f3619302302c95feb8546a28b64e3fc72cf4) |
+| **Reputation** | Score 90/100 — the agent earns trust through results | [0x1b16a2e1...](https://sepolia.basescan.org/tx/0x1b16a2e1ca162280eb3440cda9cbcfcc62671a1eea71e39c62f55768543a6a6d) |
+| **Validation** | The verdict is cryptographic evidence — permanent, auditable, impossible to erase | [0xacc46a6a...](https://sepolia.basescan.org/tx/0xacc46a6aa3c563af6700e590733cd29e3e6e067dd5ee4403316d4cf4d4fda9ee) |
 
 > The official ERC-8004 Validation Registry was not yet deployed on Base Sepolia. We deployed a spec-compliant implementation — [deploy TX](https://sepolia.basescan.org/tx/0xd770f4ab10efb44f90d1517d525cae3ddabf772b6246db977b148de3282313cd).
 
 This isn't decorative blockchain integration. Every mediation writes real transactions. Every verdict is verifiable. The agent's identity, reputation, and evidence trail live on-chain permanently.
 
+Every on-chain receipt includes an **IPFS-pinned + Filecoin-stored evidence report** — the full mediation data (contract, analysis, settlement terms, reasoning) is pinned to IPFS *and* uploaded to Filecoin via Synapse SDK with **Proof of Data Possession (PDP)** verification. The `feedbackURI` and `requestURI` fields on-chain contain dual URIs (`ipfs://` + `filecoin://`). IPFS gives instant availability; Filecoin gives **cryptographic proof that the evidence still exists** — continuously verified on-chain by the PDP protocol. Anyone can download the report, hash it, and verify it matches the on-chain hash. No trust required — just math.
+
+Every contract write is **simulated before execution** — the transaction runs against live chain state as a dry-run before spending gas. If it would revert (insufficient balance, wrong permissions, contract error), the agent catches it before a single wei is spent. All on-chain hashes use **canonical JSON serialization** (recursively sorted keys) so the same data always produces the same hash, regardless of property order.
+
 **Agent manifest:** [`/agent.json`](https://selantar.vercel.app/agent.json)
+
+---
+
+## Filecoin — Provably Alive Evidence
+
+IPFS pins data. Filecoin **proves it's still there.**
+
+Every mediation verdict and reputation feedback is stored on the **Filecoin Calibration network** via the [Synapse SDK](https://github.com/FilOzone/synapse-sdk), with continuous **Proof of Data Possession (PDP)** — a cryptographic challenge-response protocol that forces storage providers to prove they still hold the data, on-chain, on a recurring schedule.
+
+**How it works:**
+
+1. Evidence is pinned to IPFS (instant availability, returns CID)
+2. Same bytes uploaded to Filecoin via Synapse SDK (returns PieceCID)
+3. Both CIDs written on-chain in ERC-8004 `feedbackURI`/`requestURI` as dual URI: `ipfs://QmX...|filecoin://bafk...`
+4. `FILECOIN_STORED` event appended to the SHA-256 hash-chain with PieceCID, provider info, and linked TX
+5. PDP proofs run continuously — storage provider must prove possession or face penalties
+6. Public verification: `GET /api/verify-evidence?pieceCid=bafk...` returns live PDP status
+
+| IPFS Only | IPFS + Filecoin PDP |
+|-----------|-------------------|
+| "Data was pinned somewhere" | "Data is provably stored right now" |
+| Pin can disappear silently | PDP catches missing data on-chain |
+| Trust the pinning service | Trust cryptographic proofs |
+| No proof of retention | Continuous verification every proving period |
+| Single layer | Dual storage with independent verification |
+
+**Verified Filecoin storage (live on Calibration testnet):**
+
+| What | Value |
+|------|-------|
+| Deposit TX | [0xc172b70f...](https://calibration.filfox.info/en/tx/0xc172b70f71b4eefb1ce61915747b20123443500a19079495b93b540158e54fd9) |
+| Test PieceCID | `bafkzcibd3qaqjzlcknf7am35f6cbioxsspnx7qy2unltvjwlc3cypngepxojqjr6` |
+| Provider | #4, dataset 12922 |
+| PDP Status | Active — proofs verified on-chain |
+
+The Filecoin integration is protected by a dedicated **circuit breaker** (CLOSED/OPEN/HALF_OPEN) — if the Filecoin network is slow or down, evidence still flows to IPFS and on-chain without interruption. Filecoin catches up asynchronously.
 
 ---
 
@@ -186,7 +228,8 @@ Every TX is real. Click any link and verify.
 
 ```
 Contract uploaded (PDF/text)
-  → AI audits risk — loopholes, vague terms, missing clauses
+  → 5 AI sub-agents analyze in parallel (parties, risks, milestones, clause scores, deploy plan)
+    → Promise.allSettled — partial results survive if any agent fails
     → Transforms into living contract: milestones, rules, escrow
       → Contract hash registered on ERC-8004 Validation Registry
         → Sentinel goes live: monitors GitHub, WhatsApp, CRM, email
@@ -201,17 +244,19 @@ Contract uploaded (PDF/text)
           → analyzeEvidence → proposeSettlement → executeSettlement
             → postFeedback (ERC-8004 Reputation)
               → registerVerdict (ERC-8004 Validation)
-                → Receipt permanent. Relationship intact.
+                → Evidence pinned to IPFS + stored on Filecoin (PDP)
+                  → Receipt permanent. Evidence provably alive. Relationship intact.
 ```
 
 Every step autonomous. Every action verifiable. Every receipt on-chain.
 
 ---
 
-## Agent Tools — Six, All Real, All On-Chain
+## Agent Tools — Seven, All Real, All Autonomous
 
 | Tool | What It Does | Output |
 |------|-------------|--------|
+| `parseContract` | Orchestrates 5 sub-agents in parallel — extracts parties, risks, milestones, scores clauses, generates deploy plan | Structured contract analysis (typed, nullable for partial results) |
 | `classifyCase` | Classifies dispute type across 7 categories + sets strategy | Classification + strategy preset |
 | `analyzeEvidence` | Scores credibility, relevance, and probative weight (0–100) | Score + key findings |
 | `proposeSettlement` | Calculates fair split with percentages, amounts, and conditions | Dollar amounts + reasoning + conditions |
@@ -220,6 +265,26 @@ Every step autonomous. Every action verifiable. Every receipt on-chain.
 | `registerVerdict` | Registers verdict as cryptographic evidence on ERC-8004 Validation Registry | Validation TX hash |
 
 Clara calls these silently during mediation. The parties never see the machinery — they just see a mediator who somehow already knows everything.
+
+### Advisory Chains — Clara Doesn't Think Alone
+
+Before every response, Clara receives invisible counsel from two internal reasoning chains — sequential `generateText` calls (Claude Sonnet 4.6) that run before her `ToolLoopAgent` processes the message. The parties never see this. Clara just gets better.
+
+The chains only activate after the first exchange — the Empath needs at least one prior turn to read dynamics, not fabricate nuance from a single message. On the first message, Clara operates alone.
+
+**The Empath** (Claude Sonnet 4.6) is a clinical psychologist specialized in commercial mediation. She reads the full conversation — including Clara's own moves and how parties reacted to them — and reasons about what's really happening emotionally. Not sentiment scores. Not keyword matching. She tracks power dynamics, projection, trust tests, obsessive repetition, and avoidance patterns:
+
+> *"He's repeating 'investment' for the third time — this isn't about money anymore, it's about feeling deceived. His tone shifted from frustrated to resigned after Clara's last message pushed facts too early. If Clara doubles down on evidence now, he'll interpret it as one more person who doesn't listen. The developer's responses are getting shorter and more technical — classic protection mechanism. He knows he dropped the ball but won't admit it if he feels cornered."*
+
+**The Strategist** (Claude Sonnet 4.6) is a senior negotiation advisor trained in the Harvard PON method. She receives the Empath's reading plus case context, then reasons about approach using BATNA analysis (what happens to each party if mediation fails?), timing, framing, sequencing (validation → facts → proposals → deadlines), and walk-away risk:
+
+> *"The doctor's BATNA is weak — small claims court would take 8 months and cost more than the dispute. He doesn't want to leave, he wants to feel heard. This is the moment to slow down, not propose numbers. A premature proposal gets rejected on principle, not on merit. Clara should name the feeling without judgment — 'R$30 mil não é só dinheiro, é confiança' — then redirect. The developer needs a dignified exit: frame it as 'communication failure', not 'delivery failure'. Settlement proposal should wait one more turn."*
+
+Clara receives both as her own internal thinking — not as external advice, but framed as observations she arrived at herself. She absorbs the emotional intelligence and strategic timing, then responds as herself — human, direct, better calibrated. If either chain fails, Clara proceeds without advisory. She's already good alone. The chains make her exceptional.
+
+**Why this matters:** Most AI mediators treat conflict as a classification problem — sentiment: negative, recommendation: concede 20%. Clara treats it as a reading-the-room problem, the way a real mediator with a therapist and a negotiator whispering in her ear would. The reasoning happens in sequential chains before Clara ever speaks.
+
+`Empath → Strategist → Clara` · Sequential · Graceful degradation · ~900 tokens reasoning overhead · Activates from 2nd message onward
 
 **Live omnichannel monitoring (Sentinel):**
 
@@ -237,9 +302,9 @@ Built in 7 days. Production-grade from day one.
 
 | Layer | Scale |
 |-------|-------|
-| API Routes | 16 endpoints — intake, mediation, settlement, delegation, oracle, MCP, x402 |
-| Agent Tools | 6 tools (ToolLoopAgent) — all execute real on-chain actions |
-| Lib Modules | 34 files — state machine, event sourcing, circuit breaker, outbox pattern, scoring, replay |
+| API Routes | 17 endpoints — intake, mediation, contract parsing, settlement, delegation, oracle, MCP, x402 |
+| Agent Tools | 7 tools across 2 ToolLoopAgents — contract parsing (5 sub-agents) + mediation (6 on-chain tools) |
+| Lib Modules | 50 files — state machine, event sourcing, circuit breaker, outbox pattern, scoring, replay, contract parser, IPFS pinning, canonical hashing |
 | Frontend Routes | 37 pages — landing, mediation, forge, contract lifecycle, admin, pitch, docs |
 | Components | 170+ — mediation chat, settlement modal, ReactFlow, shadcn/ui, Web3, Magic UI |
 | Database | PostgreSQL + Drizzle ORM — 5 tables with event sourcing + hash-chain integrity |
@@ -249,13 +314,93 @@ Built in 7 days. Production-grade from day one.
 
 - **State machine** — 11 states (INTAKE → CLOSED/ABANDONED) with guards and transitions
 - **Event sourcing** — SHA-256 hash-chain for every mediation event + dual-write to PostgreSQL
-- **Circuit breaker** — 4 levels (NORMAL → CAUTION → LOCKDOWN → EMERGENCY)
+- **Circuit breaker** — dual-layer: settlement guard (4 levels) + per-service ServiceBreaker (CLOSED/OPEN/HALF_OPEN) with error discrimination
 - **Outbox pattern** — guaranteed settlement delivery with retry logic
 - **Idempotency** — SHA-256 deduplication keys with 24h TTL, safe retries
 - **Replay engine** — dry-run any mediation with overrides, compare results
 - **Reputation oracle** — `/api/oracle/[address]/reputation` with HMAC signature, anti-Goodhart header
-- **Scoring system** — `ReputationScorer` with 5 weighted factors + `adjustWeights` (±3% per outcome, sum=1.0 guaranteed)
+- **Scoring system** — `ReputationScorer` with 5 weighted factors + AI-driven `adjustWeights` (Claude Sonnet 4.6 analyzes outcomes, proposes weights with reasoning, fallback to math)
 - **MCP server** — 5 tools for agent-to-agent integration (query, verify, reputation, list, submit)
+- **Dual evidence storage (IPFS + Filecoin)** — every verdict and feedback report pinned to IPFS *and* uploaded to Filecoin (Synapse SDK) with PDP verification; dual CID stored in `feedbackURI`/`requestURI` on-chain; `FILECOIN_STORED` event emitted in hash-chain when upload completes; public verification endpoint at `/api/verify-evidence?pieceCid=...`; circuit breaker protects against Filecoin downtime; fallback computes CID locally if all providers are down
+- **Simulate-before-write** — every contract call dry-runs against live chain state before sending; zero gas wasted on reverts
+- **Canonical JSON hashing** — recursively sorted keys ensure deterministic hashes across hash-chain, keccak256 on-chain, and IPFS CIDs
+- **Deterministic smart accounts** — agent and party smart accounts use named salts (`keccak256("selentar-agent-v1")`) so addresses are predictable, reproducible, and verifiable by anyone
+- **Test suite** — 40 tests across 7 modules (vitest): hash-chain integrity, circuit breaker state transitions, service breaker CLOSED/OPEN/HALF_OPEN, scoring normalization, idempotency TTL, canonical JSON determinism, case lifecycle guards. `npm test` — all green.
+
+---
+
+## Self-Improving Reputation Engine
+
+Selantar doesn't just score — it **learns from every mediation it runs.**
+
+After each case closes, an AI agent (Claude Sonnet 4.6) analyzes all resolved outcomes, reasons about **why** certain factors mattered, and proposes weight adjustments with per-factor justification. This isn't mechanical ±3% — it's an LLM that reads patterns, explains its reasoning, and assigns a confidence score to every adjustment.
+
+**5 reputation factors, dynamically weighted:**
+
+| Factor | What It Measures | Default Weight |
+|--------|-----------------|----------------|
+| Compliance rate | Did parties follow through on agreements? | 30% |
+| Resolution rate | Did the case reach settlement? | 25% |
+| Response speed | How fast did parties engage? | 20% |
+| Evidence quality | Was submitted evidence strong and verifiable? | 15% |
+| Cooperation score | Did parties negotiate in good faith? | 10% |
+
+**How the learning loop works:**
+
+```
+Case closes (success or failure)
+  → AI agent receives all resolved outcomes + current weights
+    → Analyzes patterns: which factors predicted success vs failure, and why
+      → Proposes new weights with reasoning per factor + confidence (0-100)
+        → System validates constraints (min 5%, max 45%, ±5% max delta, sum=1.0)
+          → Full analysis + adjustments persisted as WEIGHT_ADJUSTMENT event in hash-chain
+            → Next case scored with updated weights
+              → If LLM fails → silent fallback to math-based adjustment (loop never breaks)
+```
+
+**Constraints that prevent overfitting:**
+- Maximum weight per factor: 45% (no single factor dominates)
+- Minimum weight per factor: 5% (no factor is ever ignored)
+- Maximum change per cycle: ±5% per factor (gradual learning, no sudden shifts)
+- Weights normalized to sum = 1.0 after every adjustment (guaranteed, no drift)
+- Every weight change is an immutable event in the hash-chain — includes analysis, reasoning per factor, and confidence score
+- Mandatory fallback: if the LLM call fails for any reason, the system falls back to correlation-based math adjustment. The learning loop never breaks.
+
+The system compounds intelligence over time. A Selantar instance with 100 mediations scores reputation more accurately than one with 10 — because an AI analyst reviews real outcomes, explains what worked, and the weights reflect reasoned judgment, not blind math.
+
+---
+
+## Replay Engine — Audit Any Decision
+
+Every mediation decision Clara makes can be **replayed, challenged, and compared.**
+
+The replay engine re-runs a completed case through the AI with optional overrides (different model, temperature, system prompt) and automatically detects divergences from the original outcome.
+
+```bash
+npx tsx scripts/cli.ts cases replay <caseId>
+```
+
+**What it produces:**
+
+| Field | Description |
+|-------|-------------|
+| `original_outcome` | What Clara decided in the live mediation |
+| `replay_outcome` | What the AI decides on re-analysis |
+| `confidence_delta` | Difference in confidence scores |
+| `terms_changed` | Did the proposed terms change? |
+| `amount_changed` | Did the settlement amount change? |
+| `reasoning_divergences` | List of specific differences detected |
+
+**Why this matters:**
+
+- **Accountability** — Any party can challenge a verdict by replaying it
+- **Consistency audit** — Run the same case 10 times with temperature=0 to verify determinism
+- **Model comparison** — Replay with a different model to see if the verdict holds
+- **Bias detection** — Change the system prompt and see if the outcome shifts
+
+Every replay is a dry-run — no transactions execute, no state changes. The original hash-chain stays untouched.
+
+No other autonomous agent in this hackathon offers verifiable decision replay with automated divergence detection.
 
 ---
 
@@ -263,7 +408,10 @@ Built in 7 days. Production-grade from day one.
 
 ```
 Contract Creation:
-  Upload contract → POST /api/analyze-contract (streaming AI audit)
+  Upload contract → POST /api/parse-contract (ToolLoopAgent + 5 sub-agents in parallel)
+    → extractParties + analyzeRisks + extractMilestones (Phase 1, parallel)
+    → scoreClauses + generateDeployPlan (Phase 2, parallel, depends on Phase 1)
+    → UI populates progressively — shimmer → real data → chain-of-thought summary
     → POST /api/create-escrow → keccak256(contract) registered on ERC-8004
     → ContractID (CSX-YYYY-XXXXXXXX) + TX hash → contract goes live
 
@@ -298,13 +446,13 @@ All transactions are live on Base Sepolia:
 
 **Mediation (dispute resolution):**
 - **Settlement TX** (Clínica Suasuna case): [0xb5d338a5...](https://sepolia.basescan.org/tx/0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86)
-- **Reputation feedback** (score: 90/100): [0x91efdaca...](https://sepolia.basescan.org/tx/0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044)
-- **Verdict validation**: [0xabff70e4...](https://sepolia.basescan.org/tx/0xabff70e40d61bd4f5322343f37d9a5dde7a4bfa254a7d1b752e62cc1544115f3)
+- **Reputation feedback** (score: 90/100): [0x1b16a2e1...](https://sepolia.basescan.org/tx/0x1b16a2e1ca162280eb3440cda9cbcfcc62671a1eea71e39c62f55768543a6a6d)
+- **Verdict validation**: [0xacc46a6a...](https://sepolia.basescan.org/tx/0xacc46a6aa3c563af6700e590733cd29e3e6e067dd5ee4403316d4cf4d4fda9ee)
 
 **Infrastructure:**
 - **Validation Registry deployed**: [0xd770f4ab...](https://sepolia.basescan.org/tx/0xd770f4ab10efb44f90d1517d525cae3ddabf772b6246db977b148de3282313cd)
 
-Full agent decision log: [`/agent_log.json`](https://selantar.vercel.app/agent_log.json)
+Full agent decision log: [`/api/agent-log`](https://selantar.vercel.app/api/agent-log)
 
 ---
 
@@ -315,7 +463,9 @@ Full agent decision log: [`/agent_log.json`](https://selantar.vercel.app/agent_l
   "humanInterventionRequired": false,
   "careLoopActive": true,
   "proactiveOutreachEnabled": true,
-  "decisionSteps": 6,
+  "decisionSteps": 7,
+  "contractParsingAgents": 5,
+  "parallelSubAgentExecution": true,
   "settlementPaths": 5,
   "settlementProposedByAgent": true,
   "settlementExecutedOnChain": true,
@@ -330,7 +480,16 @@ Full agent decision log: [`/agent_log.json`](https://selantar.vercel.app/agent_l
   "mcpServerEnabled": true,
   "eventSourcingEnabled": true,
   "circuitBreakerEnabled": true,
-  "statesMachineStates": 11
+  "statesMachineStates": 11,
+  "ipfsPinnedEvidence": true,
+  "filecoinPDPStorage": true,
+  "filecoinDualURI": true,
+  "filecoinCircuitBreaker": true,
+  "filecoinVerificationEndpoint": true,
+  "simulateBeforeWrite": true,
+  "canonicalJsonHashing": true,
+  "deterministicSmartAccounts": true,
+  "testSuite": "40 tests, 7 modules, vitest"
 }
 ```
 
@@ -342,17 +501,18 @@ Full agent decision log: [`/agent_log.json`](https://selantar.vercel.app/agent_l
 |-------|-----------|
 | Framework | Next.js 16 (App Router) + React 19 |
 | AI | Vercel AI SDK v6 — `ToolLoopAgent`, `generateText`, `useChat`, `DefaultChatTransport` |
-| Models | Gemini 2.0 Flash (mediation) · Gemini 3.1 Pro (client agent) · GPT-5.4-mini via OpenRouter (contract analysis) |
+| Models | Claude Sonnet 4.6 (contract parsing, advisory chains) · Gemini 2.0 Flash (mediation, parser orchestrator) · Gemini 3.1 Pro (client agent) · GPT-5.4-mini (contract audit) |
 | Payments | x402 protocol — `x402-next`, `@coinbase/x402` (USDC on Base Sepolia) |
 | On-chain | viem + Base Sepolia (chainId: 84532) |
 | Smart Accounts | MetaMask Smart Accounts Kit v0.3.0 — ERC-7710 + ERC-7715 scoped delegations |
 | Bundler | Pimlico (ERC-4337) — sponsors gas via paymaster |
 | ERC-8004 | Identity + Reputation + Validation registries (all 3, deployed) |
+| Filecoin | Synapse SDK — PDP-verified evidence storage on Calibration testnet |
 | Auth | Privy (email + wallet + Google) |
 | Database | PostgreSQL + Drizzle ORM — event sourcing + hash-chain integrity |
+| ENS | Mainnet reverse lookup with PostgreSQL cache (6h TTL), retry with backoff, 30 req/min rate limit |
 | Integration | MCP server (5 tools, A2A) · Evolution API (WhatsApp) · GitHub API |
 | UI | Tailwind CSS v4 · shadcn/ui (New York) · Framer Motion · ReactFlow · Magic UI |
-| QA | VALAR framework — 18/18 features approved |
 | Harness | Claude Code |
 
 ---
@@ -381,12 +541,18 @@ Open [selantar.vercel.app/mediation](https://selantar.vercel.app/mediation), pic
 
 | What | Link |
 |------|------|
-| Agent identity | [BaseScan](https://sepolia.basescan.org/tx/0xf6a996e3d77f0f6211d8636679b57b9ff4bd161b5cd412a0612ca4a6612ff32f) |
-| Reputation score (90/100) | [BaseScan](https://sepolia.basescan.org/tx/0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044) |
-| Verdict registered | [BaseScan](https://sepolia.basescan.org/tx/0xabff70e40d61bd4f5322343f37d9a5dde7a4bfa254a7d1b752e62cc1544115f3) |
+| Agent identity | [BaseScan](https://sepolia.basescan.org/tx/0xd96cad52e144d98de68ce97aa8f9f3619302302c95feb8546a28b64e3fc72cf4) |
+| Reputation score (90/100) | [BaseScan](https://sepolia.basescan.org/tx/0x1b16a2e1ca162280eb3440cda9cbcfcc62671a1eea71e39c62f55768543a6a6d) |
+| Verdict registered | [BaseScan](https://sepolia.basescan.org/tx/0xacc46a6aa3c563af6700e590733cd29e3e6e067dd5ee4403316d4cf4d4fda9ee) |
 | Settlement executed | [BaseScan](https://sepolia.basescan.org/tx/0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86) |
 
 Every TX is real. Every receipt is permanent. Click any link and verify.
+
+**5. Verify evidence is still stored on Filecoin**
+```bash
+curl https://selantar.vercel.app/api/verify-evidence?pieceCid=bafkzcibd3qaqjzlcknf7am35f6cbioxsspnx7qy2unltvjwlc3cypngepxojqjr6
+```
+Returns PDP verification status, provider info, and liveness proof.
 
 ---
 
@@ -460,8 +626,9 @@ npm run dev
 **Required env vars:**
 
 ```bash
-GOOGLE_GENERATIVE_AI_API_KEY=   # Gemini (mediation + client agent)
-OPENROUTER_API_KEY=             # GPT-5.4-mini via OpenRouter (contract analysis)
+ANTHROPIC_API_KEY=              # Claude Sonnet 4.6 (contract parsing sub-agents, advisory chains)
+GOOGLE_GENERATIVE_AI_API_KEY=   # Gemini (mediation + parser orchestrator + client agent)
+OPENROUTER_API_KEY=             # GPT-5.4-mini (contract audit)
 AGENT_PRIVATE_KEY=              # wallet that holds Agent NFT #2122
 CLIENT_PRIVATE_KEY=             # second wallet for ERC-8004 feedback
 SELANTAR_AGENT_ID=2122          # ERC-8004 agent ID
@@ -474,9 +641,13 @@ DATABASE_URL=                   # PostgreSQL connection string
 
 - **App:** [selantar.vercel.app](https://selantar.vercel.app)
 - **API discovery:** [selantar.vercel.app/api/mediate](https://selantar.vercel.app/api/mediate)
-- **Agent #2122:** [Base Sepolia Explorer](https://sepolia.basescan.org/tx/0xf6a996e3d77f0f6211d8636679b57b9ff4bd161b5cd412a0612ca4a6612ff32f)
+- **Agent #2122:** [Base Sepolia Explorer](https://sepolia.basescan.org/tx/0xd96cad52e144d98de68ce97aa8f9f3619302302c95feb8546a28b64e3fc72cf4)
 - **Agent manifest:** [selantar.vercel.app/agent.json](https://selantar.vercel.app/agent.json)
-- **Agent decision log:** [selantar.vercel.app/agent_log.json](https://selantar.vercel.app/agent_log.json)
+- **Agent decision log:** [selantar.vercel.app/api/agent-log](https://selantar.vercel.app/api/agent-log)
+
+---
+
+**Care Protocol** — the standard Selantar implements — is formally defined in [`CARE-PROTOCOL.md`](CARE-PROTOCOL.md), cryptographically anchored on Bitcoin mainnet via [OpenTimestamps](https://opentimestamps.org) · SHA-256: `c4d196853d4c35d0a3cba56d76fb890acbb3c4f7c59a7eeb82a74d8aee549553`
 
 ---
 

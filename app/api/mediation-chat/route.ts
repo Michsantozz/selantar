@@ -1,5 +1,6 @@
 import { createAgentUIStreamResponse } from "ai";
-import { mediatorAgent } from "@/lib/agents/mediator-agent";
+import { createMediatorAgent } from "@/lib/agents/mediator-agent";
+import { empathReading, strategyAdvice } from "@/lib/chains/advisory";
 import { randomUUID } from "crypto";
 import { idempotencyStore, buildCaseKey } from "@/lib/idempotency";
 
@@ -42,8 +43,38 @@ export async function POST(req: Request) {
     })
   );
 
+  // Build conversation string for advisory chains
+  const conversationText = uiMessages
+    .map((m: { role: string; parts: { type: string; text?: string }[] }) => {
+      const text = m.parts?.find((p) => p.type === "text")?.text ?? "";
+      return `[${m.role}]: ${text}`;
+    })
+    .join("\n");
+  const lastUserMsg =
+    [...uiMessages].reverse().find((m: { role: string }) => m.role === "user");
+  const latestText =
+    lastUserMsg?.parts?.find((p: { type: string }) => p.type === "text")?.text ?? "";
+
+  // Advisory chains only activate after the first exchange — the Empath needs
+  // at least one prior turn to read dynamics, not fabricate nuance from thin air
+  const userMessages = uiMessages.filter((m: { role: string }) => m.role === "user");
+  let advisory: { empath: string; strategy: string } | undefined;
+  if (userMessages.length > 1) {
+    try {
+      const empath = await empathReading(conversationText, latestText);
+      const strategy = await strategyAdvice(
+        empath,
+        conversationText,
+        `Contract: ${contractRef ?? "unknown"}, Dispute: ${disputeType ?? "unknown"}, Parties: ${partyA ?? "A"} vs ${partyB ?? "B"}`
+      );
+      advisory = { empath, strategy };
+    } catch {
+      // Graceful degradation — Clara proceeds without advisory
+    }
+  }
+
   return createAgentUIStreamResponse({
-    agent: mediatorAgent,
+    agent: createMediatorAgent(advisory),
     uiMessages,
   });
 }

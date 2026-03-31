@@ -1,14 +1,15 @@
 "use client";
 
 import { CalendarIcon, MapPinIcon, AlertTriangleIcon, ScaleIcon, BanknoteIcon } from "lucide-react";
+import type { ContractHeader as ContractHeaderData } from "@/lib/schemas/contract-parse";
 
-const contract = {
+const DEFAULT_DATA: ContractHeaderData = {
   subject: "Development of a medical scheduling system with CRM module, WhatsApp integration and administrative panel for patient management at Suasuna Clinic.",
   parties: [
     {
       role: "Client",
       name: "Suasuna Clinic Ltd.",
-      cnpj: "12.345.678/0001-90",
+      identifier: "12.345.678/0001-90",
       representative: "Dr. Ernani Suassuna",
       city: "Recife, PE",
       initials: "CS",
@@ -16,20 +17,54 @@ const contract = {
     {
       role: "Developer",
       name: "DevStudio Technology ME",
-      cnpj: "98.765.432/0001-11",
+      identifier: "98.765.432/0001-11",
       representative: "Matheus Oliveira",
       city: "São Paulo, SP",
       initials: "DV",
     },
   ],
   payment: { total: "R$ 15.000", terms: "4 payments per milestone" },
-  timeline: { start: "03/01/2026", end: "05/10/2026", duration: 70, elapsed: 21 },
+  timeline: { start: "03/01/2026", end: "05/10/2026", durationDays: 70 },
   jurisdiction: "Recife – PE",
-  risks: 2,
 };
 
-export function ContractHeader() {
-  const pct = Math.round((contract.timeline.elapsed / contract.timeline.duration) * 100);
+const DEFAULT_RISKS_COUNT = 2;
+
+function ContractHeaderSkeleton() {
+  return (
+    <div className="border-b border-border animate-pulse">
+      <div className="px-8 py-4 bg-muted/10 border-b border-border">
+        <div className="h-4 w-3/4 rounded bg-muted" />
+      </div>
+      <div className="grid grid-cols-5 divide-x divide-border">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="px-6 py-5 space-y-3">
+            <div className="h-3 w-16 rounded bg-muted" />
+            <div className="h-5 w-24 rounded bg-muted" />
+            <div className="h-3 w-20 rounded bg-muted" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface ContractHeaderProps {
+  data?: ContractHeaderData | null;
+  risksCount?: number;
+  loading?: boolean;
+}
+
+export function ContractHeader({ data, risksCount, loading }: ContractHeaderProps = {}) {
+  const contract = data ?? DEFAULT_DATA;
+  const risks = risksCount ?? DEFAULT_RISKS_COUNT;
+  const pct = contract.timeline.durationDays > 0
+    ? Math.round((21 / contract.timeline.durationDays) * 100)
+    : 0;
+
+  if (loading || data === null) {
+    return <ContractHeaderSkeleton />;
+  }
 
   return (
     <div className="border-b border-border">
@@ -59,7 +94,7 @@ export function ContractHeader() {
             <MapPinIcon className="size-3 text-muted-foreground/40" />
             <p className="text-xs text-muted-foreground/60">{contract.parties[0].city}</p>
           </div>
-          <p className="text-xs font-mono text-muted-foreground/40 mt-1">{contract.parties[0].cnpj}</p>
+          <p className="text-xs font-mono text-muted-foreground/40 mt-1">{contract.parties[0].identifier}</p>
         </div>
 
         {/* Developer */}
@@ -78,7 +113,7 @@ export function ContractHeader() {
             <MapPinIcon className="size-3 text-muted-foreground/40" />
             <p className="text-xs text-muted-foreground/60">{contract.parties[1].city}</p>
           </div>
-          <p className="text-xs font-mono text-muted-foreground/40 mt-1">{contract.parties[1].cnpj}</p>
+          <p className="text-xs font-mono text-muted-foreground/40 mt-1">{contract.parties[1].identifier}</p>
         </div>
 
         {/* Payment */}
@@ -103,7 +138,7 @@ export function ContractHeader() {
           <div className="mt-3 h-[3px] w-full rounded-full bg-border overflow-hidden">
             <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
           </div>
-          <p className="text-xs text-muted-foreground mt-1.5">{contract.timeline.elapsed} of {contract.timeline.duration} calendar days</p>
+          <p className="text-xs text-muted-foreground mt-1.5">{contract.timeline.durationDays} calendar days</p>
         </div>
 
         {/* Jurisdiction + Risks */}
@@ -115,7 +150,7 @@ export function ContractHeader() {
           <p className="text-sm text-foreground">{contract.jurisdiction}</p>
           <div className="mt-4 flex items-center gap-2 rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2">
             <AlertTriangleIcon className="size-3.5 shrink-0 text-destructive" />
-            <p className="text-xs text-destructive font-medium">{contract.risks} high-risk clauses</p>
+            <p className="text-xs text-destructive font-medium">{risks} high-risk clauses</p>
           </div>
         </div>
 

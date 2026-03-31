@@ -1,6 +1,7 @@
 import { createPublicClient, http, parseAbi } from "viem";
 import { baseSepolia } from "viem/chains";
 import { ERC8004_ADDRESSES } from "./addresses";
+import { simulateAndWrite } from "@/lib/wallet";
 
 const IDENTITY_ABI = parseAbi([
   "function register(string agentURI) returns (uint256 agentId)",
@@ -17,7 +18,7 @@ export async function registerSelantarAgent(
   walletClient: any,
   agentJsonUrl: string
 ): Promise<bigint> {
-  const hash = await walletClient.writeContract({
+  const hash = await simulateAndWrite(walletClient, {
     address: ERC8004_ADDRESSES.baseSepolia.identityRegistry,
     abi: IDENTITY_ABI,
     functionName: "register",
@@ -30,7 +31,7 @@ export async function registerSelantarAgent(
     chain: baseSepolia,
     transport: http(),
   });
-  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  const receipt = await publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}` });
 
   const log = receipt.logs[0];
   const agentId = BigInt(log.topics[1] ?? "0");

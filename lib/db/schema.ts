@@ -80,6 +80,23 @@ export const idempotencyKeys = pgTable(
   ]
 );
 
+// ENS cache with TTL
+export const ensCache = pgTable(
+  "ens_cache",
+  {
+    id:        integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    address:   varchar("address", { length: 42 }).notNull().unique(),
+    ensName:   varchar("ens_name", { length: 255 }),
+    avatar:    text("avatar"),
+    resolvedAt: timestamp("resolved_at").notNull().defaultNow(),
+    expiresAt: timestamp("expires_at").notNull(),
+  },
+  (t) => [
+    index("idx_ens_cache_address").on(t.address),
+    index("idx_ens_cache_expires").on(t.expiresAt),
+  ]
+);
+
 // F02 — Circuit breaker state
 export const circuitBreakerState = pgTable("circuit_breaker_state", {
   id:            integer("id").primaryKey().generatedAlwaysAsIdentity(),

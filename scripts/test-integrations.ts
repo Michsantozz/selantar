@@ -10,9 +10,14 @@ import { baseSepolia } from "viem/chains";
 
 // ── Config ──────────────────────────────────────────────────────────────
 const RPC = "https://sepolia.base.org";
-const AGENT_PK = process.env.AGENT_PRIVATE_KEY ?? "b0e8535c8d665e57c7c6c337510e814b38dc021e249fa94ef3b9665daaad8b9a";
-const CLIENT_PK = process.env.CLIENT_PRIVATE_KEY ?? "0x57592aabd05c095b2a31cab6b3f769d78aa6e461427262a6412f004c57a529f3";
-const PIMLICO_KEY = process.env.PIMLICO_API_KEY ?? "pim_VLzkzFDox79DipTijjF6rv";
+if (!process.env.AGENT_PRIVATE_KEY || !process.env.CLIENT_PRIVATE_KEY || !process.env.PIMLICO_API_KEY) {
+  console.error("Missing required env vars: AGENT_PRIVATE_KEY, CLIENT_PRIVATE_KEY, PIMLICO_API_KEY");
+  console.error("Set them in .env.local before running this script.");
+  process.exit(1);
+}
+const AGENT_PK: string = process.env.AGENT_PRIVATE_KEY;
+const CLIENT_PK: string = process.env.CLIENT_PRIVATE_KEY;
+const PIMLICO_KEY: string = process.env.PIMLICO_API_KEY;
 
 const IDENTITY_REGISTRY = "0x8004A818BFB912233c491871b3d84c89A494BD9e";
 const REPUTATION_REGISTRY = "0x8004B663056A597Dffe9eCcC1965A193B7388713";
@@ -428,32 +433,9 @@ async function testRPC() {
 async function testKnownTxs() {
   console.log("\n══ TEST 9: VERIFY KNOWN ON-CHAIN TXS ══");
 
-  // Base Mainnet client for TXs that happened on mainnet
-  const baseMainnetClient = createPublicClient({
-    chain: { id: 8453, name: "Base", nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 }, rpcUrls: { default: { http: ["https://mainnet.base.org"] } } },
-    transport: http("https://mainnet.base.org"),
-  });
-
-  // Self-custody transfer was on Base Mainnet
-  const mainnetTxs = [
-    { name: "Agent NFT #2122 self-custody transfer (Base Mainnet)", hash: "0xf6a996e3d77f0f6211d8636679b57b9ff4bd161b5cd412a0612ca4a6612ff32f" },
-  ];
-
-  for (const { name, hash } of mainnetTxs) {
-    try {
-      const receipt = await baseMainnetClient.getTransactionReceipt({ hash: hash as `0x${string}` });
-      if (receipt.status === "success") {
-        pass(name, `Block ${receipt.blockNumber}, status: success`);
-      } else {
-        fail(name, `TX found but status: ${receipt.status}`);
-      }
-    } catch (e) {
-      fail(name, `TX not found: ${String(e).slice(0, 80)}`);
-    }
-  }
-
-  // All other TXs are on Base Sepolia
+  // All TXs are on Base Sepolia
   const sepoliaTxs = [
+    { name: "Agent NFT #2122 self-custody transfer", hash: "0xf6a996e3d77f0f6211d8636679b57b9ff4bd161b5cd412a0612ca4a6612ff32f" },
     { name: "Reputation feedback posted", hash: "0x91efdaca7a28fbf135f1db0c6a79ebfa3365910dd4815c85323d58400d1db044" },
     { name: "Validation Registry deploy", hash: "0xd770f4ab10efb44f90d1517d525cae3ddabf772b6246db977b148de3282313cd" },
     { name: "Verdict registered on-chain", hash: "0xabff70e40d61bd4f5322343f37d9a5dde7a4bfa254a7d1b752e62cc1544115f3" },

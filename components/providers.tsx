@@ -1,24 +1,30 @@
 "use client";
 
-import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
-import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-
-const environmentId = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID;
+import { PrivyProvider } from "@privy-io/react-auth";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  if (!environmentId) {
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+
+  if (!appId) {
     return <>{children}</>;
   }
 
   return (
-    <DynamicContextProvider
-      theme="dark"
-      settings={{
-        environmentId,
-        walletConnectors: [EthereumWalletConnectors],
+    <PrivyProvider
+      appId={appId}
+      config={{
+        loginMethods: ["email", "wallet", "google"],
+        appearance: {
+          theme: "dark",
+          accentColor: "#c2410c",
+          logo: "https://selantar.vercel.app/selantar-logo.png",
+        },
+        embeddedWallets: {
+          createOnLogin: "users-without-wallets",
+        },
       }}
     >
       {children}
-    </DynamicContextProvider>
+    </PrivyProvider>
   );
 }

@@ -1,4 +1,8 @@
 import { mediationLog } from "@/lib/mediation-log";
+import { readdir } from "fs/promises";
+import { join } from "path";
+import type { MediationOutcome } from "@/lib/learning";
+import type { MediationEvent } from "@/lib/mediation-log";
 
 export enum CaseState {
   INTAKE              = "INTAKE",
@@ -60,6 +64,10 @@ export class MediationCase {
       to:        newState,
       timestamp: new Date().toISOString(),
     });
+
+    if (newState === CaseState.CLOSED || newState === CaseState.ABANDONED) {
+      triggerLearningLoop(this.caseId);
+    }
   }
 
   canTransitionTo(newState: CaseState): boolean {
@@ -80,7 +88,10 @@ const caseStore = new Map<string, MediationCase>();
 
 export function createCase(caseId: string): MediationCase {
   const existing = caseStore.get(caseId);
-  if (existing) return existing; // idempotente
+  if (existing && existing.getState() !== CaseState.CLOSED && existing.getState() !== CaseState.ABANDONED) {
+    return existing; // idempotente — só reutiliza se ainda ativo
+  }
+  learnedCases.delete(caseId); // libera para futuro learning loop
 
   const mediationCase = new MediationCase(caseId);
   caseStore.set(caseId, mediationCase);
@@ -99,3 +110,75 @@ export function getCase(caseId: string): MediationCase | undefined {
 
 // Exportar Map para uso futuro em admin/metrics (F13)
 export { caseStore };
+
+const MIN_OUTCOMES_FOR_LEARNING = 3;
+const LOG_DIR = join(process.cwd(), ".mediation-logs");
+const learnedCases = new Set<string>();
+
+async function collectOutcomes(): Promise<MediationOutcome[]> {
+  let files: string[];
+  try {
+    files = (await readdir(LOG_DIR)).filter((f: string) => f.endsWith(".json"));
+  } catch {
+    return [];
+  }
+
+  const outcomes: MediationOutcome[] = [];
+  for (const file of files) {
+    try {
+      const caseId = file.replace(".json", "");
+      const events = mediationLog.getAll(caseId);
+
+      const closed = events.find(
+        (e: MediationEvent) =>
+          e.eventType === "STATE_TRANSITION" &&
+          ((e.payload as Record<string, unknown>).to === CaseState.CLOSED ||
+           (e.payload as Record<string, unknown>).to === CaseState.ABANDONED)
+      );
+      if (!closed) continue;
+
+      const analyses = events.filter(
+        (e: MediationEvent) => e.eventType === "ANALYSIS_COMPLETE"
+      );
+      const avgScore = analyses.length > 0
+        ? analyses.reduce((s, e) => s + (Number((e.payload as Record<string, unknown>).credibilityScore) || 0), 0) / analyses.length
+        : 50;
+      const normalized = avgScore / 100;
+
+      const settled = events.some(
+        (e: MediationEvent) => e.eventType === "SETTLEMENT_EXECUTED"
+      );
+
+      outcomes.push({
+        caseId,
+        compliance_rate:   settled ? 0.8 : 0.3,
+        resolution_rate:   settled ? 1.0 : 0.0,
+        response_speed:    0.7,
+        evidence_quality:  normalized,
+        cooperation_score: settled ? 0.75 : 0.25,
+        successful:        (closed.payload as Record<string, unknown>).to === CaseState.CLOSED,
+      });
+    } catch (err) {
+      console.error(`[learning] failed to process case file ${file}:`, err);
+    }
+  }
+
+  return outcomes;
+}
+
+function triggerLearningLoop(caseId: string): void {
+  const runKey = `${caseId}:${Date.now()}`;
+  if (learnedCases.has(caseId)) return;
+  learnedCases.add(caseId);
+
+  (async () => {
+    const outcomes = await collectOutcomes();
+    if (outcomes.length < MIN_OUTCOMES_FOR_LEARNING) return;
+
+    const { adjustWeights } = await import("@/lib/learning");
+    await adjustWeights(outcomes);
+    console.log(`[learning] adjusted weights from ${outcomes.length} outcomes (trigger: ${runKey})`);
+  })().catch((err) => {
+    console.error(`[learning] loop failed for case ${caseId}:`, err);
+  });
+}

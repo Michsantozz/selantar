@@ -21,6 +21,17 @@ yarn-error.log*
 .env*
 !.env.example
 
+# internal
+/VALAR/
+/.mediation-logs/
+AGENTCHAIN-ANALYSIS.md
+CONTRACT-PARSER-PLAN.md
+SENTINEL-PLAN-PLAN.md
+FALTA.md
+VALAR-SENTINEL.md
+docs/PROMPTS-GUIDE.md
+docs/SUBMISSION-CHECKLIST.md
+
 # vercel
 .vercel
 

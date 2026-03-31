@@ -9,21 +9,12 @@ import {
   XIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { RiskItem as RiskItemData, ClauseScore } from "@/lib/schemas/contract-parse";
 
 // --- Types ---
 
 type Severity = "high" | "medium" | "low";
-
-type RiskItem = {
-  id: string;
-  clause: string;
-  title: string;
-  description: string;
-  severity: Severity;
-  originalText: string;
-  suggestion: string;
-  accepted: boolean | null; // null = not decided
-};
+type RiskDisplay = RiskItemData & { accepted: boolean | null };
 
 // --- Config ---
 
@@ -53,7 +44,7 @@ const severityConfig: Record<
 
 // --- Demo data ---
 
-const initialRisks: RiskItem[] = [
+const INITIAL_RISKS: RiskItemData[] = [
   {
     id: "r1",
     clause: "Clause 3.2",
@@ -65,7 +56,6 @@ const initialRisks: RiskItem[] = [
       "The Developer shall deliver the complete frontend including mobile by the agreed date.",
     suggestion:
       'Replace with: "The Developer shall deliver the responsive frontend (desktop, tablet and mobile), tested in Chrome, Safari and Firefox, with Lighthouse mobile score ≥ 80."',
-    accepted: null,
   },
   {
     id: "r2",
@@ -78,7 +68,6 @@ const initialRisks: RiskItem[] = [
       "Payment shall be released upon Client approval.",
     suggestion:
       'Add: "The Client shall have 5 business days to review. If no response is given, payment will be released automatically."',
-    accepted: null,
   },
   {
     id: "r3",
@@ -91,7 +80,6 @@ const initialRisks: RiskItem[] = [
       "Intellectual property shall be transferred to the Client at the end of the project.",
     suggestion:
       'Specify: "IP for each milestone shall be transferred to the Client upon confirmation of the corresponding escrow payment."',
-    accepted: true,
   },
   {
     id: "r4",
@@ -104,7 +92,6 @@ const initialRisks: RiskItem[] = [
       "Scope changes may be agreed upon between the parties.",
     suggestion:
       'Add: "Scope changes must be formalized via Amendment in Selantar with dual approval, adjusting values and deadlines as needed."',
-    accepted: null,
   },
   {
     id: "r5",
@@ -116,7 +103,6 @@ const initialRisks: RiskItem[] = [
     originalText:
       "This contract is governed by the laws of the Federative Republic of Brazil.",
     suggestion: "No changes needed. Clause is well-defined.",
-    accepted: true,
   },
 ];
 
@@ -126,7 +112,7 @@ function RiskCard({
   risk,
   onToggle,
 }: {
-  risk: RiskItem;
+  risk: RiskDisplay;
   onToggle: (id: string, accepted: boolean) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -258,7 +244,7 @@ function RiskCard({
 
 // --- Summary bar ---
 
-function RiskSummary({ risks }: { risks: RiskItem[] }) {
+function RiskSummary({ risks }: { risks: RiskDisplay[] }) {
   const total = risks.length;
   const accepted = risks.filter((r) => r.accepted === true).length;
   const rejected = risks.filter((r) => r.accepted === false).length;
@@ -319,20 +305,55 @@ function RiskSummary({ risks }: { risks: RiskItem[] }) {
   );
 }
 
+// --- Skeleton ---
+
+function RiskReviewSkeleton() {
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-1 overflow-auto p-4">
+        <div className="flex flex-col gap-3 animate-pulse">
+          <div className="rounded-lg border border-border bg-card px-5 py-4 space-y-3">
+            <div className="h-4 w-48 rounded bg-muted" />
+            <div className="h-2 w-full rounded-full bg-muted" />
+          </div>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-border bg-card px-5 py-4 space-y-2">
+              <div className="h-4 w-40 rounded bg-muted" />
+              <div className="h-3 w-24 rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- Exported ---
 
-export function RiskReview() {
-  const [risks, setRisks] = useState<RiskItem[]>(initialRisks);
+interface RiskReviewProps {
+  risks?: RiskItemData[] | null;
+  clauseScores?: ClauseScore[] | null;
+  loading?: boolean;
+}
+
+export function RiskReview({ risks: propRisks, clauseScores, loading }: RiskReviewProps = {}) {
+  const baseRisks = propRisks ?? INITIAL_RISKS;
+  const [acceptedMap, setAcceptedMap] = useState<Record<string, boolean | null>>({});
+
+  // Derive display risks with accepted state from map
+  const risks: RiskDisplay[] = baseRisks.map((r) => ({
+    ...r,
+    accepted: acceptedMap[r.id] ?? null,
+  }));
 
   const handleToggle = (id: string, accepted: boolean) => {
-    setRisks((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, accepted: r.accepted === accepted ? null : accepted }
-          : r
-      )
-    );
+    setAcceptedMap((prev) => ({
+      ...prev,
+      [id]: prev[id] === accepted ? null : accepted,
+    }));
   };
+
+  if (loading) return <RiskReviewSkeleton />;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">

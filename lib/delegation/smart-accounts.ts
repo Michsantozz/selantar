@@ -4,8 +4,12 @@ import {
   getSmartAccountsEnvironment,
 } from "@metamask/smart-accounts-kit";
 import { privateKeyToAccount } from "viem/accounts";
-import type { PublicClient } from "viem";
+import { keccak256, toBytes, type PublicClient } from "viem";
 import { baseSepolia } from "viem/chains";
+
+// Deterministic salts — same name always produces the same smart account address
+const AGENT_SALT = keccak256(toBytes("selentar-agent-v1"));
+const PARTY_SALT = keccak256(toBytes("selentar-party-v1"));
 
 // Get the MetaMask delegation environment for Base Sepolia
 export function getEnvironment() {
@@ -27,7 +31,7 @@ export async function getAgentSmartAccount(publicClient: PublicClient) {
     client: publicClient,
     implementation: Implementation.Hybrid,
     deployParams: [account.address, [], [], []],
-    deploySalt: "0x",
+    deploySalt: AGENT_SALT,
     signer: { account },
   });
 }
@@ -43,7 +47,7 @@ export async function getPartySmartAccount(
     client: publicClient,
     implementation: Implementation.Hybrid,
     deployParams: [account.address, [], [], []],
-    deploySalt: "0x",
+    deploySalt: PARTY_SALT,
     signer: { account },
   });
 }

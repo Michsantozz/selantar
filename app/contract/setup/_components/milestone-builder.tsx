@@ -31,16 +31,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Milestone } from "@/lib/schemas/contract-parse";
 
-type Milestone = {
-  id: string;
-  name: string;
-  value: number;
-  deadline: string;
-  deliverables: string;
-};
-
-const initialMilestones: Milestone[] = [
+const DEFAULT_MILESTONES: Milestone[] = [
   { id: "m1", name: "Design System",        value: 800,  deadline: "2026-04-01", deliverables: "Figma file, component library, style guide" },
   { id: "m2", name: "Frontend Development", value: 1200, deadline: "2026-04-15", deliverables: "React app, responsive layout, API integration" },
   { id: "m3", name: "Backend & API",        value: 800,  deadline: "2026-04-28", deliverables: "REST API, database schema, auth system" },
@@ -211,8 +204,39 @@ function MilestoneRow({ milestone, colorIndex, onUpdate, onRemove, isDragOverlay
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
-export function MilestoneBuilder() {
-  const [milestones, setMilestones] = useState<Milestone[]>(initialMilestones);
+function MilestoneBuilderSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 animate-pulse">
+      <div className="h-4 w-32 rounded bg-muted" />
+      <div className="rounded-md border border-border p-4 space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4">
+            <div className="h-4 w-4 rounded bg-muted" />
+            <div className="h-4 flex-1 rounded bg-muted" />
+            <div className="h-8 w-16 rounded bg-muted" />
+            <div className="h-8 w-16 rounded bg-muted" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface MilestoneBuilderProps {
+  initialMilestones?: Milestone[] | null;
+  loading?: boolean;
+}
+
+export function MilestoneBuilder({ initialMilestones, loading }: MilestoneBuilderProps = {}) {
+  const [milestones, setMilestones] = useState<Milestone[]>(initialMilestones ?? DEFAULT_MILESTONES);
+
+  // Adjust state when props change (React-recommended pattern, no useEffect needed)
+  const [prevInitial, setPrevInitial] = useState(initialMilestones);
+  if (initialMilestones !== prevInitial) {
+    setPrevInitial(initialMilestones);
+    if (initialMilestones) setMilestones(initialMilestones);
+  }
+
   const [activeId, setActiveId]     = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -225,6 +249,8 @@ export function MilestoneBuilder() {
     () => milestones.find(m => m.id === activeId) ?? null,
     [milestones, activeId]
   );
+
+  if (loading) return <MilestoneBuilderSkeleton />;
 
   const handleDragEnd = (e: DragEndEvent) => {
     setActiveId(null);

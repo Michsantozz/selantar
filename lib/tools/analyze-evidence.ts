@@ -1,12 +1,9 @@
 import { tool, generateText, Output } from "ai";
 import { z } from "zod";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 import { mediationLog } from "@/lib/mediation-log";
 import { getCase, CaseState } from "@/lib/case-lifecycle";
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
+import { breakers } from "@/lib/breakers";
 
 export interface AnalysisResult {
   relevance: number;
@@ -58,8 +55,8 @@ export const analyzeEvidence = tool({
     let analysisResult: AnalysisResult;
 
     try {
-      const result = await generateText({
-        model: google("gemini-2.0-flash"),
+      const result = await breakers.llm.call(() => generateText({
+        model: openai("gpt-5.4-2026-03-05"),
         output: Output.object({ schema: analysisSchema }),
         prompt: `You are a legal evidence analyst for B2B contract dispute mediation.
 
@@ -76,7 +73,7 @@ Score each dimension 0-100:
 - reasoning: Brief explanation of your assessment
 
 Be objective. Do not favor either party.`,
-      });
+      }));
 
       const { relevance, credibility, probativeWeight, redFlags, reasoning } = result.output;
       const compositeScore = Math.round(

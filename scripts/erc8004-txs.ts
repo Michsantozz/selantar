@@ -10,6 +10,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import * as dotenv from "dotenv";
 import * as path from "path";
+import { canonicalJSON } from "../lib/canonical-json";
 
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
 
@@ -43,11 +44,18 @@ async function main() {
   console.log("Agent balance: ", (Number(agentBalance) / 1e18).toFixed(6), "ETH");
 
   // --- Fund client wallet if needed ---
-  if (clientBalance < BigInt(5e15)) { // less than 0.005 ETH
-    console.log("\nFunding client wallet with 0.005 ETH from agent wallet...");
+  if (clientBalance < BigInt(5e14)) { // less than 0.0005 ETH (just enough for gas)
+    const fundAmount = BigInt(1e15); // 0.001 ETH
+    if (agentBalance < fundAmount + BigInt(1e14)) {
+      console.log("\n⚠️  Both wallets low on ETH. Get Base Sepolia ETH from a faucet:");
+      console.log("   https://www.alchemy.com/faucets/base-sepolia");
+      console.log("   Agent address:", agentAccount.address);
+      process.exit(1);
+    }
+    console.log("\nFunding client wallet with 0.001 ETH from agent wallet...");
     const fundTx = await agentWallet.sendTransaction({
       to: clientAccount.address,
-      value: BigInt(5e15),
+      value: fundAmount,
     });
     console.log("Fund TX:", fundTx);
     await publicClient.waitForTransactionReceipt({ hash: fundTx });
@@ -70,7 +78,7 @@ async function main() {
     endpoint: "https://selantar.vercel.app/mediation",
     settlementTx: "0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86",
   };
-  const feedbackHash = keccak256(toBytes(JSON.stringify(feedbackData)));
+  const feedbackHash = keccak256(toBytes(canonicalJSON(feedbackData)));
 
   const feedbackTx = await clientWallet.writeContract({
     address: REPUTATION_REGISTRY as `0x${string}`,
@@ -91,6 +99,10 @@ async function main() {
   await publicClient.waitForTransactionReceipt({ hash: feedbackTx });
   console.log("✅ Feedback confirmed! Basescan: https://sepolia.basescan.org/tx/" + feedbackTx);
 
+  // Wait for nonce to propagate on public RPC
+  console.log("\nWaiting 5s for nonce propagation...");
+  await new Promise((r) => setTimeout(r, 5000));
+
   // --- TX 2: Validation Request ---
   console.log("\n[TX 2] Registering verdict as validation...");
   const VALIDATION_ABI = parseAbi([
@@ -108,7 +120,7 @@ async function main() {
       txHash: "0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86",
     },
   };
-  const requestHash = keccak256(toBytes(JSON.stringify(evidenceData)));
+  const requestHash = keccak256(toBytes(canonicalJSON(evidenceData)));
 
   const validationTx = await clientWallet.writeContract({
     address: VALIDATION_REGISTRY as `0x${string}`,

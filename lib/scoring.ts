@@ -67,11 +67,17 @@ export const reputationScorer = new ReputationScorer();
 export function persistWeightAdjustment(
   caseId: string,
   oldWeights: ReputationWeights,
-  newWeights: ReputationWeights
+  newWeights: ReputationWeights,
+  analysis?: string,
+  reasoningPerFactor?: Record<string, string>,
+  confidence?: number
 ): void {
   mediationLog.append(caseId, "WEIGHT_ADJUSTMENT", {
     old_weights: oldWeights,
     new_weights: newWeights,
     adjusted_at: new Date().toISOString(),
+    ...(analysis != null && { analysis }),
+    ...(reasoningPerFactor != null && { reasoning_per_factor: reasoningPerFactor }),
+    ...(confidence != null && { confidence }),
   });
 }

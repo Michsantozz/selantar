@@ -4,6 +4,8 @@ import { eq, and, isNull } from "drizzle-orm";
 import { mediationLog } from "@/lib/mediation-log";
 import { parseEther } from "viem";
 import { getWalletClient, getPublicClient } from "@/lib/wallet";
+import { breakers } from "@/lib/breakers";
+import { BreakerOpenError } from "@/lib/service-breaker";
 
 export type SettlementStatus = "pending" | "executing" | "completed" | "failed";
 
@@ -49,7 +51,13 @@ export async function processOutbox(): Promise<void> {
     );
 
   for (const row of pending) {
-    await processSingleSettlement(row.id, row.intent as unknown as OutboxIntent);
+    try {
+      await processSingleSettlement(row.id, row.intent as unknown as OutboxIntent);
+    } catch (err) {
+      // BreakerOpenError rethrown = stop processing, remaining rows stay pending
+      if (err instanceof BreakerOpenError) break;
+      throw err;
+    }
   }
 }
 
@@ -67,10 +75,13 @@ async function processSingleSettlement(
     const walletClient = getWalletClient();
     const publicClient = getPublicClient();
 
-    const hash = await walletClient.sendTransaction({
-      to: walletClient.account.address,
-      value: parseEther("0.0001"),
-    });
+    const clientAddress = (process.env.CLIENT_WALLET_ADDRESS ?? "0x7C41D01c95F55c5590e65c8f91B4F854316d1da4") as `0x${string}`;
+    const hash = await breakers.onchain.call(() =>
+      walletClient.sendTransaction({
+        to: clientAddress,
+        value: parseEther("0.0001"),
+      })
+    );
 
     await publicClient.waitForTransactionReceipt({ hash });
 
@@ -88,23 +99,30 @@ async function processSingleSettlement(
       outboxId: id,
       txHash: hash,
       method: "outbox_worker",
-      clientAmount: intent.clientAmount,
-      developerAmount: intent.developerAmount,
+      contractAmount: { client: intent.clientAmount, developer: intent.developerAmount },
+      onChainAmount: "0.0001 ETH (testnet symbolic execution)",
     });
   } catch (err) {
+    // BreakerOpenError = transient (service wasn't even called) → keep as pending for retry
+    const isTransient = err instanceof BreakerOpenError;
+
     await db
       .update(settlements)
       .set({
-        status: "failed",
+        status: isTransient ? "pending" : "failed",
         error: String(err),
       })
       .where(eq(settlements.id, id));
 
-    mediationLog.append(intent.caseId, "CIRCUIT_BREAKER_TRIGGERED", {
+    mediationLog.append(intent.caseId, isTransient ? "BREAKER_SKIPPED" : "CIRCUIT_BREAKER_TRIGGERED", {
       outboxId: id,
       error: String(err),
+      transient: isTransient,
       source: "outbox_worker",
     });
+
+    // If breaker is open, skip remaining rows — they'll all fail the same way
+    if (isTransient) throw err;
   }
 }
 

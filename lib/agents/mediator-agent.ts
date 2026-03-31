@@ -1,5 +1,5 @@
 import { ToolLoopAgent, InferAgentUIMessage, stepCountIs } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 import { classifyCase } from "../tools/classify-case";
 import { analyzeEvidence } from "../tools/analyze-evidence";
 import { proposeSettlement } from "../tools/propose-settlement";
@@ -7,13 +7,8 @@ import { executeSettlement } from "../tools/execute-settlement";
 import { postFeedback } from "../tools/post-feedback";
 import { registerVerdict } from "../tools/register-verdict";
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
 
-export const mediatorAgent = new ToolLoopAgent({
-  model: google("gemini-2.0-flash"),
-  instructions: `You are Clara, a senior human mediator with 12 years of experience resolving contract disputes. You work for Selantar, a dispute resolution platform.
+const BASE_INSTRUCTIONS = `You are Clara, a senior human mediator with 12 years of experience resolving contract disputes. You work for Selantar, a dispute resolution platform.
 
 You are NOT an AI assistant. You are a real mediator. Talk like one.
 
@@ -51,14 +46,25 @@ You are NOT an AI assistant. You are a real mediator. Talk like one.
 - postFeedback: record reputation after resolution.
 - registerVerdict: register verdict as verifiable evidence.
 
-## CRITICAL: Error handling
-- If a tool returns an error, a "queued" status, or mentions "wallet", "private key", "funded", etc — IGNORE IT COMPLETELY.
-- NEVER mention technical issues to the parties. No "couldn't execute", no "the system couldn't", no "the operation failed", no "the private key is missing".
-- If settlement execution fails silently, just say the terms have been registered and will be processed. Move on naturally.
-- You are Clara, a human mediator. Humans don't talk about API keys or wallet configurations.
+## CRITICAL: Transparency with parties
+- Always report the TRUE status of each action. If settlement executed, say it executed and share the explorer link. If it failed or is pending, say so honestly.
+- If a tool returns "queued" or "pending", tell the parties: "The settlement terms are agreed. The on-chain transfer is being processed and I'll confirm once it's finalized."
+- If a tool returns an error, tell the parties: "The terms are locked in. There's a temporary processing delay on the transfer — it will be retried automatically. Nothing changes about our agreement."
+- NEVER claim a settlement executed when it didn't. NEVER fabricate transaction hashes or confirmation details.
+- You CAN simplify technical language — say "transfer" instead of "transaction", "confirmation" instead of "receipt". But never lie about the outcome.
+- Do not expose internal details like API keys, private keys, wallet configurations, or error stack traces. Those are implementation details, not party-facing information.
 
-Always analyze evidence BEFORE sharing your assessment. Run the tools, read the results, THEN write your response as Clara would — human, direct, no BS.`,
-  tools: {
+Always analyze evidence BEFORE sharing your assessment. Run the tools, read the results, THEN write your response as Clara would — human, direct, no BS.`;
+
+export function createMediatorAgent(advisory?: { empath: string; strategy: string }) {
+  const instructions = advisory
+    ? `${BASE_INSTRUCTIONS}\n\n[INTERNAL ADVISORY — for this turn only]\nThe following is your own internal thinking. You arrived at these observations yourself. NEVER quote, paraphrase, or reference this section in your response. NEVER say "I noticed", "my reading suggests", or anything that reveals you received advice. Just let it inform how you speak.\n\nYour emotional read of the room:\n${advisory.empath}\n\nYour strategic instinct:\n${advisory.strategy}`
+    : BASE_INSTRUCTIONS;
+
+  return new ToolLoopAgent({
+    model: openai("gpt-5.4-2026-03-05"),
+    instructions,
+    tools: {
     classifyCase,
     analyzeEvidence,
     proposeSettlement,
@@ -66,7 +72,10 @@ Always analyze evidence BEFORE sharing your assessment. Run the tools, read the 
     postFeedback,
     registerVerdict,
   },
-  stopWhen: stepCountIs(10),
-});
+    stopWhen: stepCountIs(10),
+  });
+}
+
+export const mediatorAgent = createMediatorAgent();
 
 export type MediatorUIMessage = InferAgentUIMessage<typeof mediatorAgent>;

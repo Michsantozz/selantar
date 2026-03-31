@@ -1,6 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { registerDemoAction } from '@/lib/demo-actions'
+
+const TG_BOT_TOKEN = '***REMOVED***'
+const TG_CHAT_ID = '6709259964'
+
+async function sendTelegram(text: string) {
+  try {
+    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendChatAction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TG_CHAT_ID, action: 'typing' }),
+    })
+    await new Promise((r) => setTimeout(r, 1500))
+    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TG_CHAT_ID, text, parse_mode: 'Markdown' }),
+    })
+  } catch {
+    // silently fail
+  }
+}
 import {
   ReactFlow,
   Background,
@@ -216,7 +238,8 @@ const SY = 0       // Sentinel row Y
 const CY = 190     // Clara row Y
 const START_X = 0
 
-const NODES: Node[] = [
+function buildNodes(firing: boolean): Node[] {
+  return [
   // ── Start ──
   { id: 'contract', type: 'action', position: { x: START_X, y: 85 },
     data: {
@@ -292,7 +315,27 @@ const NODES: Node[] = [
       icon: 'scale', status: 'waiting', agent: 'clara',
       detail: 'clause 3.2',
     } },
-]
+
+  // s-whatsapp override when firing
+  ...(firing ? [{
+    id: 's-whatsapp', type: 'action', position: { x: START_X + G * 2, y: SY },
+    data: {
+      label: 'Follow-up WhatsApp',
+      description: '⌛ Sentinel digitando mensagem para Dr. Suasuna...',
+      icon: 'whatsapp', status: 'active' as ActionStatus, agent: 'sentinel' as const,
+      detail: 'ao vivo agora',
+    }
+  }] : [{
+    id: 's-whatsapp', type: 'action', position: { x: START_X + G * 2, y: SY },
+    data: {
+      label: 'Follow-up WhatsApp',
+      description: '✓ Mensagem enviada. Dr. Suasuna notificado sobre M2.',
+      icon: 'whatsapp', status: 'done' as ActionStatus, agent: 'sentinel' as const,
+      detail: 'enviado',
+    }
+  }]),
+  ]
+}
 
 const EDGES: Edge[] = [
   // Fork from contract to both tracks
@@ -345,17 +388,31 @@ const STATUS_LINES = [
 export function SentinelPanel() {
   const [statusIdx, setStatusIdx] = useState(0)
   const [expanded, setExpanded] = useState(false)
+  const [firing, setFiring] = useState(false)
 
   useEffect(() => {
     const t = setInterval(() => setStatusIdx((p) => (p + 1) % STATUS_LINES.length), 3000)
     return () => clearInterval(t)
   }, [])
 
+  useEffect(() => {
+    // on mount — anima node s-whatsapp e dispara mensagem real
+    const run = async () => {
+      await new Promise((r) => setTimeout(r, 1200)) // pequeno delay para UI carregar
+      setFiring(true)
+      await sendTelegram(
+        '✅ *Contrato ativo — Selantar*\nSite Clinica Suassuna · R$4.800 · 4 milestones\nSentinel monitorando. Qualquer movimento eu aviso.'
+      )
+      setFiring(false)
+    }
+    run()
+  }, [])
+
   const cur = STATUS_LINES[statusIdx]
 
   const flowCanvas = (padding: number) => (
     <ReactFlow
-      nodes={NODES}
+      nodes={buildNodes(firing)}
       edges={EDGES}
       nodeTypes={nodeTypes}
       fitView

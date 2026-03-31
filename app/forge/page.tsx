@@ -40,8 +40,11 @@ function ParseCard() {
   const router = useRouter()
 
   const handleDemo = () => {
-    setDemoLoading(true)
-    setTimeout(() => router.push("/contractv2"), 1500)
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("selentar-parsed-contract");
+    }
+    setDemoLoading(true);
+    router.push("/contractv2?demo=true");
   }
 
   return (

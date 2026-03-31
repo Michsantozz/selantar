@@ -31,7 +31,7 @@ export function DisputePanel({
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Left — issues */}
-      <div className="flex flex-col gap-2">
+      <div id="cd-issues" className="flex flex-col gap-2">
         <div className="flex items-center gap-2 mb-1">
           <span className="size-1.5 rounded-full bg-destructive shrink-0" />
           <span className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">
@@ -39,21 +39,22 @@ export function DisputePanel({
           </span>
         </div>
         {issues.map((issue, i) => (
-          <IssueCard
-            key={issue.id}
-            title={issue.title}
-            status={issue.status}
-            partyClaim={issue.partyClaim}
-            otherPartyClaim={issue.otherPartyClaim}
-            otherPartyName={otherPartyName}
-            claraFinding={issue.claraFinding}
-            index={i}
-          />
+          <div key={issue.id} id={`cd-issue-${issue.id}`}>
+            <IssueCard
+              title={issue.title}
+              status={issue.status}
+              partyClaim={issue.partyClaim}
+              otherPartyClaim={issue.otherPartyClaim}
+              otherPartyName={otherPartyName}
+              claraFinding={issue.claraFinding}
+              index={i}
+            />
+          </div>
         ))}
       </div>
 
       {/* Right — settlement */}
-      <div className="flex flex-col gap-4">
+      <div id="cd-settlement" className="flex flex-col gap-4">
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="size-1.5 rounded-full bg-accent shrink-0" />
