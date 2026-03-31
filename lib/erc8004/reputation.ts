@@ -1,5 +1,8 @@
 import { parseAbi, keccak256, toBytes } from "viem";
 import { ERC8004_ADDRESSES } from "./addresses";
+import { simulateAndWrite } from "@/lib/wallet";
+import { canonicalJSON } from "@/lib/canonical-json";
+import { pinEvidence } from "@/lib/ipfs";
 
 const REPUTATION_ABI = parseAbi([
   "function giveFeedback(uint256 agentId, int128 value, uint8 valueDecimals, string tag1, string tag2, string endpoint, string feedbackURI, bytes32 feedbackHash) external",
@@ -38,10 +41,19 @@ export async function postMediationFeedback(
     },
   };
 
-  const feedbackJson = JSON.stringify(feedbackData);
+  const feedbackJson = canonicalJSON(feedbackData);
   const feedbackHash = keccak256(toBytes(feedbackJson));
 
-  const hash = await walletClient.writeContract({
+  // Pin feedback evidence to IPFS — verifiable by anyone with the CID
+  let feedbackURI = "";
+  try {
+    const { cid } = await pinEvidence(feedbackData, `selantar-feedback-${result.contractId}`);
+    feedbackURI = `ipfs://${cid}`;
+  } catch (e) {
+    console.warn("IPFS pin failed, writing on-chain without URI:", (e as Error).message);
+  }
+
+  const hash = await simulateAndWrite(walletClient, {
     address: ERC8004_ADDRESSES.baseSepolia.reputationRegistry,
     abi: REPUTATION_ABI,
     functionName: "giveFeedback",
@@ -52,7 +64,7 @@ export async function postMediationFeedback(
       "mediationSuccess",
       result.disputeType,
       "https://selantar.vercel.app/mediation",
-      "",
+      feedbackURI,
       feedbackHash,
     ],
   });

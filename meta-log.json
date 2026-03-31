@@ -1,0 +1,21 @@
+[
+  {
+    "sessao": "2026-03-31",
+    "feature": "F01",
+    "resultado": "reprovado",
+    "fase_falhou": "1",
+    "criterios_falhados": [
+      "Regression: callers reputation.ts:50 e validation.ts:39 recebem PinResult (objeto) em vez de string — template literal produz 'ipfs://[object Object]' em runtime. TypeScript nao detecta. Dados garbage escritos on-chain.",
+      "Fase 5: console.log em lib/ipfs.ts:189 — referencia variaveis criadas pelo F01 (pieceCid, copies.length), portanto atribuivel ao F01"
+    ],
+    "detalhes": "pinEvidence() agora retorna Promise<PinResult> mas callers em reputation.ts:50 e validation.ts:39 ainda fazem 'const cid = await pinEvidence(...)' e usam cid como string via template literal. cid e agora {cid: string, filecoinPromise: Promise<...>}, produzindo 'ipfs://[object Object]' em runtime. Task Engineering afirmou que TypeScript pegaria o erro — INCORRETO, template literals aceitam qualquer tipo. Segundo: console.log na linha 189 de lib/ipfs.ts referencia variaveis novas (pieceCid, copies.length) criadas pelo F01, contradizendo a claim de 'pre-existente'.",
+    "severidade": "critico"
+  },
+  {
+    "sessao": "2026-03-31",
+    "feature": "F01",
+    "resultado": "aprovado",
+    "testes_destruicao": "BigInt serialization: copies[].providerId/dataSetId/pieceId convertidos via String() — JSON.stringify seguro. Promise handling: filecoinPromise criada com .catch(() => null) em fire-and-forget — rejection handled. Input malformado: pinEvidence(null, '') produz canonicalJSON(null)='null' — valido. pinEvidence(undefined, '') — canonicalJSON throws, propaga corretamente. Circular reference: JSON.stringify throws — propaga via throw. PinResult serialization: callers destructuram { cid } (string) — PinResult nunca serializado diretamente. Private key: env-only, server-side, nao logada.",
+    "observacoes": "Correcao rapida e cirurgica apos reprovacao: callers adaptados com destructuring, console.log removido. Risco residual aceitavel: walletClient: any nos callers e pre-existente (nao F01). filecoinPromise ignorada nos callers — F03 vai consumi-la."
+  }
+]

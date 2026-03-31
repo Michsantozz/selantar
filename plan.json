@@ -1,0 +1,65 @@
+{
+  "projeto": "selentar-genesys",
+  "descricao": "Deep Filecoin Integration — tornar Filecoin camada verificavel e visivel no pipeline de evidencias",
+  "fonte": "precious-tickling-hellman.md",
+  "valar_version": "v2",
+  "agentes": ["Planner (Claude)", "Task Engineering", "QA Destrutivo"],
+  "features": [
+    {
+      "id": "F01",
+      "descricao": "Fase 1a — lib/ipfs.ts: Mudar return type de pinEvidence() de Promise<string> para Promise<PinResult>. Exportar interfaces FilecoinResult e PinResult. Capturar promise do Filecoin em vez de fire-and-forget. storeOnFilecoin() deve retornar FilecoinResult (com pieceCid, copies, complete) em vez de string|null. Serializar copies[].providerId para string (bigint nao serializa em JSON).",
+      "prioridade": 1,
+      "status": "concluida",
+      "dependencias": []
+    },
+    {
+      "id": "F02",
+      "descricao": "Fase 1b — Criar lib/filecoin.ts (NOVO). 3 funcoes: (1) buildDualURI(ipfsCid, filecoinPieceCid?) retorna 'ipfs://QmX' ou 'ipfs://QmX|filecoin://bafk...', (2) parseDualURI(uri) retorna {ipfsCid?, filecoinPieceCid?}, (3) verifyFilecoinStorage(pieceCid) retorna {status: 'live'|'pending'|'not_found'|'error', providers: [{providerId, isLive}]}. Usa Synapse.create() → synapse.storage.findDataSets(). Lazy singleton do Synapse client. Leitura obrigatoria: docs/synapse-sdk/ (getting-started, storage-operations, synapse-core, pdp-overview).",
+      "prioridade": 2,
+      "status": "pendente",
+      "dependencias": ["F01"]
+    },
+    {
+      "id": "F03",
+      "descricao": "Fase 2 — ERC-8004 return types enriquecidos. (A) lib/erc8004/reputation.ts: postMediationFeedback() retorna Promise<{txHash, ipfsCid, filecoinPromise}> em vez de Promise<string>. Linha 50: destructure pinEvidence(). Linha 51: usar buildDualURI(pinResult.cid). Linha 73: retornar objeto completo. (B) lib/erc8004/validation.ts: registerVerdictAsValidation() mesma mudanca — retorna {txHash, ipfsCid, filecoinPromise}. Linha 39, 40, 61 mesmas alteracoes. Importar buildDualURI de lib/filecoin.ts.",
+      "prioridade": 3,
+      "status": "pendente",
+      "dependencias": ["F02"]
+    },
+    {
+      "id": "F04",
+      "descricao": "Fase 3 — Hash-chain evento FILECOIN_STORED. (A) lib/mediation-log.ts: adicionar 'FILECOIN_STORED' ao union type MediationEventType (linha 44). (B) lib/tools/post-feedback.ts: destructure retorno de postMediationFeedback() em {txHash, ipfsCid, filecoinPromise}. Apos return do tool, filecoinPromise.then emite mediationLog.append(caseId, 'FILECOIN_STORED', {context:'feedback', ipfsCid, pieceCid, copies, complete, linkedTxHash}). Adicionar ipfsCid ao return do tool. (C) lib/tools/register-verdict.ts: mesma mudanca com context:'verdict'.",
+      "prioridade": 4,
+      "status": "pendente",
+      "dependencias": ["F03"]
+    },
+    {
+      "id": "F05",
+      "descricao": "Fase 4a — Criar app/api/verify-evidence/route.ts (NOVO). GET com 2 modos: (1) ?pieceCid=bafk... chama verifyFilecoinStorage() de lib/filecoin.ts, (2) ?caseId=CSX-001 busca eventos FILECOIN_STORED no mediation log e verifica cada um. Response: {pieceCid, status, providers, pdpExplorerUrl:'https://pdp.vxb.ai/calibration', verifiedAt}. Runtime nodejs, maxDuration 120.",
+      "prioridade": 5,
+      "status": "pendente",
+      "dependencias": ["F02", "F04"]
+    },
+    {
+      "id": "F06",
+      "descricao": "Fase 4b — Adicionar circuit breaker filecoin em lib/breakers.ts. Adicionar ao objeto breakers (apos delegation): filecoin: new ServiceBreaker('filecoin', {failureThreshold:3, windowMs:120_000, resetTimeout:90_000, callTimeout:120_000, onStateChange:logStateChange, shouldTrip:isServiceError}). Proteger verify-evidence route com breaker.",
+      "prioridade": 6,
+      "status": "pendente",
+      "dependencias": ["F05"]
+    },
+    {
+      "id": "F07",
+      "descricao": "Fase 5 — UI FilecoinStorageCard no intelligence-panel.tsx. Componente inline no app/mediation/_components/intelligence-panel.tsx abaixo do bloco de Settlement Status. Extrai ipfsCid dos tool outputs de postFeedback e registerVerdict. 4 estados visuais: Uploading (spinner + 'Storing on Filecoin...'), Stored (CheckCircle + PieceCID truncado + copy), Verified (ShieldCheck + 'PDP proofs active' + provider count), Unavailable (Info + 'IPFS only'). Polling useEffect + fetch('/api/verify-evidence?pieceCid=...') cada 30s quando pieceCid disponivel. Link externo PDP Explorer. Design: rounded-lg border border-border bg-card p-3, text-xs. Icone: Database ou HardDrive de lucide-react. Tokens semanticos SEMPRE.",
+      "prioridade": 7,
+      "status": "pendente",
+      "dependencias": ["F05"]
+    },
+    {
+      "id": "F08",
+      "descricao": "Fase 6 — Enriquecer app/api/verify/[caseId]/route.ts existente. Apos verificar hash-chain, filtrar eventos FILECOIN_STORED e incluir na response: {filecoin: {recordCount, records: [{context, pieceCid, complete}]}}. Nao quebrar formato existente — apenas adicionar campo filecoin ao JSON de retorno.",
+      "prioridade": 8,
+      "status": "pendente",
+      "dependencias": ["F04"]
+    }
+  ]
+}
