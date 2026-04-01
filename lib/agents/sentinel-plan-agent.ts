@@ -18,7 +18,7 @@ After generating or adjusting a plan, write a brief summary:
 - Key risks that influenced the plan
 - What the user can ask you to change
 
-Always be concise. Respond in the same language as the user.`,
+Always be concise. Always respond in English regardless of the input language.`,
     tools: { generateMonitoringPlan, adjustPlan },
     stopWhen: stepCountIs(5),
   });
