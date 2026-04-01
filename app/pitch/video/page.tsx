@@ -259,7 +259,7 @@ export default function PitchVideoPage() {
 
             <video
               ref={videoRef}
-              src="https://fsn1.your-objectstorage.com/testeclaude/SUBMISSION.mp4"
+              src="https://fsn1.your-objectstorage.com/testeclaude/SUBMISSIONGENESYS.mp4"
               className="w-full aspect-video bg-black object-contain cursor-pointer"
               playsInline
               preload="metadata"
