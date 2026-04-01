@@ -7,9 +7,10 @@ export async function POST(req: Request) {
   const TG_CHAT_ID = process.env.TG_CHAT_ID;
 
   if (!TG_BOT_TOKEN || !TG_CHAT_ID) {
+    console.warn("[sentinel-notify] TG_BOT_TOKEN or TG_CHAT_ID not configured, skipping notification");
     return NextResponse.json(
-      { error: "Telegram credentials not configured" },
-      { status: 500 }
+      { ok: true, skipped: true, reason: "Telegram credentials not configured" },
+      { status: 200 }
     );
   }
 

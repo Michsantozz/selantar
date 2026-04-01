@@ -37,7 +37,6 @@ export async function POST(req: Request) {
       milestones: { label: string; value: string; deadline: string }[];
     };
 
-    const walletClient = getWalletClient();
     const agentId = BigInt(process.env.SELANTAR_AGENT_ID ?? "2122");
 
     // 1. Hash the contract text — proof of integrity
@@ -62,6 +61,7 @@ export async function POST(req: Request) {
     // 3. Register on ERC-8004 Validation Registry (on-chain)
     let validationTxHash: string;
     try {
+      const walletClient = getWalletClient();
       validationTxHash = await breakers.onchain.call(() =>
         simulateAndWrite(walletClient, {
           address: ERC8004_ADDRESSES.baseSepolia.validationRegistry,
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       console.log("[create-escrow] ERC-8004 validation TX:", validationTxHash);
     } catch (err) {
       const skipped = err instanceof BreakerOpenError;
-      console.warn(skipped ? "[create-escrow] Onchain breaker OPEN, using fallback hash" : "[create-escrow] ERC-8004 registration failed (wallet unfunded?):", err);
+      console.warn(skipped ? "[create-escrow] Onchain breaker OPEN, using fallback hash" : "[create-escrow] ERC-8004 registration failed (wallet config issue):", err);
       // Graceful fallback — return simulated hash so demo still works
       validationTxHash = `0x${Buffer.from(requestHash.slice(2), "hex").toString("hex")}`;
     }
