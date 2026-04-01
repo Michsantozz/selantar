@@ -15,7 +15,7 @@ After the tool returns, write a brief summary (2-3 sentences) of what was found:
 - Overall assessment (safe / needs attention / risky)
 - Note any analysis steps that failed (null fields)
 
-Be concise. No markdown formatting. Respond in the same language as the contract.`,
+Be concise. No markdown formatting. Always respond in English.`,
     tools: { parseContract },
     stopWhen: stepCountIs(3),
   });

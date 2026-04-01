@@ -4,28 +4,28 @@ import { CalendarIcon, MapPinIcon, AlertTriangleIcon, ScaleIcon, BanknoteIcon } 
 import type { ContractHeader as ContractHeaderData } from "@/lib/schemas/contract-parse";
 
 const DEFAULT_DATA: ContractHeaderData = {
-  subject: "Development of a medical scheduling system with CRM module, WhatsApp integration and administrative panel for patient management at Suasuna Clinic.",
+  subject: "Development of a patient management CRM system with scheduling module, electronic health records, and billing for Suasuna Clinic.",
   parties: [
     {
       role: "Client",
-      name: "Suasuna Clinic Ltd.",
-      identifier: "12.345.678/0001-90",
-      representative: "Dr. Ernani Suassuna",
+      name: "Suasuna Clinic Ltd",
+      identifier: "EIN 12-3456789",
+      representative: "Dr. Ernani Suasuna, Clinical Director",
       city: "Recife, PE",
-      initials: "CS",
+      initials: "SC",
     },
     {
       role: "Developer",
-      name: "DevStudio Technology ME",
-      identifier: "98.765.432/0001-11",
-      representative: "Matheus Oliveira",
-      city: "São Paulo, SP",
-      initials: "DV",
+      name: "DevStudio Technology LLC",
+      identifier: "EIN 98-7654321",
+      representative: "Michael Santos, Technical Director",
+      city: "Recife, PE",
+      initials: "DT",
     },
   ],
-  payment: { total: "R$ 15.000", terms: "4 payments per milestone" },
-  timeline: { start: "03/01/2026", end: "05/10/2026", durationDays: 70 },
-  jurisdiction: "Recife – PE",
+  payment: { total: "$15,000", terms: "4 payments per milestone" },
+  timeline: { start: "2026-01-15", end: "2026-03-26", durationDays: 70 },
+  jurisdiction: "Courts of Recife, PE, Brazil",
 };
 
 const DEFAULT_RISKS_COUNT = 2;

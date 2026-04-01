@@ -1,49 +1,49 @@
-export const DEMO_CONTRACT = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE DESENVOLVIMENTO DE SOFTWARE
+export const DEMO_CONTRACT = `SOFTWARE DEVELOPMENT SERVICES AGREEMENT
 
-CONTRATANTE: Clínica Suasuna Ltda, CNPJ 12.345.678/0001-90
-Representada por: Dr. Ernani Suasuna, Diretor Clínico
-Endereço: Rua do Espinheiro 423, Recife-PE
+CLIENT: Suasuna Clinic Ltd, EIN 12-3456789
+Represented by: Dr. Ernani Suasuna, Clinical Director
+Address: 423 Espinheiro Street, Recife, PE, Brazil
 
-CONTRATADA: DevStudio Ltda, CNPJ 98.765.432/0001-10
-Representada por: Michael Santos, Diretor Técnico
-Endereço: Av. Boa Viagem 1200, Recife-PE
+DEVELOPER: DevStudio Technology LLC, EIN 98-7654321
+Represented by: Michael Santos, Technical Director
+Address: 1200 Boa Viagem Ave, Recife, PE, Brazil
 
-OBJETO: Desenvolvimento de sistema CRM para gestão de pacientes, incluindo módulo de agendamento, prontuário eletrônico e faturamento. O sistema será desenvolvido em tecnologia web (Next.js + PostgreSQL) com deploy em cloud.
+SCOPE: Development of a patient management CRM system, including scheduling module, electronic health records, and billing. The system will be built using web technologies (Next.js + PostgreSQL) with cloud deployment.
 
-CLÁUSULA 1 - DO VALOR E PAGAMENTO
-1.1 O valor total do contrato é de R$ 15.000,00 (quinze mil reais), dividido em 4 parcelas vinculadas à entrega dos milestones descritos na Cláusula 3.
-1.2 O pagamento será realizado via transferência bancária em até 5 dias úteis após a aprovação de cada milestone pela CONTRATANTE.
+CLAUSE 1 - FEES AND PAYMENT
+1.1 The total contract value is $15,000 (fifteen thousand dollars), divided into 4 installments tied to the delivery of milestones described in Clause 3.
+1.2 Payment shall be made via bank transfer within 5 business days after approval of each milestone by the CLIENT.
 
-CLÁUSULA 2 - DO PRAZO
-2.1 O prazo total para execução é de 70 (setenta) dias corridos, com início em 15/01/2026 e término previsto para 26/03/2026.
-2.2 Atrasos superiores a 15 dias úteis por parte da CONTRATADA incorrerão em multa de 2% ao mês sobre o valor restante, sem limite máximo.
+CLAUSE 2 - TIMELINE
+2.1 The total execution period is 70 (seventy) calendar days, starting on 01/15/2026 and ending on 03/26/2026.
+2.2 Delays exceeding 15 business days by the DEVELOPER shall incur a penalty of 2% per month on the remaining balance, with no maximum cap.
 
-CLÁUSULA 3 - DOS MILESTONES
-3.1 Milestone 1 - Design System e Protótipos: Entrega de wireframes, design system e protótipos navegáveis. Valor: R$ 3.000,00. Prazo: 15 dias.
-3.2 Milestone 2 - Frontend Development: Implementação das telas e componentes. Valor: R$ 4.500,00. Prazo: 20 dias.
-3.3 Milestone 3 - Backend e API: Desenvolvimento da API, banco de dados e integrações. Valor: R$ 5.000,00. Prazo: 20 dias.
-3.4 Milestone 4 - Deploy e Launch: Configuração de infraestrutura, deploy em produção e treinamento. Valor: R$ 2.500,00. Prazo: 15 dias.
+CLAUSE 3 - MILESTONES
+3.1 Milestone 1 - Design System & Prototypes: Delivery of wireframes, design system, and navigable prototypes. Value: $3,000. Deadline: 15 days.
+3.2 Milestone 2 - Frontend Development: Implementation of screens and components. Value: $4,500. Deadline: 20 days.
+3.3 Milestone 3 - Backend & API: Development of API, database, and integrations. Value: $5,000. Deadline: 20 days.
+3.4 Milestone 4 - Deploy & Launch: Infrastructure setup, production deployment, and training. Value: $2,500. Deadline: 15 days.
 
-CLÁUSULA 4 - DA PROPRIEDADE INTELECTUAL
-4.1 Todo o código-fonte desenvolvido será de propriedade exclusiva da CONTRATANTE após o pagamento integral.
-4.2 A CONTRATADA poderá utilizar componentes genéricos e bibliotecas open-source em outros projetos.
+CLAUSE 4 - INTELLECTUAL PROPERTY
+4.1 All source code developed shall be the exclusive property of the CLIENT after full payment.
+4.2 The DEVELOPER may use generic components and open-source libraries in other projects.
 
-CLÁUSULA 5 - DA CONFIDENCIALIDADE
-5.1 Ambas as partes comprometem-se a manter sigilo sobre informações confidenciais pelo prazo indeterminado, sem definir o que constitui "informação confidencial".
+CLAUSE 5 - CONFIDENTIALITY
+5.1 Both parties agree to maintain confidentiality of all information exchanged for an indefinite period, without defining what constitutes "confidential information".
 
-CLÁUSULA 6 - DA RESCISÃO
-6.1 A CONTRATANTE poderá rescindir o contrato a qualquer momento sem ônus, ficando obrigada apenas ao pagamento dos milestones já entregues.
-6.2 A CONTRATADA não poderá rescindir o contrato sem justa causa.
+CLAUSE 6 - TERMINATION
+6.1 The CLIENT may terminate the contract at any time without penalty, being required only to pay for milestones already delivered.
+6.2 The DEVELOPER may not terminate the contract without just cause.
 
-CLÁUSULA 7 - DO FORO
-7.1 Fica eleito o Foro da Comarca de Recife-PE para dirimir quaisquer dúvidas oriundas deste contrato.
+CLAUSE 7 - JURISDICTION
+7.1 The courts of Recife, PE, Brazil shall have exclusive jurisdiction over any disputes arising from this contract.
 
-Recife, 10 de janeiro de 2026.
+Recife, January 10, 2026.
 
 ___________________________
 Dr. Ernani Suasuna
-Clínica Suasuna Ltda
+Suasuna Clinic Ltd
 
 ___________________________
 Michael Santos
-DevStudio Ltda`;
+DevStudio Technology LLC`;

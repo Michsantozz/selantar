@@ -26,13 +26,13 @@ export interface ClassificationResult {
 }
 
 export const STRATEGY_PRESETS: Record<DisputeCategory, DisputeStrategy> = {
-  LATE_DELIVERY:      { tone: "conciliatory", maxRounds: 3, confidenceThreshold: 0.65, proposalTemplate: "Atraso documentado. Proposta: desconto proporcional + prazo revisado." },
-  NON_PAYMENT:        { tone: "assertive",    maxRounds: 2, confidenceThreshold: 0.80, proposalTemplate: "Pagamento em atraso. Proposta: valor integral + juros de mora." },
-  BAD_FAITH:          { tone: "assertive",    maxRounds: 2, confidenceThreshold: 0.85, proposalTemplate: "Evidência de má-fé. Proposta: ressarcimento integral + compensação." },
-  CONTRACT_AMBIGUITY: { tone: "conciliatory", maxRounds: 4, confidenceThreshold: 0.55, proposalTemplate: "Cláusula ambígua. Proposta: interpretação mais favorável ao devedor." },
-  FORCE_MAJEURE:      { tone: "conciliatory", maxRounds: 3, confidenceThreshold: 0.60, proposalTemplate: "Evento externo documentado. Proposta: prorrogação sem penalidade." },
-  SCOPE_CREEP:        { tone: "conciliatory", maxRounds: 4, confidenceThreshold: 0.60, proposalTemplate: "Escopo expandido sem aditivo. Proposta: pagamento proporcional ao entregue." },
-  QUALITY_DISPUTE:    { tone: "assertive",    maxRounds: 3, confidenceThreshold: 0.70, proposalTemplate: "Entrega abaixo do especificado. Proposta: retrabalho ou desconto." },
+  LATE_DELIVERY:      { tone: "conciliatory", maxRounds: 3, confidenceThreshold: 0.65, proposalTemplate: "Documented delay. Proposal: proportional discount + revised deadline." },
+  NON_PAYMENT:        { tone: "assertive",    maxRounds: 2, confidenceThreshold: 0.80, proposalTemplate: "Overdue payment. Proposal: full amount + late interest." },
+  BAD_FAITH:          { tone: "assertive",    maxRounds: 2, confidenceThreshold: 0.85, proposalTemplate: "Evidence of bad faith. Proposal: full reimbursement + compensation." },
+  CONTRACT_AMBIGUITY: { tone: "conciliatory", maxRounds: 4, confidenceThreshold: 0.55, proposalTemplate: "Ambiguous clause. Proposal: interpretation most favorable to the debtor." },
+  FORCE_MAJEURE:      { tone: "conciliatory", maxRounds: 3, confidenceThreshold: 0.60, proposalTemplate: "Documented external event. Proposal: extension without penalty." },
+  SCOPE_CREEP:        { tone: "conciliatory", maxRounds: 4, confidenceThreshold: 0.60, proposalTemplate: "Scope expanded without amendment. Proposal: proportional payment for delivered work." },
+  QUALITY_DISPUTE:    { tone: "assertive",    maxRounds: 3, confidenceThreshold: 0.70, proposalTemplate: "Delivery below specification. Proposal: rework or discount." },
 };
 
 export async function classifyDispute(

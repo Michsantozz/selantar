@@ -28,7 +28,7 @@ Extract: all parties (name, role, CNPJ/CPF, representative, city, initials for a
 payment info (total value as formatted string e.g. "R$ 15.000,00", terms),
 timeline (start/end as ISO dates, duration in days), and jurisdiction.
 Generate unique 2-letter initials for each party (use first letters of name).
-Respond in the same language as the contract.`,
+Always respond in English.`,
     prompt: contractText,
   });
   if (!output)
@@ -48,7 +48,7 @@ export async function analyzeRisks(
 For each risk: cite the exact clause number, give it a title, explain the risk,
 quote the original text, classify severity (high/medium/low), and suggest an improvement.
 Generate a unique ID per risk (e.g. "risk-1", "risk-2").
-Find at least 3 risks. Respond in the same language as the contract.`,
+Find at least 3 risks. Always respond in English.`,
     prompt: contractText,
   });
   if (!output)
@@ -70,7 +70,7 @@ or thousand separators (e.g. 15000 not "R$ 15.000,00" or "15.000"),
 deadline as ISO date, and deliverables description.
 Generate unique IDs (e.g. "ms-1", "ms-2").
 If the contract doesn't have explicit milestones, infer them from scope/timeline.
-Respond in the same language as the contract.`,
+Always respond in English.`,
     prompt: contractText,
   });
   if (!output)
