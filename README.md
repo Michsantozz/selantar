@@ -196,7 +196,7 @@ This is intent-based delegation: the parties delegate the *intent* "resolve my d
 1. Both parties have **deployed MetaMask Smart Accounts** on Base Sepolia (Hybrid implementation)
 2. When Clara calls `executeSettlement`, the client's smart account signs a **scoped delegation** — limited to native ETH transfers up to a fixed amount
 3. The agent sends a **UserOperation via Pimlico bundler** (ERC-4337) — the smart account is `msg.sender`, not the EOA
-4. The **DelegationManager** verifies the signature, checks the `NativeTokenTransferAmountEnforcer` caveat, and executes the transfer
+4. The **DelegationManager** verifies the signature, checks the scoped caveat, and executes the transfer
 5. ETH moves from the client's smart account to the agent's smart account — verified on-chain
 6. If delegation fails for any reason, the system cascades through 4 fallback paths automatically
 
@@ -217,7 +217,7 @@ Every TX is real. Click any link and verify.
 | Without Delegations | With Delegations |
 |---------------------|-----------------|
 | Agent moves its own funds as "proof" | Agent moves the party's funds with permission |
-| No spending limits | Scoped by NativeTokenTransferAmountEnforcer |
+| No spending limits | Scoped by delegation caveats (amount + recipient) |
 | Trust the agent's wallet | Trust the delegation's cryptographic scope |
 | Settlement is symbolic | Settlement is real fund movement — balances change |
 | No verifiable authority chain | Delegation → Bundler → DelegationManager → TX |
@@ -302,13 +302,13 @@ Built in 7 days. Production-grade from day one.
 
 | Layer | Scale |
 |-------|-------|
-| API Routes | 17 endpoints — intake, mediation, contract parsing, settlement, delegation, oracle, MCP, x402 |
+| API Routes | 22 endpoints — intake, mediation, contract parsing, settlement, delegation, oracle, MCP, x402, ENS, sentinel, replay, verification |
 | Agent Tools | 7 tools across 2 ToolLoopAgents — contract parsing (5 sub-agents) + mediation (6 on-chain tools) |
-| Lib Modules | 50 files — state machine, event sourcing, circuit breaker, outbox pattern, scoring, replay, contract parser, IPFS pinning, canonical hashing |
-| Frontend Routes | 37 pages — landing, mediation, forge, contract lifecycle, admin, pitch, docs |
-| Components | 170+ — mediation chat, settlement modal, ReactFlow, shadcn/ui, Web3, Magic UI |
-| Database | PostgreSQL + Drizzle ORM — 5 tables with event sourcing + hash-chain integrity |
-| Scripts | 12 — CLI, ERC-8004 registration, QA, screenshots, integration tests |
+| Lib Modules | 51 files — state machine, event sourcing, circuit breaker, outbox pattern, scoring, replay, contract parser, IPFS pinning, canonical hashing |
+| Frontend Routes | 23 pages — landing, mediation, forge, contract lifecycle, dashboard, pitch, docs |
+| Components | 168 — mediation chat, settlement modal, ReactFlow, shadcn/ui, Web3, ai-elements |
+| Database | PostgreSQL + Drizzle ORM — 6 tables with event sourcing + hash-chain integrity |
+| Scripts | 21 — CLI, ERC-8004 registration, QA, screenshots, integration tests, Filecoin, validation |
 
 **Infrastructure highlights:**
 
@@ -372,13 +372,15 @@ The system compounds intelligence over time. A Selantar instance with 100 mediat
 
 ## Replay Engine — Audit Any Decision
 
-Every mediation decision Clara makes can be **replayed, challenged, and compared.**
+Dr. Suasuna got an 80/20 split. The developer thinks it should have been 70/30. In the old world, he'd hire a lawyer, spend $5,000, and wait 6 months to challenge a verdict no one can reconstruct.
 
-The replay engine re-runs a completed case through the AI with optional overrides (different model, temperature, system prompt) and automatically detects divergences from the original outcome.
+**In Selantar, he runs one command:**
 
 ```bash
-npx tsx scripts/cli.ts cases replay <caseId>
+npx tsx scripts/cli.ts cases replay CSX-2026-A7F3B2C1
 ```
+
+The replay engine re-runs the entire mediation through the AI — same evidence, same contract, same conversation history — and automatically detects every point where the outcome diverges from the original. No transactions execute. No state changes. The hash-chain stays untouched. It's a pure thought experiment with receipts.
 
 **What it produces:**
 
@@ -391,16 +393,16 @@ npx tsx scripts/cli.ts cases replay <caseId>
 | `amount_changed` | Did the settlement amount change? |
 | `reasoning_divergences` | List of specific differences detected |
 
-**Why this matters:**
+The developer replays with `temperature=0`. Same verdict. He replays with a different model. Same split. He changes the system prompt to remove the Empath's emotional reading. Now the split shifts to 75/25 — the AI without empathy gave the developer less, not more, because it couldn't read that the clinic's own staff caused the delay.
+
+**The replay didn't just prove the verdict was fair — it proved that emotional intelligence made it *more* fair.**
 
 - **Accountability** — Any party can challenge a verdict by replaying it
 - **Consistency audit** — Run the same case 10 times with temperature=0 to verify determinism
 - **Model comparison** — Replay with a different model to see if the verdict holds
 - **Bias detection** — Change the system prompt and see if the outcome shifts
 
-Every replay is a dry-run — no transactions execute, no state changes. The original hash-chain stays untouched.
-
-No other autonomous agent in this hackathon offers verifiable decision replay with automated divergence detection.
+Every human judge can be questioned. Every AI verdict can be replayed. The difference is that replaying Clara takes 30 seconds, costs nothing, and produces a cryptographic diff — not a 40-page appeal.
 
 ---
 
@@ -416,7 +418,7 @@ Contract Creation:
     → ContractID (CSX-YYYY-XXXXXXXX) + TX hash → contract goes live
 
 Interactive Mediation (UI):
-  Pick a case → Clara mediates live via ToolLoopAgent (Gemini 2.0 Flash)
+  Pick a case → Clara mediates live via ToolLoopAgent (GPT-5.4)
     → classifyCase → analyzeEvidence → proposeSettlement
     → executeSettlement (4 paths + fallback)
     → postFeedback → registerVerdict
@@ -445,7 +447,7 @@ All transactions are live on Base Sepolia:
 - **Contract registered** (integrity hash on escrow creation): [0xcac8dd72...](https://sepolia.basescan.org/tx/0xcac8dd72bc85ab242e09920f0a72fff8fe81e2f2e9abf1b22e17f6ec49e246ea)
 
 **Mediation (dispute resolution):**
-- **Settlement TX** (Clínica Suasuna case): [0xb5d338a5...](https://sepolia.basescan.org/tx/0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86)
+- **Settlement TX** (Clínica Suasuna case — ERC-7710 delegation, real ETH transferred): [0xd6ad6b07...](https://sepolia.basescan.org/tx/0xd6ad6b07722b4df8e5b44b3c3b2f7a190a6c15ddcea5440623f10a367e32ba6f)
 - **Reputation feedback** (score: 90/100): [0x1b16a2e1...](https://sepolia.basescan.org/tx/0x1b16a2e1ca162280eb3440cda9cbcfcc62671a1eea71e39c62f55768543a6a6d)
 - **Verdict validation**: [0xacc46a6a...](https://sepolia.basescan.org/tx/0xacc46a6aa3c563af6700e590733cd29e3e6e067dd5ee4403316d4cf4d4fda9ee)
 
@@ -501,7 +503,7 @@ Full agent decision log: [`/api/agent-log`](https://selantar.vercel.app/api/agen
 |-------|-----------|
 | Framework | Next.js 16 (App Router) + React 19 |
 | AI | Vercel AI SDK v6 — `ToolLoopAgent`, `generateText`, `useChat`, `DefaultChatTransport` |
-| Models | Claude Sonnet 4.6 (contract parsing, advisory chains) · Gemini 2.0 Flash (mediation, parser orchestrator) · Gemini 3.1 Pro (client agent) · GPT-5.4-mini (contract audit) |
+| Models | GPT-5.4 (mediation, parser orchestrator, client agent) · Claude Sonnet 4.6 (advisory chains, scoring) · GPT-5.4-mini (contract audit, x402 mediation) |
 | Payments | x402 protocol — `x402-next`, `@coinbase/x402` (USDC on Base Sepolia) |
 | On-chain | viem + Base Sepolia (chainId: 84532) |
 | Smart Accounts | MetaMask Smart Accounts Kit v0.3.0 — ERC-7710 + ERC-7715 scoped delegations |
@@ -510,9 +512,9 @@ Full agent decision log: [`/api/agent-log`](https://selantar.vercel.app/api/agen
 | Filecoin | Synapse SDK — PDP-verified evidence storage on Calibration testnet |
 | Auth | Privy (email + wallet + Google) |
 | Database | PostgreSQL + Drizzle ORM — event sourcing + hash-chain integrity |
-| ENS | Mainnet reverse lookup with PostgreSQL cache (6h TTL), retry with backoff, 30 req/min rate limit |
-| Integration | MCP server (5 tools, A2A) · Evolution API (WhatsApp) · GitHub API |
-| UI | Tailwind CSS v4 · shadcn/ui (New York) · Framer Motion · ReactFlow · Magic UI |
+| ENS | Mainnet reverse lookup with PostgreSQL cache (6h TTL), retry with backoff |
+| Integration | MCP server (5 tools, A2A) · GitHub API |
+| UI | Tailwind CSS v4 · shadcn/ui (New York) · Framer Motion · ReactFlow · ai-elements |
 | Harness | Claude Code |
 
 ---
@@ -544,7 +546,7 @@ Open [selantar.vercel.app/mediation](https://selantar.vercel.app/mediation), pic
 | Agent identity | [BaseScan](https://sepolia.basescan.org/tx/0xd96cad52e144d98de68ce97aa8f9f3619302302c95feb8546a28b64e3fc72cf4) |
 | Reputation score (90/100) | [BaseScan](https://sepolia.basescan.org/tx/0x1b16a2e1ca162280eb3440cda9cbcfcc62671a1eea71e39c62f55768543a6a6d) |
 | Verdict registered | [BaseScan](https://sepolia.basescan.org/tx/0xacc46a6aa3c563af6700e590733cd29e3e6e067dd5ee4403316d4cf4d4fda9ee) |
-| Settlement executed | [BaseScan](https://sepolia.basescan.org/tx/0xb5d338a522e9e4c7a35d527a421906c840261266dcddd8f5232737fbad301e86) |
+| Settlement executed (ERC-7710 delegation) | [BaseScan](https://sepolia.basescan.org/tx/0xd6ad6b07722b4df8e5b44b3c3b2f7a190a6c15ddcea5440623f10a367e32ba6f) |
 
 Every TX is real. Every receipt is permanent. Click any link and verify.
 
@@ -589,7 +591,7 @@ npx tsx scripts/cli.ts breaker reset           # manually reset circuit breaker 
 
 Full interactive documentation: [selantar.vercel.app/docs](https://selantar.vercel.app/docs)
 
-All 16 endpoints documented with schemas, examples, and authentication details.
+All 22 endpoints documented with schemas, examples, and authentication details.
 
 ### MCP Server — Agent-to-Agent Integration
 
@@ -626,9 +628,8 @@ npm run dev
 **Required env vars:**
 
 ```bash
-ANTHROPIC_API_KEY=              # Claude Sonnet 4.6 (contract parsing sub-agents, advisory chains)
-GOOGLE_GENERATIVE_AI_API_KEY=   # Gemini (mediation + parser orchestrator + client agent)
-OPENROUTER_API_KEY=             # GPT-5.4-mini (contract audit)
+ANTHROPIC_API_KEY=              # Claude Sonnet 4.6 (advisory chains, scoring)
+OPENAI_API_KEY=                 # GPT-5.4 (mediation, parser, client agent) + GPT-5.4-mini (contract audit, x402)
 AGENT_PRIVATE_KEY=              # wallet that holds Agent NFT #2122
 CLIENT_PRIVATE_KEY=             # second wallet for ERC-8004 feedback
 SELANTAR_AGENT_ID=2122          # ERC-8004 agent ID

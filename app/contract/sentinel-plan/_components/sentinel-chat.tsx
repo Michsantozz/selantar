@@ -1,15 +1,27 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { isToolUIPart } from "ai";
 import type { UIMessage } from "ai";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 import {
   ShieldCheckIcon,
   SparklesIcon,
   XIcon,
   SendIcon,
+  FileTextIcon,
+  ShieldAlertIcon,
+  FlagIcon,
+  ZapIcon,
+  CheckCircleIcon,
 } from "lucide-react";
-import { ACCENT, MUTED } from "./sentinel-constants";
+
+const SENTINEL_STEPS = [
+  { icon: FileTextIcon,    label: "Reading contract structure" },
+  { icon: ShieldAlertIcon, label: "Evaluating risks & clauses" },
+  { icon: FlagIcon,        label: "Mapping milestones & deadlines" },
+  { icon: ZapIcon,         label: "Generating monitoring actions" },
+  { icon: CheckCircleIcon, label: "Plan ready" },
+];
 
 interface SentinelChatProps {
   messages: UIMessage[];
@@ -27,6 +39,22 @@ export function SentinelChat({
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const isStreaming = status === "streaming" || status === "submitted";
+
+  // Animate Chain of Thought steps during streaming
+  const [visibleStep, setVisibleStep] = useState(0);
+  const stepRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    if (isStreaming) {
+      setVisibleStep(0);
+      stepRef.current = setInterval(() => {
+        setVisibleStep(s => Math.min(s + 1, SENTINEL_STEPS.length - 2));
+      }, 4500);
+    } else {
+      if (stepRef.current) clearInterval(stepRef.current);
+      if (status === "ready") setVisibleStep(SENTINEL_STEPS.length - 1);
+    }
+    return () => { if (stepRef.current) clearInterval(stepRef.current); };
+  }, [isStreaming, status]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -49,14 +77,8 @@ export function SentinelChat({
     >
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-        <div
-          className="flex size-8 items-center justify-center rounded-lg"
-          style={{
-            background: `oklch(0.7 0.18 50 / 0.12)`,
-            border: `1px solid oklch(0.7 0.18 50 / 0.25)`,
-          }}
-        >
-          <ShieldCheckIcon className="size-4" style={{ color: ACCENT }} />
+        <div className="flex size-8 items-center justify-center rounded-lg border border-border bg-muted/20">
+          <ShieldCheckIcon className="size-4 text-foreground/70" />
         </div>
         <div className="flex-1">
           <p className="text-[13px] font-semibold text-foreground">
@@ -74,29 +96,87 @@ export function SentinelChat({
         </button>
       </div>
 
+      {/* Progress bar — thin amber line below header while streaming */}
+      <div className="shrink-0 h-px w-full bg-border overflow-hidden">
+        <div
+          className="h-full bg-amber-400/70 transition-all duration-700 ease-out"
+          style={{
+            width: isStreaming
+              ? `${Math.round(((visibleStep + 1) / SENTINEL_STEPS.length) * 100)}%`
+              : visibleStep === SENTINEL_STEPS.length - 1 ? "100%" : "0%",
+          }}
+        />
+      </div>
+
       {/* Messages */}
       <div
         ref={scrollRef}
         className="flex-1 min-h-0 overflow-y-auto px-4 py-4 flex flex-col gap-3"
       >
-        {messages.map((msg) => {
+        {/* Chain of Thought — timeline, steps appear one by one */}
+        {(isStreaming || visibleStep === SENTINEL_STEPS.length - 1) && messages.some(m => m.role === "assistant") && (
+          <div className="flex flex-col py-2 px-1">
+            {SENTINEL_STEPS.slice(0, visibleStep + 1).map((step, i) => {
+              const Icon = step.icon;
+              const isDone = i < visibleStep;
+              const isActive = i === visibleStep;
+              const isLast = i === SENTINEL_STEPS.slice(0, visibleStep + 1).length - 1;
+              return (
+                <div key={i} className="flex gap-3 animate-in fade-in-0 slide-in-from-top-1 duration-300">
+                  {/* Icon + connector line */}
+                  <div className="flex flex-col items-center">
+                    <div className={`size-5 rounded-full flex items-center justify-center shrink-0 border transition-colors duration-300 ${
+                      isDone ? "border-border bg-transparent" :
+                      isActive ? "border-amber-400/40 bg-amber-400/5" :
+                      "border-border/40 bg-transparent"
+                    }`}>
+                      <Icon className={`size-2.5 transition-colors duration-300 ${
+                        isDone ? "text-muted-foreground/30" :
+                        isActive ? "text-amber-400" :
+                        "text-muted-foreground/40"
+                      }`} />
+                    </div>
+                    {!isLast && (
+                      <div className="w-px bg-border/50 flex-1 mt-1 mb-1" style={{ minHeight: 20 }} />
+                    )}
+                  </div>
+                  {/* Label */}
+                  <div className={`flex items-start ${isLast ? "pb-0" : "pb-4"}`}>
+                    {isActive && isStreaming ? (
+                      <Shimmer
+                        as="span"
+                        duration={1.8}
+                        spread={3}
+                        className="text-[12px] leading-snug pt-0.5 [--color-muted-foreground:oklch(0.88_0.18_60)]"
+                      >
+                        {step.label}
+                      </Shimmer>
+                    ) : (
+                      <span className={`text-[12px] leading-snug pt-0.5 transition-colors duration-300 ${
+                        isDone ? "text-muted-foreground/35" : "text-foreground/80"
+                      }`}>
+                        {step.label}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {messages.map((msg, msgIdx) => {
+          // Hide the first user message — it's the raw JSON payload sent to the API
+          if (msg.role === "user" && msgIdx === 0) return null;
+
           if (msg.role === "user") {
             return (
               <div key={msg.id} className="flex justify-end">
-                <div
-                  className="rounded-xl rounded-tr-sm px-3 py-2 max-w-[85%]"
-                  style={{
-                    background: `oklch(0.7 0.18 50 / 0.08)`,
-                    border: `1px solid oklch(0.7 0.18 50 / 0.15)`,
-                  }}
-                >
+                <div className="rounded-xl rounded-tr-sm border border-border bg-muted/10 px-3 py-2 max-w-[85%]">
                   {msg.parts
                     .filter((p) => p.type === "text")
                     .map((p, i) => (
-                      <p
-                        key={i}
-                        className="text-[11px] leading-relaxed text-foreground/75"
-                      >
+                      <p key={i} className="text-[11px] leading-relaxed text-foreground/75">
                         {p.text}
                       </p>
                     ))}
@@ -107,74 +187,19 @@ export function SentinelChat({
 
           if (msg.role === "assistant") {
             const textParts = msg.parts.filter((p) => p.type === "text");
-            const toolParts = msg.parts.filter((p) => isToolUIPart(p));
-
+            if (textParts.length === 0) return null;
             return (
-              <div key={msg.id} className="flex flex-col gap-2">
-                {/* Tool indicators */}
-                {toolParts.map((part) => {
-                  if (!isToolUIPart(part)) return null;
-                  const isLoading =
-                    part.state === "input-streaming" ||
-                    part.state === "input-available";
-                  return (
-                    <div
-                      key={part.toolCallId}
-                      className="flex items-center gap-2 rounded-lg px-3 py-1.5"
-                      style={{
-                        background: `oklch(0.7 0.18 50 / 0.04)`,
-                        border: `1px solid oklch(0.7 0.18 50 / 0.1)`,
-                      }}
-                    >
-                      <div
-                        className="size-1.5 rounded-full"
-                        style={{
-                          background: isLoading ? ACCENT : "#22c55e",
-                          animation: isLoading
-                            ? "sp-pulse 1s ease-in-out infinite"
-                            : undefined,
-                        }}
-                      />
-                      <span className="text-[9px] font-medium text-muted-foreground/50">
-                        {isLoading ? "Processing..." : "Done"}
-                      </span>
-                    </div>
-                  );
-                })}
-
-                {/* Text content */}
-                {textParts.length > 0 && (
-                  <div className="flex gap-2.5">
-                    <div
-                      className="flex size-6 shrink-0 items-center justify-center rounded-full mt-0.5"
-                      style={{
-                        background: `oklch(0.7 0.18 50 / 0.12)`,
-                        border: `1px solid oklch(0.7 0.18 50 / 0.2)`,
-                      }}
-                    >
-                      <SparklesIcon
-                        className="size-2.5"
-                        style={{ color: ACCENT }}
-                      />
-                    </div>
-                    <div
-                      className="rounded-xl rounded-tl-sm border px-3 py-2 max-w-[85%]"
-                      style={{
-                        borderColor: `${MUTED}30`,
-                        background: `${MUTED}08`,
-                      }}
-                    >
-                      {textParts.map((p, i) => (
-                        <p
-                          key={i}
-                          className="text-[11px] leading-relaxed text-foreground/75"
-                        >
-                          {p.text}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              <div key={msg.id} className="flex gap-2.5">
+                <div className="flex size-6 shrink-0 items-center justify-center rounded-full mt-0.5 border border-border bg-muted/20">
+                  <SparklesIcon className="size-2.5 text-muted-foreground/60" />
+                </div>
+                <div className="rounded-xl rounded-tl-sm border border-border bg-muted/5 px-3 py-2 max-w-[85%]">
+                  {textParts.map((p, i) => (
+                    <p key={i} className="text-[11px] leading-relaxed text-foreground/75">
+                      {p.text}
+                    </p>
+                  ))}
+                </div>
               </div>
             );
           }
@@ -185,10 +210,7 @@ export function SentinelChat({
 
       {/* Input */}
       <div className="shrink-0 border-t border-border px-3 py-3">
-        <div
-          className="flex items-center gap-2 rounded-xl border px-3 py-2"
-          style={{ borderColor: `${MUTED}40`, background: `${MUTED}06` }}
-        >
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/5 px-3 py-2">
           <input
             type="text"
             placeholder="Talk to Sentinel..."
@@ -206,13 +228,9 @@ export function SentinelChat({
           <button
             onClick={handleSend}
             disabled={!input.trim() || isStreaming}
-            className="flex size-7 items-center justify-center rounded-lg transition-all hover:brightness-125 disabled:opacity-30"
-            style={{ background: ACCENT }}
+            className="flex size-7 items-center justify-center rounded-lg bg-foreground/10 transition-all hover:bg-foreground/15 disabled:opacity-30"
           >
-            <SendIcon
-              className="size-3"
-              style={{ color: "oklch(0.08 0.01 50)" }}
-            />
+            <SendIcon className="size-3 text-foreground/70" />
           </button>
         </div>
       </div>

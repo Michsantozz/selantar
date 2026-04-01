@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Clock,
   ShieldOff,
+  ExternalLink,
 } from "lucide-react";
 
 import { BlurFade } from "@/components/ui/blur-fade";
@@ -257,8 +258,8 @@ function ProblemSection() {
               <BorderBeam
                 size={200}
                 duration={8}
-                colorFrom="oklch(0.72 0.17 55)"
-                colorTo="oklch(0.62 0.22 25)"
+                colorFrom="oklch(0.68 0.18 55)"
+                colorTo="oklch(0.60 0.22 30)"
                 borderWidth={1}
               />
               <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
@@ -655,74 +656,148 @@ function ERC8004Section() {
         className="text-primary/[0.06] [mask-image:radial-gradient(600px_circle_at_30%_50%,white,transparent)]"
       />
       <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
-        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <BlurFade delay={0.1} inView>
-              <SectionLabel label="On-chain trust" />
-            </BlurFade>
-            <BlurFade delay={0.2} inView>
-              <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
-                Credit is never
-                <br />
+        {/* Header */}
+        <div className="max-w-2xl">
+          <BlurFade delay={0.1} inView>
+            <SectionLabel label="On-chain trust" />
+          </BlurFade>
+          <BlurFade delay={0.2} inView>
+            <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
+              Credit is never
+              <br />
+              <span className="font-display italic text-primary">
                 a cold number.
-              </h2>
-            </BlurFade>
-            <BlurFade delay={0.3} inView>
-              <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground">
-                We look past statistics to see the human behind the deal.
-                Every mediation builds an on-chain bureau. Not just
-                payments, but professional truth. This truth unlocks a new economy.
-              </p>
-            </BlurFade>
-          </div>
+              </span>
+            </h2>
+          </BlurFade>
+          <BlurFade delay={0.3} inView>
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
+              Every mediation builds an on-chain bureau on Base — not just
+              payments, but professional truth. Three registries. Three receipts.
+              One immutable reputation that follows the agent forever.
+            </p>
+          </BlurFade>
+        </div>
 
-          <div className="divide-y divide-border">
-            {[
-              {
-                title: "Identity Registry",
-                description:
-                  "Registered as an autonomous agent on Base. Every action traceable to a verified on-chain identity.",
-                icon: Fingerprint,
-                badge: "REGISTERED",
-              },
-              {
-                title: "Reputation Registry",
-                description:
-                  "Each settlement builds reputation. Verified professional truth that unlocks real liquidity.",
-                icon: TrendingUp,
-                badge: "ACTIVE",
-              },
-              {
-                title: "Validation Registry",
-                description:
-                  "Every verdict stored as cryptographic evidence. Permanent, auditable, impossible to erase.",
-                icon: BadgeCheck,
-                badge: "VERIFIED",
-              },
-            ].map(({ title, description, icon: Icon, badge }, i) => (
-              <BlurFade key={title} delay={0.2 + i * 0.1} inView>
-                <div className="flex items-start justify-between gap-6 py-6">
-                  <div className="flex items-start gap-4">
-                    <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-foreground">
-                          {title}
-                        </span>
-                        <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary">
-                          {badge}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {description}
-                      </p>
-                    </div>
+        {/* 3 Registry Cards */}
+        <div className="mt-12 grid gap-4 lg:grid-cols-3">
+          {[
+            {
+              title: "Identity Registry",
+              icon: Fingerprint,
+              badge: "AGENT #2122",
+              description: "Registered as an autonomous agent on Base Sepolia. Every action traceable to a verified on-chain identity.",
+              detail: "EVM · 0xd96cad...c72cf4",
+            },
+            {
+              title: "Reputation Registry",
+              icon: TrendingUp,
+              badge: "SCORE 90",
+              description: "Each settlement builds reputation. Verified professional truth that unlocks real liquidity.",
+              detail: "EVM · 0x1b16a2...3a6a6d",
+            },
+            {
+              title: "Validation Registry",
+              icon: BadgeCheck,
+              badge: "DEPLOYED",
+              description: "Every verdict stored as cryptographic evidence. Permanent, auditable, impossible to erase.",
+              detail: "EVM · 0xacc46a...fda9ee",
+            },
+          ].map(({ title, icon: Icon, badge, description, detail }, i) => (
+            <BlurFade key={title} delay={0.3 + i * 0.1} inView>
+              <div className="group rounded-xl border border-border bg-card/50 p-6 transition-all hover:border-primary/20 hover:bg-card/80 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-primary/[0.08] border border-primary/15">
+                    <Icon className="size-4 text-primary" />
+                  </div>
+                  <span className="rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+                    {badge}
+                  </span>
+                </div>
+                <p className="text-base font-medium text-foreground">{title}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground flex-1">{description}</p>
+                <p className="mt-3 text-xs font-mono text-muted-foreground/50">{detail}</p>
+              </div>
+            </BlurFade>
+          ))}
+        </div>
+
+        {/* Metric strip + BaseScan CTA */}
+        <div className="mt-10 grid gap-4 lg:grid-cols-[1fr_auto]">
+          <BlurFade delay={0.6} inView>
+            <div className="grid grid-cols-3 sm:grid-cols-5 rounded-xl overflow-hidden border border-primary/10 divide-x divide-primary/10">
+              {[
+                { value: "17", label: "API Endpoints", sub: "Across all services", accent: true },
+                { value: "7", label: "Agent Tools", sub: "Autonomous exec", accent: true },
+                { value: "90", label: "Trust", sub: "Reputation score", accent: false },
+                { value: "5", label: "Settlement Paths", sub: "Delegation cascade", accent: false },
+                { value: "40", label: "Tests", sub: "7 modules · vitest", accent: false },
+              ].map(({ value, label, sub, accent }) => (
+                <div key={label} className="flex flex-col justify-between p-4">
+                  <span
+                    className={`font-mono text-2xl font-medium leading-none ${accent ? "text-primary" : "text-foreground"}`}
+                  >
+                    {value}
+                  </span>
+                  <div className="mt-2">
+                    <p className="text-xs font-medium text-foreground/80">{label}</p>
+                    <p className="text-[10px] text-muted-foreground/50">{sub}</p>
                   </div>
                 </div>
-              </BlurFade>
-            ))}
-          </div>
+              ))}
+            </div>
+          </BlurFade>
+
+          <BlurFade delay={0.7} inView>
+            <a
+              href="https://sepolia.basescan.org/tx/0xd96cad52e144d98de68ce97aa8f9f3619302302c95feb8546a28b64e3fc72cf4"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-primary/20 bg-primary/[0.04] px-5 py-4 h-full transition-all hover:border-primary/40 hover:bg-primary/[0.08]"
+            >
+              <BorderBeam size={120} duration={4} borderWidth={1.5} colorFrom="oklch(0.68 0.18 55)" colorTo="oklch(0.68 0.18 55 / 0)" />
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Fingerprint className="size-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Agent #2122</p>
+                <p className="text-xs text-muted-foreground">Verify on BaseScan</p>
+              </div>
+              <ExternalLink className="size-3.5 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-primary ml-auto" />
+            </a>
+          </BlurFade>
         </div>
+
+        {/* Per mediation breakdown */}
+        <BlurFade delay={0.8} inView>
+          <div className="mt-6 rounded-xl border border-primary/10 bg-primary/[0.03] p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary/70 shrink-0">
+                Per mediation
+              </p>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                {[
+                  { num: "3", label: "EVM TXs" },
+                  { num: "2", label: "IPFS pins" },
+                  { num: "1", label: "Filecoin PDP" },
+                  { num: "1", label: "delegation" },
+                  { num: "1", label: "reputation" },
+                ].map(({ num, label }) => (
+                  <span key={label} className="text-xs text-foreground/70 font-mono">
+                    <span className="text-foreground font-medium">{num}</span>{" "}
+                    <span className="text-muted-foreground">{label}</span>
+                  </span>
+                ))}
+              </div>
+              <div className="sm:ml-auto shrink-0 rounded-md border border-primary/20 bg-primary/[0.06] px-3 py-1.5">
+                <p className="text-xs font-mono">
+                  <span className="text-muted-foreground">$0.10/mediation via</span>{" "}
+                  <span className="text-primary font-medium">x402</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </BlurFade>
       </div>
     </section>
   );
@@ -849,6 +924,120 @@ function VisionSection() {
 }
 
 /* ═══════════════════════════════════════════════
+   PITCH — Demo video + Pitch deck
+   ═══════════════════════════════════════════════ */
+function PitchSection() {
+  return (
+    <section className="relative py-14 lg:py-22 border-t border-border overflow-hidden">
+      <div className="relative mx-auto max-w-7xl px-4 lg:px-9">
+        <div className="mb-10 max-w-2xl">
+          <BlurFade delay={0.1} inView>
+            <SectionLabel label="Pitch Materials" />
+          </BlurFade>
+          <BlurFade delay={0.2} inView>
+            <h2 className="mt-6 text-3xl font-normal tracking-tight leading-tight text-foreground lg:text-[2.75rem]">
+              See it{" "}
+              <span className="font-display italic text-primary">in action.</span>
+            </h2>
+          </BlurFade>
+          <BlurFade delay={0.3} inView>
+            <p className="mt-6 text-base leading-relaxed text-muted-foreground">
+              Full walkthrough and deck. Everything a judge needs to understand Selantar.
+            </p>
+          </BlurFade>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          {/* Card 1 — Demo Video */}
+          <BlurFade delay={0.25} inView>
+            <Link
+              href="/pitch/video"
+              className="group flex flex-col rounded-xl border border-border bg-card transition-colors duration-500 hover:border-primary/15"
+            >
+              <div className="flex items-center justify-between px-7 py-5">
+                <div className="flex items-center gap-2.5">
+                  <span className="size-[6px] rounded-full bg-primary" />
+                  <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Demo Video
+                  </span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground/25">
+                  01 — Walkthrough
+                </span>
+              </div>
+              <div className="h-px bg-border" />
+              <div className="flex flex-1 flex-col px-7 pt-8 pb-7">
+                <h3 className="text-[1.65rem] font-normal tracking-tight leading-[1.15] text-foreground">
+                  Watch Clara mediate live.
+                  <br />
+                  <span className="text-muted-foreground/60">
+                    From PDF to settlement.
+                  </span>
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground/50 max-w-[360px]">
+                  Upload, audit, mediation, and on-chain execution — end to end.
+                  See the AI think under real pressure.
+                </p>
+                <div className="flex-1" />
+                <div className="mt-8 flex items-center justify-between rounded-md border border-primary/20 bg-primary/[0.04] px-5 py-3 transition-all duration-500 group-hover:bg-primary/[0.08] group-hover:border-primary/30">
+                  <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-primary">
+                    Watch Demo
+                  </span>
+                  <ArrowRight className="size-3 text-primary transition-transform duration-500 group-hover:translate-x-0.5" />
+                </div>
+              </div>
+            </Link>
+          </BlurFade>
+
+          {/* Card 2 — Agent Manifest */}
+          <BlurFade delay={0.35} inView>
+            <a
+              href="https://selentar-genesys.vercel.app/pitch"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col rounded-xl border border-border bg-card transition-colors duration-500 hover:border-primary/15"
+            >
+              <div className="flex items-center justify-between px-7 py-5">
+                <div className="flex items-center gap-2.5">
+                  <span className="size-[6px] rounded-full bg-primary" />
+                  <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                    Pitch Deck
+                  </span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground/25">
+                  02 — Architecture
+                </span>
+              </div>
+              <div className="h-px bg-border" />
+              <div className="flex flex-1 flex-col px-7 pt-8 pb-7">
+                <h3 className="text-[1.65rem] font-normal tracking-tight leading-[1.15] text-foreground">
+                  The full pitch.
+                  <br />
+                  <span className="text-muted-foreground/60">
+                    Architecture to market.
+                  </span>
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground/50 max-w-[360px]">
+                  ERC-8004 integration, on-chain proof, Filecoin PDP,
+                  x402 payments, and the trust economy vision.
+                </p>
+                <div className="flex-1" />
+                <div className="mt-8 flex items-center justify-between rounded-md border border-primary/20 bg-primary/[0.04] px-5 py-3 transition-all duration-500 group-hover:bg-primary/[0.08] group-hover:border-primary/30">
+                  <span className="text-[13px] font-medium uppercase tracking-[0.12em] text-primary">
+                    View Deck
+                  </span>
+                  <ArrowRight className="size-3 text-primary transition-transform duration-500 group-hover:translate-x-0.5" />
+                </div>
+              </div>
+            </a>
+          </BlurFade>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════
    CTA — Centered with ShimmerButton
    ═══════════════════════════════════════════════ */
 function CTASection() {
@@ -897,7 +1086,7 @@ function CTASection() {
               </Link>
 
               <a
-                href="https://sepolia.basescan.org/address/0x377711a26B52F4AD8C548AAEF8297E0563b87Db4"
+                href="https://sepolia.basescan.org/tx/0xd96cad52e144d98de68ce97aa8f9f3619302302c95feb8546a28b64e3fc72cf4"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-wider text-foreground transition-colors hover:text-primary"
@@ -954,6 +1143,7 @@ export default function LandingPage() {
       <PipelineSection />
       <ERC8004Section />
       <VisionSection />
+      <PitchSection />
       <CTASection />
       <Footer />
     </>

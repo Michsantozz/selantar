@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 
-const URL = "http://localhost:3001/w3kit";
+const URL = "http://localhost:3000/contractv2?demo=true";
 const ROOT = process.cwd();
 
 async function main() {

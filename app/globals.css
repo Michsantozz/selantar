@@ -89,6 +89,10 @@
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
   }
+  @keyframes text-shimmer {
+    0%   { background-position: 200% center; }
+    100% { background-position: -200% center; }
+  }
   @keyframes shimmer-slide {
   to {
     transform: translate(calc(100cqw - 100%), 0);
@@ -110,8 +114,24 @@
   }
 }
 
+.shimmer-text {
+  background-image: linear-gradient(
+    90deg,
+    oklch(0.65 0.15 50) 0%,
+    oklch(0.92 0.18 75) 35%,
+    oklch(1 0.12 80)    50%,
+    oklch(0.92 0.18 75) 65%,
+    oklch(0.65 0.15 50) 100%
+  );
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 2s linear infinite;
+}
+
 :root {
-  /* === Selantar — Dark Luxury Legal palette === */
+  /* === Selantar — Warm Amber palette === */
 
   --background: #09090b;
   --foreground: #fafafa;
@@ -122,7 +142,7 @@
   --popover: #131316;
   --popover-foreground: #fafafa;
 
-  --primary: #c8a26a;
+  --primary: #e8842a;
   --primary-foreground: #09090b;
 
   --secondary: #18181b;
@@ -131,14 +151,14 @@
   --muted: #18181b;
   --muted-foreground: #a1a1aa;
 
-  --accent: #3b82f6;
+  --accent: #f59e0b;
   --accent-foreground: #fafafa;
 
   --destructive: #ef4444;
 
   --border: #27272a;
   --input: #27272a;
-  --ring: #c8a26a;
+  --ring: #e8842a;
 
   --radius: 0.625rem;
 
@@ -151,7 +171,7 @@
 
   --chain: #818cf8;
 
-  --chart-1: #c8a26a;
+  --chart-1: #e8842a;
   --chart-2: #22c55e;
   --chart-3: #ef4444;
   --chart-4: #818cf8;
@@ -159,12 +179,12 @@
 
   --sidebar: #0c0c0f;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #c8a26a;
+  --sidebar-primary: #e8842a;
   --sidebar-primary-foreground: #09090b;
   --sidebar-accent: #1c1c20;
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #27272a;
-  --sidebar-ring: #c8a26a;
+  --sidebar-ring: #e8842a;
 }
 
 @layer base {
@@ -191,19 +211,19 @@
 
 /* --- Hero CTA — dark button with gold border glow --- */
 .hero-cta {
-  background: oklch(0.12 0.005 80);
-  border: 1px solid oklch(0.72 0.10 80 / 40%);
+  background: oklch(0.12 0.01 55);
+  border: 1px solid oklch(0.68 0.18 55 / 40%);
   box-shadow:
-    0 0 12px oklch(0.72 0.10 80 / 8%),
+    0 0 12px oklch(0.68 0.18 55 / 8%),
     inset 0 1px 0 oklch(1 0 0 / 5%);
   transition: all 0.3s ease;
 }
 
 .hero-cta:hover {
-  border-color: oklch(0.72 0.10 80 / 70%);
+  border-color: oklch(0.68 0.18 55 / 70%);
   box-shadow:
-    0 0 20px oklch(0.72 0.10 80 / 15%),
-    0 0 40px oklch(0.72 0.10 80 / 5%),
+    0 0 20px oklch(0.68 0.18 55 / 15%),
+    0 0 40px oklch(0.68 0.18 55 / 5%),
     inset 0 1px 0 oklch(1 0 0 / 8%);
 }
 
@@ -244,16 +264,16 @@
 
 /* --- Live Contract Page — Pulse Animations --- */
 @keyframes pulse-urgent {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.10 80 / 0%); }
-  50% { box-shadow: 0 0 0 6px oklch(0.72 0.10 80 / 12%); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.68 0.18 55 / 0%); }
+  50% { box-shadow: 0 0 0 6px oklch(0.68 0.18 55 / 12%); }
 }
 @keyframes pulse-urgent-red {
   0%, 100% { box-shadow: 0 0 0 0 oklch(0.62 0.22 25 / 0%); }
   50% { box-shadow: 0 0 0 6px oklch(0.62 0.22 25 / 12%); }
 }
 @keyframes pulse-border {
-  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.10 80 / 0%); }
-  50% { box-shadow: 0 0 0 4px oklch(0.72 0.10 80 / 10%); }
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.68 0.18 55 / 0%); }
+  50% { box-shadow: 0 0 0 4px oklch(0.68 0.18 55 / 10%); }
 }
 @keyframes pulse-border-red {
   0%, 100% { box-shadow: 0 0 0 0 oklch(0.62 0.22 25 / 0%); }
@@ -281,6 +301,6 @@
 
 /* --- Selection --- */
 ::selection {
-  background: oklch(0.72 0.10 80 / 25%);
+  background: oklch(0.68 0.18 55 / 25%);
   color: oklch(0.96 0 0);
 }

@@ -17,7 +17,7 @@ function SectionLabel({ label }: { label: string }) {
 
 export default function SetupPage() {
   return (
-    <div className="h-dvh w-dvw overflow-hidden grid grid-cols-3 bg-background">
+    <div className="h-dvh w-full overflow-hidden grid grid-cols-3 bg-background">
       {/* 1 — Milestone Builder */}
       <div className="border-r border-border overflow-hidden">
         <div className="h-full flex flex-col">
