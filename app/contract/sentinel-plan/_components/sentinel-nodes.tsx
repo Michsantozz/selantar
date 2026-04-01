@@ -34,165 +34,269 @@ import {
   type SentinelSayData,
 } from "./sentinel-constants";
 
-// ── Contract Node ───────────────────────────────────────────────────────────
+/* ── Neutral dark palette (zero warm tint) ────────────────────────────── */
+const N = {
+  /** card surface */
+  card: "hsl(0 0% 7.5%)",
+  /** slightly elevated surface */
+  elevated: "hsl(0 0% 9%)",
+  /** header / muted surface */
+  header: "hsl(0 0% 8.5%)",
+  /** dividers inside cards */
+  rule: "hsl(0 0% 13%)",
+  /** card border — subtle */
+  border: "hsl(0 0% 15%)",
+  /** stronger border (active state) */
+  borderStrong: "hsl(0 0% 20%)",
+  /** text primary */
+  fg: "hsl(0 0% 93%)",
+  /** text secondary */
+  fg2: "hsl(0 0% 62%)",
+  /** text tertiary */
+  fg3: "hsl(0 0% 42%)",
+  /** text ghost */
+  fg4: "hsl(0 0% 28%)",
+};
+
+/* ── Invisible handle ─────────────────────────────────────────────────── */
+const H = { background: "transparent", border: "none", width: 6, height: 6, opacity: 0 };
+
+/* ── Tint helper — returns a color at a given opacity hex suffix ─────── */
+function tint(color: string | undefined, opacityHex: string) {
+  if (!color) return `${MUTED}${opacityHex}`;
+  if (color.startsWith("#")) return `${color}${opacityHex}`;
+  if (color.startsWith("oklch")) {
+    const val = parseInt(opacityHex, 16) / 255;
+    return color.replace(")", ` / ${val.toFixed(2)})`);
+  }
+  return color;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  Contract Node                                                        */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 function ContractNode({ data }: NodeProps<Node<ContractNodeData>>) {
   return (
     <div
-      className="flex flex-col rounded-2xl border backdrop-blur-sm overflow-hidden"
       style={{
         width: 320,
-        borderColor: `oklch(0.7 0.18 50 / 0.4)`,
-        background: `oklch(0.7 0.18 50 / 0.04)`,
-        boxShadow: `0 0 30px oklch(0.7 0.18 50 / 0.08)`,
+        background: N.card,
+        border: `1px solid ${N.border}`,
+        borderRadius: 14,
+        boxShadow: `0 1px 3px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.35)`,
+        overflow: "hidden",
       }}
     >
+      {/* Accent top edge */}
+      <div style={{ height: 2, background: ACCENT, opacity: 0.5 }} />
+
       {/* Header */}
       <div
-        className="flex items-center gap-3 px-4 py-3"
         style={{
-          background: `oklch(0.7 0.18 50 / 0.08)`,
-          borderBottom: `1px solid oklch(0.7 0.18 50 / 0.15)`,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 16px",
+          borderBottom: `1px solid ${N.rule}`,
+          background: N.header,
         }}
       >
         <div
-          className="flex size-8 shrink-0 items-center justify-center rounded-lg"
-          style={{ background: `oklch(0.7 0.18 50 / 0.15)`, border: `1px solid oklch(0.7 0.18 50 / 0.25)` }}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: tint(ACCENT, "10"),
+            border: `1px solid ${tint(ACCENT, "20")}`,
+          }}
         >
-          <FileTextIcon className="size-4" style={{ color: ACCENT }} />
+          <FileTextIcon style={{ width: 14, height: 14, color: ACCENT }} />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: `oklch(0.7 0.18 50 / 0.7)` }}>
-            Contract Received
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              fontSize: 9,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: N.fg3,
+              margin: 0,
+            }}
+          >
+            Contract
           </p>
-          <p className="text-[13px] font-semibold text-foreground truncate">{data.title}</p>
+          <p
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: N.fg,
+              margin: 0,
+              marginTop: 1,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {data.title}
+          </p>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-4 py-3">
-        <div>
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">Client</p>
-          <p className="text-[11px] font-medium text-foreground/80">{data.parties.client}</p>
-        </div>
-        <div>
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">Dev</p>
-          <p className="text-[11px] font-medium text-foreground/80">{data.parties.dev}</p>
-        </div>
-        <div>
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">Value</p>
-          <p className="text-[11px] font-bold" style={{ color: GREEN }}>{data.value}</p>
-        </div>
-        <div>
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">Deadline</p>
-          <p className="text-[11px] font-medium text-foreground/80">{data.duration}</p>
-        </div>
-        <div className="col-span-2">
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">Milestones</p>
-          <p className="text-[11px] font-medium text-foreground/80">{data.milestones} deliverables mapped</p>
+      {/* Body grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "10px 20px",
+          padding: "14px 16px",
+        }}
+      >
+        {([
+          { label: "Client", value: data.parties.client },
+          { label: "Dev", value: data.parties.dev },
+          { label: "Value", value: data.value, color: GREEN },
+          { label: "Deadline", value: data.duration },
+        ] as const).map((item) => (
+          <div key={item.label}>
+            <p style={{ fontSize: 8, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: N.fg4, margin: 0 }}>
+              {item.label}
+            </p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "color" in item && item.color ? item.color : N.fg2, margin: 0, marginTop: 2 }}>
+              {item.value}
+            </p>
+          </div>
+        ))}
+        <div style={{ gridColumn: "1 / -1" }}>
+          <p style={{ fontSize: 8, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: N.fg4, margin: 0 }}>
+            Milestones
+          </p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: N.fg2, margin: 0, marginTop: 2 }}>
+            {data.milestones} deliverables mapped
+          </p>
         </div>
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={{ background: ACCENT, border: "none", width: 10, height: 10, bottom: -5 }}
-      />
+      <Handle type="source" position={Position.Bottom} style={{ ...H, bottom: -3 }} />
     </div>
   );
 }
 
-// ── Analysis Node ───────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  Analysis Node                                                        */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 function AnalysisNode({ data }: NodeProps<Node<AnalysisNodeData>>) {
   const isDone = data.status === "done";
   const isRunning = data.status === "running";
+  const accentColor = isDone ? GREEN : ACCENT;
 
   return (
     <div
-      className="flex flex-col rounded-2xl border backdrop-blur-sm"
       style={{
         width: 320,
-        borderColor: isDone ? `${GREEN}50` : isRunning ? ACCENT : `${MUTED}50`,
-        background: isDone ? `${GREEN}04` : isRunning ? `oklch(0.7 0.18 50 / 0.04)` : `oklch(0.11 0.005 50 / 0.8)`,
-        boxShadow: isRunning ? `0 0 30px oklch(0.7 0.18 50 / 0.1)` : undefined,
+        background: N.card,
+        border: `1px solid ${isDone ? tint(GREEN, "28") : isRunning ? tint(ACCENT, "20") : N.border}`,
+        borderRadius: 14,
+        boxShadow: isRunning
+          ? `0 1px 3px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.35), 0 0 0 1px ${tint(ACCENT, "08")}`
+          : `0 1px 3px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.35)`,
+        overflow: "hidden",
         transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: isDone ? GREEN : ACCENT, border: "none", width: 10, height: 10, top: -5 }}
-      />
+      <Handle type="target" position={Position.Top} style={{ ...H, top: -3 }} />
+
+      {/* Accent top edge */}
+      <div style={{ height: 2, background: accentColor, opacity: isDone ? 0.4 : isRunning ? 0.6 : 0.15 }} />
 
       {/* Header */}
       <div
-        className="flex items-center gap-3 rounded-t-2xl px-4 py-3"
         style={{
-          borderBottom: `1px solid ${isDone ? `${GREEN}15` : isRunning ? `oklch(0.7 0.18 50 / 0.12)` : `${MUTED}30`}`,
-          background: isDone ? `${GREEN}06` : isRunning ? `oklch(0.7 0.18 50 / 0.06)` : `${MUTED}08`,
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 16px",
+          borderBottom: `1px solid ${N.rule}`,
+          background: N.header,
         }}
       >
         <div
-          className="flex size-7 shrink-0 items-center justify-center rounded-full"
           style={{
-            background: isDone ? `${GREEN}18` : `oklch(0.7 0.18 50 / 0.15)`,
-            border: `1.5px solid ${isDone ? `${GREEN}35` : `oklch(0.7 0.18 50 / 0.3)`}`,
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: tint(accentColor, "0c"),
+            border: `1px solid ${tint(accentColor, "1a")}`,
           }}
         >
           {isDone ? (
-            <CheckCircleIcon className="size-3.5" style={{ color: GREEN }} />
+            <CheckCircleIcon style={{ width: 14, height: 14, color: GREEN }} />
           ) : isRunning ? (
-            <LoaderIcon className="size-3.5" style={{ color: ACCENT, animation: "sp-spin 1.5s linear infinite" }} />
+            <LoaderIcon style={{ width: 14, height: 14, color: ACCENT, animation: "sp-spin 1.5s linear infinite" }} />
           ) : (
-            <ShieldCheckIcon className="size-3.5" style={{ color: MUTED }} />
+            <ShieldCheckIcon style={{ width: 14, height: 14, color: N.fg4 }} />
           )}
         </div>
-        <p className="text-[13px] font-semibold text-foreground">{data.label}</p>
+        <p style={{ fontSize: 13, fontWeight: 600, color: N.fg, margin: 0 }}>
+          {data.label}
+        </p>
       </div>
 
       {/* Findings */}
-      <div className="flex flex-col gap-1.5 px-4 py-3">
-        {(data.findings as string[]).map((f: string, i: number) => (
-          <div key={i} className="flex items-start gap-2">
-            <CheckCircleIcon
-              className="size-3 mt-0.5 shrink-0"
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 16px" }}>
+        {(data.findings as string[]).map((f: string, i: number) => {
+          const active = isDone || (isRunning && i < 2);
+          return (
+            <div
+              key={i}
               style={{
-                color: isDone ? GREEN : isRunning && i < 2 ? ACCENT : MUTED,
-                opacity: isDone || (isRunning && i < 2) ? 0.8 : 0.3,
-                transition: "all 0.3s",
-              }}
-            />
-            <p
-              className="text-[11px] leading-relaxed"
-              style={{
-                color: isDone || (isRunning && i < 2) ? "var(--foreground)" : MUTED,
-                opacity: isDone || (isRunning && i < 2) ? 0.7 : 0.4,
-                transition: "all 0.3s",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                opacity: active ? 1 : 0.3,
+                transition: "opacity 0.4s ease",
               }}
             >
-              {f}
-            </p>
-          </div>
-        ))}
+              <div
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: 8,
+                  flexShrink: 0,
+                  marginTop: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: active ? tint(accentColor, "0c") : "transparent",
+                  border: `1px solid ${active ? tint(accentColor, "22") : N.rule}`,
+                }}
+              >
+                <CheckCircleIcon style={{ width: 10, height: 10, color: active ? accentColor : N.fg4 }} />
+              </div>
+              <p style={{ fontSize: 10.5, lineHeight: 1.55, color: N.fg2, margin: 0 }}>
+                {f}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={{ background: isDone ? GREEN : ACCENT, border: "none", width: 10, height: 10, bottom: -5 }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="to-milestones"
-        style={{ background: isDone ? GREEN : ACCENT, border: "none", width: 8, height: 8 }}
-      />
+      <Handle type="source" position={Position.Bottom} style={{ ...H, bottom: -3 }} />
+      <Handle type="source" position={Position.Right} id="to-milestones" style={H} />
     </div>
   );
 }
 
-// ── Action Node ─────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  Action Node                                                          */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 function ActionNode({ data }: NodeProps<Node<ActionNodeData>>) {
   const icon = data.icon as keyof typeof actionIcons;
@@ -201,149 +305,282 @@ function ActionNode({ data }: NodeProps<Node<ActionNodeData>>) {
   const st = statusConfig[status];
   const isPending = status === "pending";
   const isSuggested = status === "suggested";
+  const isInactive = status === "rejected" || status === "declined";
   const actionColor = colorMap[icon];
 
   return (
     <div
-      className="flex flex-col rounded-xl border backdrop-blur-sm overflow-hidden"
       style={{
         width: 290,
-        borderColor: isPending ? `${MUTED}40` : st.border,
-        background: isPending ? "oklch(0.11 0.005 50 / 0.6)" : st.bg,
-        boxShadow: isSuggested ? `0 0 24px ${actionColor}10` : undefined,
-        opacity: status === "rejected" || status === "declined" ? 0.5 : isPending ? 0.4 : 1,
+        background: N.card,
+        border: `1px solid ${isPending ? N.border : isInactive ? tint(st.color, "18") : tint(st.color, "28")}`,
+        borderRadius: 14,
+        boxShadow: `0 1px 3px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.35)`,
+        overflow: "hidden",
+        opacity: isInactive ? 0.45 : isPending ? 0.35 : 1,
         transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
         animation: isSuggested ? "sp-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)" : undefined,
       }}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: actionColor, border: "none", width: 8, height: 8, top: -4 }}
-      />
+      <Handle type="target" position={Position.Top} style={{ ...H, top: -3 }} />
+
+      {/* Accent top edge — action-colored */}
+      <div style={{ height: 2, background: actionColor, opacity: isPending ? 0.15 : 0.45 }} />
 
       {/* Header */}
       <div
-        className="flex items-center gap-2.5 px-3.5 py-2.5"
         style={{
-          borderBottom: `1px solid ${isPending ? `${MUTED}20` : `${st.color}15`}`,
-          background: isPending ? `${MUTED}06` : `${actionColor}06`,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "10px 14px",
+          borderBottom: `1px solid ${N.rule}`,
+          background: N.header,
         }}
       >
         <div
-          className="flex size-6 shrink-0 items-center justify-center rounded-md"
-          style={{ background: `${actionColor}15`, border: `1px solid ${actionColor}25` }}
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: 7,
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: tint(actionColor, "0c"),
+            border: `1px solid ${tint(actionColor, "1a")}`,
+          }}
         >
-          {Icon && <Icon className="size-3" style={{ color: actionColor }} />}
+          {Icon && <Icon style={{ width: 12, height: 12, color: actionColor }} />}
         </div>
-        <p className="text-[12px] font-semibold text-foreground/90 flex-1 truncate">
+        <p
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: N.fg,
+            margin: 0,
+            flex: 1,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
           {data.label}
         </p>
 
         {/* Status badge */}
         {!isPending && (
           <div
-            className="flex items-center gap-1 rounded-full px-2 py-0.5"
             style={{
-              background: `${st.color}12`,
-              border: `1px solid ${st.color}25`,
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "3px 8px",
+              borderRadius: 999,
+              background: tint(st.color, "0c"),
+              border: `1px solid ${tint(st.color, "1a")}`,
               animation: st.animate ? "sp-pulse 2s ease-in-out infinite" : undefined,
             }}
           >
-            <st.icon className="size-2.5" style={{ color: st.color }} />
-            <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: st.color }}>
+            <st.icon style={{ width: 10, height: 10, color: st.color }} />
+            <span
+              style={{
+                fontSize: 8,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: st.color,
+              }}
+            >
               {st.label}
             </span>
           </div>
         )}
       </div>
 
-      {/* Timestamp bar */}
+      {/* Timestamp */}
       {data.timestamp && !isPending && (
-        <div className="flex items-center gap-1.5 px-3.5 py-1" style={{ background: `${st.color}04`, borderBottom: `1px solid ${st.color}08` }}>
-          <ClockIcon className="size-2.5" style={{ color: `${st.color}80` }} />
-          <span className="text-[9px] font-mono" style={{ color: `${st.color}90` }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "4px 14px",
+            borderBottom: `1px solid ${N.rule}`,
+            background: "hsl(0 0% 6.5%)",
+          }}
+        >
+          <ClockIcon style={{ width: 10, height: 10, color: tint(st.color, "70") }} />
+          <span style={{ fontSize: 9, fontFamily: "var(--font-mono, monospace)", color: tint(st.color, "88"), fontVariantNumeric: "tabular-nums" }}>
             {data.timestamp}
           </span>
         </div>
       )}
 
       {/* Body */}
-      <div className="flex flex-col gap-2 px-3.5 py-2.5">
-        <p className="text-[10px] leading-relaxed text-muted-foreground/70">
+      <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <p style={{ fontSize: 10, lineHeight: 1.6, color: N.fg3, margin: 0 }}>
           {data.description}
         </p>
 
-        {/* Meta tags */}
-        <div className="flex flex-wrap gap-1.5">
+        {/* Meta pills */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {data.frequency && (
             <span
-              className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wider"
-              style={{ color: `${actionColor}cc`, background: `${actionColor}10`, border: `1px solid ${actionColor}20` }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "2px 8px",
+                borderRadius: 999,
+                fontSize: 8,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: tint(actionColor, "bb"),
+                background: tint(actionColor, "0a"),
+                border: `1px solid ${tint(actionColor, "15")}`,
+              }}
             >
-              <ClockIcon className="size-2" />
+              <ClockIcon style={{ width: 8, height: 8 }} />
               {data.frequency}
             </span>
           )}
           {data.target && (
             <span
-              className="rounded-full px-2 py-0.5 text-[8px] font-medium text-muted-foreground/50"
-              style={{ background: `${MUTED}15`, border: `1px solid ${MUTED}25` }}
+              style={{
+                display: "inline-flex",
+                padding: "2px 8px",
+                borderRadius: 999,
+                fontSize: 8,
+                fontWeight: 500,
+                color: N.fg3,
+                background: "hsl(0 0% 11%)",
+                border: `1px solid ${N.rule}`,
+              }}
             >
               {data.target}
             </span>
           )}
           {data.milestone && (
             <span
-              className="rounded-full px-2 py-0.5 text-[8px] font-medium"
-              style={{ color: ACCENT, background: `oklch(0.7 0.18 50 / 0.08)`, border: `1px solid oklch(0.7 0.18 50 / 0.2)` }}
+              style={{
+                display: "inline-flex",
+                padding: "2px 8px",
+                borderRadius: 999,
+                fontSize: 8,
+                fontWeight: 600,
+                color: tint(ACCENT, "aa"),
+                background: tint(ACCENT, "08"),
+                border: `1px solid ${tint(ACCENT, "15")}`,
+              }}
             >
               {data.milestone}
             </span>
           )}
         </div>
 
-        {/* Sent to indicator */}
+        {/* Sent to */}
         {data.sentTo && ["sent", "waiting", "accepted", "declined"].includes(status) && (
           <div
-            className="flex items-center gap-2 rounded-lg border px-2.5 py-1.5 mt-0.5"
             style={{
-              borderColor: `${st.color}20`,
-              background: `${st.color}06`,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "8px 10px",
+              borderRadius: 10,
+              background: "hsl(0 0% 9%)",
+              border: `1px solid ${tint(st.color, "15")}`,
+              marginTop: 2,
             }}
           >
-            <MessageCircleIcon className="size-3 shrink-0" style={{ color: st.color }} />
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] text-muted-foreground/50">
-                {status === "sent" ? "Sent to" : status === "waiting" ? "Awaiting response from" : status === "accepted" ? "Accepted by" : "Declined by"}
+            <MessageCircleIcon style={{ width: 12, height: 12, flexShrink: 0, color: tint(st.color, "88") }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: "0.1em", color: N.fg4, margin: 0 }}>
+                {status === "sent" ? "Sent to" : status === "waiting" ? "Awaiting" : status === "accepted" ? "Accepted by" : "Declined by"}
               </p>
-              <p className="text-[10px] font-semibold truncate" style={{ color: st.color }}>
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: tint(st.color, "cc"),
+                  margin: 0,
+                  marginTop: 1,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
                 {data.sentTo}
               </p>
             </div>
             {status === "waiting" && (
-              <LoaderIcon className="size-3 shrink-0" style={{ color: YELLOW, animation: "sp-spin 2s linear infinite" }} />
+              <LoaderIcon style={{ width: 12, height: 12, flexShrink: 0, color: YELLOW, animation: "sp-spin 2s linear infinite" }} />
             )}
           </div>
         )}
 
-        {/* Action buttons (only when suggested) */}
+        {/* Approve / Reject buttons */}
         {isSuggested && (
-          <div className="flex gap-2 mt-1">
+          <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
             <button
               onClick={data.onApprove}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-1.5 text-[10px] font-semibold transition-all hover:brightness-125"
-              style={{ borderColor: `${GREEN}40`, background: `${GREEN}10`, color: GREEN }}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                padding: "7px 0",
+                borderRadius: 9,
+                fontSize: 10,
+                fontWeight: 600,
+                cursor: "pointer",
+                color: GREEN,
+                background: tint(GREEN, "0a"),
+                border: `1px solid ${tint(GREEN, "22")}`,
+                transition: "background 0.15s, border-color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = tint(GREEN, "14");
+                e.currentTarget.style.borderColor = tint(GREEN, "35");
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = tint(GREEN, "0a");
+                e.currentTarget.style.borderColor = tint(GREEN, "22");
+              }}
             >
-              <CheckIcon className="size-3" />
+              <CheckIcon style={{ width: 12, height: 12 }} />
               Approve
             </button>
             <button
               onClick={data.onReject}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-1.5 text-[10px] font-semibold transition-all hover:brightness-125"
-              style={{ borderColor: `${RED}30`, background: `${RED}08`, color: `${RED}cc` }}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                padding: "7px 0",
+                borderRadius: 9,
+                fontSize: 10,
+                fontWeight: 600,
+                cursor: "pointer",
+                color: tint(RED, "bb"),
+                background: tint(RED, "08"),
+                border: `1px solid ${tint(RED, "18")}`,
+                transition: "background 0.15s, border-color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = tint(RED, "12");
+                e.currentTarget.style.borderColor = tint(RED, "2a");
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = tint(RED, "08");
+                e.currentTarget.style.borderColor = tint(RED, "18");
+              }}
             >
-              <XIcon className="size-3" />
+              <XIcon style={{ width: 12, height: 12 }} />
               Reject
             </button>
           </div>
@@ -353,56 +590,68 @@ function ActionNode({ data }: NodeProps<Node<ActionNodeData>>) {
   );
 }
 
-// ── Date Node ───────────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  Date Node                                                            */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 function DateNode({ data }: NodeProps<Node<DateNodeData>>) {
   const isLate = data.isLate ?? false;
   const color = isLate ? RED : ACCENT;
 
   return (
-    <div
-      className="relative"
-      style={{
-        width: 120,
-        animation: "sp-appear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
-      }}
-    >
-      {/* Outer container — pill shape */}
+    <div style={{ width: 120, animation: "sp-appear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
       <div
         style={{
-          borderRadius: 20,
-          border: `2px solid ${color}`,
-          background: `oklch(0.08 0.01 50)`,
+          borderRadius: 14,
+          background: N.card,
+          border: `1px solid ${tint(color, "35")}`,
+          boxShadow: `0 1px 3px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.35)`,
           overflow: "hidden",
         }}
       >
-        {/* Top accent strip — solid color bar */}
-        <div style={{ height: 4, background: color }} />
+        {/* Top accent strip */}
+        <div style={{ height: 3, background: color, opacity: 0.7 }} />
 
         {/* Content */}
-        <div className="flex items-center gap-2.5 px-3 py-2.5">
-          {/* Calendar icon circle */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px" }}>
           <div
-            className="flex size-10 shrink-0 items-center justify-center rounded-full"
             style={{
-              background: `${color}`,
-              boxShadow: `0 0 16px ${color}40`,
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: color,
             }}
           >
-            <CalendarIcon className="size-4" style={{ color: "oklch(0.08 0.01 50)" }} />
+            <CalendarIcon style={{ width: 14, height: 14, color: "hsl(0 0% 5%)" }} />
           </div>
-
-          {/* Date text */}
           <div>
             <p
-              className="font-mono text-[22px] font-black leading-none tabular-nums tracking-tight"
-              style={{ color: "var(--foreground)" }}
+              style={{
+                fontSize: 22,
+                fontWeight: 900,
+                lineHeight: 1,
+                fontFamily: "var(--font-mono, monospace)",
+                fontVariantNumeric: "tabular-nums",
+                color: N.fg,
+                margin: 0,
+              }}
             >
               {data.day}
             </p>
             <p
-              className="text-[11px] font-bold uppercase tracking-widest mt-0.5"
-              style={{ color }}
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.14em",
+                color,
+                margin: 0,
+                marginTop: 2,
+              }}
             >
               {data.month}
             </p>
@@ -410,126 +659,143 @@ function DateNode({ data }: NodeProps<Node<DateNodeData>>) {
         </div>
       </div>
 
-      {/* Bottom connector — vertical line + dot */}
-      <div className="flex flex-col items-center">
-        <div style={{ width: 2, height: 12, background: `${color}40` }} />
-        <div
-          className="size-2 rounded-full"
-          style={{
-            background: color,
-            boxShadow: `0 0 8px ${color}60`,
-          }}
-        />
+      {/* Connector */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ width: 1, height: 12, background: tint(color, "40") }} />
+        <div style={{ width: 5, height: 5, borderRadius: 3, background: color }} />
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={{ background: color, border: "none", width: 0, height: 0, bottom: 0, opacity: 0 }}
-      />
+      <Handle type="source" position={Position.Bottom} style={{ ...H, bottom: 0 }} />
     </div>
   );
 }
 
-// ── Milestone Node ──────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  Milestone Node                                                       */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 function MilestoneNode({ data }: NodeProps<Node<MilestoneNodeData>>) {
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3"
       style={{
         width: 240,
-        borderRadius: 16,
-        border: `1.5px solid oklch(0.7 0.18 50 / 0.25)`,
-        background: `oklch(0.1 0.005 50 / 0.85)`,
-        boxShadow: `0 4px 20px oklch(0.7 0.18 50 / 0.04), inset 0 1px 0 oklch(0.7 0.18 50 / 0.06)`,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "12px 16px",
+        borderRadius: 14,
+        background: N.card,
+        border: `1px solid ${tint(ACCENT, "22")}`,
+        boxShadow: `0 1px 3px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.35)`,
         animation: "sp-appear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}
     >
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{ background: ACCENT, border: "none", width: 8, height: 8 }}
-      />
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="from-date"
-        style={{ background: "transparent", border: "none", width: 0, height: 0, top: 0 }}
-      />
+      <Handle type="target" position={Position.Left} style={H} />
+      <Handle type="target" position={Position.Top} id="from-date" style={{ ...H, top: 0 }} />
 
       {/* Index badge */}
       <div
-        className="flex size-8 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-black"
         style={{
-          background: `oklch(0.7 0.18 50 / 0.1)`,
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "var(--font-mono, monospace)",
+          fontSize: 11,
+          fontWeight: 900,
           color: ACCENT,
-          border: `1.5px solid oklch(0.7 0.18 50 / 0.2)`,
-          boxShadow: `0 0 12px oklch(0.7 0.18 50 / 0.08)`,
+          background: tint(ACCENT, "0c"),
+          border: `1px solid ${tint(ACCENT, "1a")}`,
         }}
       >
         M{data.index}
       </div>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-semibold text-foreground/85 truncate tracking-tight">
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: N.fg2,
+            margin: 0,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
           {data.label}
         </p>
-        <span
-          className="font-mono text-[10px] font-bold tabular-nums"
-          style={{ color: GREEN }}
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            fontFamily: "var(--font-mono, monospace)",
+            fontVariantNumeric: "tabular-nums",
+            color: GREEN,
+            margin: 0,
+            marginTop: 2,
+          }}
         >
           {data.value}
-        </span>
+        </p>
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={{ background: ACCENT, border: "none", width: 8, height: 8 }}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="actions"
-        style={{ background: MUTED, border: "none", width: 8, height: 8, bottom: -4 }}
-      />
+      <Handle type="source" position={Position.Right} style={H} />
+      <Handle type="source" position={Position.Bottom} id="actions" style={{ ...H, bottom: -3 }} />
     </div>
   );
 }
 
-// ── Sentinel Say Node ───────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  Sentinel Say Node                                                    */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 function SentinelSayNode({ data }: NodeProps<Node<SentinelSayData>>) {
   return (
     <div
-      className="flex items-start gap-2.5 rounded-xl border p-3.5 shadow-lg"
       style={{
         width: 280,
-        borderColor: `oklch(0.7 0.18 50 / 0.35)`,
-        background: `oklch(0.7 0.18 50 / 0.04)`,
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 10,
+        padding: 14,
+        borderRadius: 14,
+        background: N.card,
+        border: `1px solid ${tint(ACCENT, "22")}`,
+        boxShadow: `0 1px 3px hsl(0 0% 0% / 0.5), 0 8px 24px hsl(0 0% 0% / 0.35)`,
         animation: "sp-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: ACCENT, border: "none", width: 8, height: 8, top: -4 }}
-      />
+      <Handle type="target" position={Position.Top} style={{ ...H, top: -3 }} />
       <div
-        className="flex size-6 shrink-0 items-center justify-center rounded-full mt-0.5"
-        style={{ background: `oklch(0.7 0.18 50 / 0.15)`, border: `1px solid oklch(0.7 0.18 50 / 0.25)` }}
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          flexShrink: 0,
+          marginTop: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: tint(ACCENT, "0c"),
+          border: `1px solid ${tint(ACCENT, "1a")}`,
+        }}
       >
-        <SparklesIcon className="size-3" style={{ color: ACCENT }} />
+        <SparklesIcon style={{ width: 11, height: 11, color: ACCENT }} />
       </div>
-      <p className="text-[11px] leading-relaxed font-medium" style={{ color: `oklch(0.75 0.14 55)` }}>
+      <p style={{ fontSize: 11, lineHeight: 1.6, fontWeight: 500, color: N.fg2, margin: 0 }}>
         {data.text}
       </p>
     </div>
   );
 }
 
-// ── Node Types Map ──────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════════════════ */
+/*  Export                                                               */
+/* ═══════════════════════════════════════════════════════════════════════ */
 
 export const sentinelNodeTypes = {
   contract: ContractNode,

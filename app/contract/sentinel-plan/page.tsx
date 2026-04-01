@@ -20,7 +20,7 @@ import { sentinelNodeTypes } from "./_components/sentinel-nodes";
 import { SentinelChat } from "./_components/sentinel-chat";
 import { SentinelTopbar } from "./_components/sentinel-topbar";
 import { DeployCinematic } from "./_components/deploy-cinematic";
-import { SparklesIcon, LoaderIcon, ShieldCheckIcon } from "lucide-react";
+import { SparklesIcon, LoaderIcon, ShieldCheckIcon, ZapIcon, ChevronRightIcon } from "lucide-react";
 import {
   ACCENT,
   GREEN,
@@ -874,7 +874,46 @@ function useSentinelPlanSim() {
     return () => clearTimeout(timer);
   }, [stepIdx, isRunning, updateNodeData, revealNode, revealEdge]);
 
-  return { nodes, edges, isRunning, progress, stepIdx, startSim };
+  const skipToEnd = useCallback(() => {
+    // Reveal all nodes
+    setNodes((prev) =>
+      prev.map((n) => {
+        const finals: Record<string, Record<string, unknown>> = {
+          analysis: { status: "done", label: "Analysis complete" },
+          "act-github": { status: "accepted", sentTo: "Matheus (dev)", timestamp: "21 Mar · 10:14 — dev confirmou acesso" },
+          "act-whatsapp-m1": { status: "waiting", sentTo: "Dr. Suassuna & Matheus", timestamp: "21 Mar · 10:03 — scheduled for Mar 29" },
+          "act-deploy": { status: "accepted", sentTo: "Matheus (dev)", timestamp: "21 Mar · 10:08 — staging.clinica-suassuna.com" },
+          "act-api": { status: "declined", sentTo: "Matheus (dev)", timestamp: "21 Mar · 10:12 — endpoints not ready yet" },
+          "act-whatsapp-m3": { status: "rejected", timestamp: "21 Mar · 10:06 — removed by user" },
+          "act-escrow": { status: "waiting", sentTo: "Both parties", timestamp: "21 Mar · 10:07 — awaiting signature" },
+        };
+        const patch = finals[n.id];
+        return {
+          ...n,
+          hidden: false,
+          data: patch ? { ...n.data, ...patch } : n.data,
+        };
+      })
+    );
+    // Reveal all edges
+    setEdges((prev) =>
+      prev.map((e) => ({
+        ...e,
+        hidden: false,
+        animated: false,
+        style: {
+          ...e.style,
+          stroke: e.id === "e-contract-analysis" ? GREEN : e.style?.stroke,
+          strokeDasharray: e.id === "e-contract-analysis" ? undefined : e.style?.strokeDasharray,
+        },
+      }))
+    );
+    setIsRunning(false);
+    setProgress(100);
+    setStepIdx(SIM_STEPS.length);
+  }, []);
+
+  return { nodes, edges, isRunning, progress, stepIdx, startSim, skipToEnd };
 }
 
 // ── Page ────────────────────────────────────────────────────────────────────
@@ -901,6 +940,14 @@ export default function SentinelPlanPage() {
   }, []);
 
   const isRealMode = !!parsedContract;
+
+  // Auto-open chat when real mode starts
+  useEffect(() => {
+    if (isRealMode) {
+      const t = setTimeout(() => setChatOpen(true), 400);
+      return () => clearTimeout(t);
+    }
+  }, [isRealMode]);
 
   // ── Real mode: useChat ──
   const { messages, sendMessage, status } = useChat({
@@ -1158,38 +1205,9 @@ export default function SentinelPlanPage() {
 
         {/* Canvas */}
         <div className="relative flex-1 min-w-0">
-          {/* Loading overlay — shown while agent is generating the plan */}
+          {/* Blur canvas while analyzing — no spinner */}
           {isRealMode && isAnalyzing && !plan && (
-            <div
-              className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-4"
-              style={{ background: "oklch(0.08 0.01 50 / 0.85)", backdropFilter: "blur(8px)" }}
-            >
-              <div
-                className="flex size-16 items-center justify-center rounded-2xl"
-                style={{
-                  background: `oklch(0.7 0.18 50 / 0.1)`,
-                  border: `2px solid oklch(0.7 0.18 50 / 0.3)`,
-                  boxShadow: `0 0 40px oklch(0.7 0.18 50 / 0.15)`,
-                }}
-              >
-                <ShieldCheckIcon
-                  className="size-7"
-                  style={{ color: ACCENT, animation: "sp-pulse 2s ease-in-out infinite" }}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <LoaderIcon
-                  className="size-4"
-                  style={{ color: ACCENT, animation: "sp-spin 1.5s linear infinite" }}
-                />
-                <p className="text-sm font-medium" style={{ color: `oklch(0.7 0.18 50 / 0.8)` }}>
-                  Sentinel is analyzing your contract...
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground/40">
-                Generating monitoring plan with AI
-              </p>
-            </div>
+            <div className="absolute inset-0 z-10 backdrop-blur-sm" />
           )}
 
           <ReactFlow
@@ -1214,38 +1232,50 @@ export default function SentinelPlanPage() {
 
       {/* Floating chat button */}
       {!chatOpen && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 32,
-            left: 32,
-            zIndex: 9999,
-          }}
-        >
+        <div className="fixed bottom-8 left-8 z-50">
           <button
             onClick={() => setChatOpen(true)}
-            className="group flex items-center gap-3 rounded-full border border-border/50 bg-card px-5 py-3 text-foreground shadow-lg backdrop-blur-md transition-all duration-300 ease-out hover:border-accent/40 hover:shadow-xl hover:shadow-accent/5 active:scale-95"
+            className="group relative overflow-hidden flex items-center gap-2.5 rounded-lg border border-accent/25 bg-accent/5 pl-3.5 pr-4.5 py-2.5 shadow-lg shadow-accent/5 backdrop-blur-sm transition-all duration-200 hover:bg-accent/10 hover:border-accent/40 hover:shadow-accent/15 active:scale-[0.97]"
           >
-            <div
-              className="flex size-9 items-center justify-center rounded-full transition-transform duration-300 group-hover:rotate-[20deg] group-hover:scale-110"
-              style={{
-                background: ACCENT,
-                boxShadow: `0 0 16px oklch(0.7 0.18 50 / 0.25)`,
-              }}
-            >
-              <SparklesIcon
-                className="size-4"
-                style={{ color: "oklch(0.08 0.01 50)" }}
-              />
+            {/* beam sweep */}
+            <span className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-accent/15 to-transparent" />
+            <div className="relative z-10 flex size-7 items-center justify-center rounded-md border border-accent/20 bg-accent/10">
+              <SparklesIcon className="size-3.5 text-accent" />
             </div>
-            <div className="pr-1">
-              <p className="text-[12px] font-semibold leading-tight">
+            <div className="relative z-10 pr-0.5">
+              <p className="text-[12px] font-semibold leading-tight text-accent">
                 Talk to Sentinel
               </p>
-              <p className="text-[10px] text-muted-foreground/50">
+              <p className="text-[9px] text-muted-foreground/40 mt-px">
                 Adjust plan
               </p>
             </div>
+          </button>
+        </div>
+      )}
+
+      {/* Skip to prefilled — shows while anything is loading */}
+      {(sim.isRunning || (isRealMode && !plan)) && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2.5 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: "1.5s" }}>
+          <p className="text-[11px] text-muted-foreground/50 tracking-wider uppercase">
+            AI is analyzing — this takes ~45s
+          </p>
+          <button
+            onClick={() => {
+              setParsedContract(null);
+              setChatOpen(false);
+              sim.skipToEnd();
+            }}
+            className="group relative overflow-hidden flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 px-5 py-2.5 text-sm font-medium text-accent shadow-lg shadow-accent/10 backdrop-blur-sm transition-all hover:bg-accent/10 hover:border-accent/50 hover:shadow-accent/20"
+          >
+            {/* beam sweep */}
+            <span
+              className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-accent/20 to-transparent"
+              style={{ animationDelay: "0.5s" }}
+            />
+            <ZapIcon className="size-3.5 shrink-0 relative z-10" />
+            <span className="relative z-10">Skip to prefilled demo</span>
+            <ChevronRightIcon className="size-3.5 shrink-0 relative z-10 text-accent/50 transition-transform group-hover:translate-x-0.5" />
           </button>
         </div>
       )}
