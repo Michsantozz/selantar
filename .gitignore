@@ -61,7 +61,9 @@ SYNTHESIS-PROJECTS.md
 /app/contract/*
 !/app/contract/setup/
 !/app/contract/setup/_components/
+!/app/contract/_components/
 !/app/contract/demo/
+!/app/contract/[id]/
 !/app/contract/sentinel-plan/
 !/app/contract/sentinel-plan/_components/
 
