@@ -254,37 +254,25 @@ function RiskSummary({ risks }: { risks: RiskDisplay[] }) {
   const low = risks.filter((r) => r.severity === "low").length;
 
   return (
-    <div className="rounded-lg border border-border bg-card px-5 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-destructive" />
-            <span className="text-sm text-muted-foreground">
-              {high} high
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-accent" />
-            <span className="text-sm text-muted-foreground">
-              {medium} medium
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-emerald" />
-            <span className="text-sm text-muted-foreground">
-              {low} low
-            </span>
-          </div>
+    <div className="rounded-lg border border-border bg-card px-4 py-3">
+      {/* Severity counts */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-destructive" />
+          <span className="text-xs text-muted-foreground">{high} high</span>
         </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-emerald">{accepted} accepted</span>
-          <span className="text-destructive">{rejected} rejected</span>
-          <span className="text-muted-foreground">{pending} pending</span>
+        <div className="flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-accent" />
+          <span className="text-xs text-muted-foreground">{medium} medium</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-emerald" />
+          <span className="text-xs text-muted-foreground">{low} low</span>
         </div>
       </div>
 
       {/* Progress */}
-      <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-muted">
+      <div className="mt-2.5 flex h-1.5 overflow-hidden rounded-full bg-muted">
         {accepted > 0 && (
           <div
             className="h-full bg-emerald transition-all duration-300"
@@ -298,9 +286,18 @@ function RiskSummary({ risks }: { risks: RiskDisplay[] }) {
           />
         )}
       </div>
-      <p className="mt-2 text-xs text-muted-foreground/60">
-        {total - pending} of {total} clauses reviewed
-      </p>
+
+      {/* Review status */}
+      <div className="mt-2 flex items-center justify-between">
+        <p className="text-[11px] text-muted-foreground/60">
+          {total - pending} of {total} clauses reviewed
+        </p>
+        <div className="flex items-center gap-2.5 text-[11px]">
+          <span className="text-emerald">{accepted} accepted</span>
+          <span className="text-destructive">{rejected} rejected</span>
+          <span className="text-muted-foreground/50">{pending} pending</span>
+        </div>
+      </div>
     </div>
   );
 }
