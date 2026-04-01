@@ -144,19 +144,19 @@ function MilestoneRow({ milestone, colorIndex, onUpdate, onRemove, isDragOverlay
       </TableCell>
 
       {/* Milestone */}
-      <TableCell className="py-3">
-        <div className="flex items-start gap-2.5">
+      <TableCell className="py-3 overflow-hidden">
+        <div className="flex items-start gap-2.5 min-w-0">
           <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full", p.dot)} />
-          <div className="flex flex-col gap-0.5 min-w-0">
+          <div className="flex flex-col gap-0.5 min-w-0 overflow-hidden">
             <InlineEdit
               value={milestone.name}
               onSave={v => onUpdate(milestone.id, "name", v)}
-              className="text-sm font-semibold text-foreground"
+              className="text-sm font-semibold text-foreground truncate"
             />
             <InlineEdit
               value={milestone.deliverables}
               onSave={v => onUpdate(milestone.id, "deliverables", v)}
-              className="text-xs text-muted-foreground/80"
+              className="text-xs text-muted-foreground/80 truncate"
             />
           </div>
         </div>
@@ -295,7 +295,7 @@ export function MilestoneBuilder({ initialMilestones, loading }: MilestoneBuilde
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={milestones.map(m => m.id)} strategy={verticalListSortingStrategy}>
-            <Table>
+            <Table className="table-fixed">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="w-8" />

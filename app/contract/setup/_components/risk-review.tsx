@@ -121,7 +121,7 @@ function RiskCard({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-card transition-all",
+        "rounded-lg border bg-card transition-all overflow-hidden",
         risk.accepted === true && "border-emerald/20 opacity-70",
         risk.accepted === false && "border-destructive/20",
         risk.accepted === null && "border-border"
@@ -254,9 +254,9 @@ function RiskSummary({ risks }: { risks: RiskDisplay[] }) {
   const low = risks.filter((r) => r.severity === "low").length;
 
   return (
-    <div className="rounded-lg border border-border bg-card px-4 py-3">
+    <div className="rounded-lg border border-border bg-card px-4 py-3 overflow-hidden">
       {/* Severity counts */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1.5">
           <span className="size-2 rounded-full bg-destructive" />
           <span className="text-xs text-muted-foreground">{high} high</span>
@@ -288,7 +288,7 @@ function RiskSummary({ risks }: { risks: RiskDisplay[] }) {
       </div>
 
       {/* Review status */}
-      <div className="mt-2 flex items-center justify-between">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-1">
         <p className="text-[11px] text-muted-foreground/60">
           {total - pending} of {total} clauses reviewed
         </p>

@@ -247,10 +247,11 @@ export default function ContractV2Page() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5, ease: [0, 0, 0.2, 1] }}
         className="flex-1 grid divide-x divide-border overflow-hidden min-h-0"
-        style={{ gridTemplateColumns: "1fr 1fr 1.2fr" }}>
+        style={{ gridTemplateColumns: "1fr 1fr 1.2fr" }}
+      >
 
         {/* Col 1 — Risk Review */}
-        <div id="cv2-risk-col" className="flex flex-col min-h-0">
+        <div id="cv2-risk-col" className="flex flex-col min-h-0 min-w-0 overflow-hidden">
           <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent" />
@@ -267,7 +268,7 @@ export default function ContractV2Page() {
         </div>
 
         {/* Col 2 — Milestones */}
-        <div id="cv2-milestones-col" className="flex flex-col min-h-0">
+        <div id="cv2-milestones-col" className="flex flex-col min-h-0 min-w-0 overflow-hidden">
           <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent" />
@@ -283,7 +284,7 @@ export default function ContractV2Page() {
         </div>
 
         {/* Col 3 — Deploy Preview */}
-        <div id="cv2-deploy-col" className="flex flex-col min-h-0">
+        <div id="cv2-deploy-col" className="flex flex-col min-h-0 min-w-0 overflow-hidden">
           <div className="shrink-0 h-9 flex items-center px-5 border-b border-border">
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-accent" />
