@@ -3,21 +3,12 @@
 import { useState, useEffect } from 'react'
 import { registerDemoAction } from '@/lib/demo-actions'
 
-const TG_BOT_TOKEN = '***REMOVED***'
-const TG_CHAT_ID = '6709259964'
-
 async function sendTelegram(text: string) {
   try {
-    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendChatAction`, {
+    await fetch('/api/sentinel-notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TG_CHAT_ID, action: 'typing' }),
-    })
-    await new Promise((r) => setTimeout(r, 1500))
-    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TG_CHAT_ID, text, parse_mode: 'Markdown' }),
+      body: JSON.stringify({ text }),
     })
   } catch {
     // silently fail
